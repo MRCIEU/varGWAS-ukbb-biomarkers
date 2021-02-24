@@ -4,12 +4,12 @@ source("funs.R")
 set.seed(1234)
 
 # load phenotypes
-f <- "/tmp/tmp.krHob0dvnc/data.29244.tab"
+f <- "/tmp/tmp.785ctU0Nrl/data.33352.csv"
 pheno <- fread(f, select=c(
-        "f.eid",
-        "f.31.0.0",
-        "f.21022.0.0",
-        "f.21001.0.0"
+        "eid",
+        "31-0.0",
+        "21022-0.0",
+        "21001-0.0"
     ),
     col.names=c(
         "eid", 
