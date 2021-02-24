@@ -11,21 +11,22 @@ linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TR
 
 # load covariates
 covariates <- get_covariates()
+pc <- get_genetic_principal_components()
 
 # merge data
 dat <- merge(linker, covariates, "appieu")
 dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
+dat <- merge(dat, pc, "appieu")
 
 # select fields for GWAS
-dat <- dat[,c("appieu", "appieu", "sex.31.0.0", "chip", "age_at_recruitment.21022.0.0", "body_mass_index.21001.0.0"), with=F]
-names(dat)[1] <- "FID"
-names(dat)[2] <- "IID"
+dat <- dat[,c("appieu", "sex.31.0.0", "age_at_recruitment.21022.0.0", "body_mass_index.21001.0.0", paste0("PC", seq(1, 10))), with=F]
 
 # drop missing values
 dat <- dat[complete.cases(dat), ]
 
 # SD scale
 dat$body_mass_index.21001.0.0 <- dat$body_mass_index.21001.0.0 / sd(dat$body_mass_index.21001.0.0)
+dat$age_at_recruitment.21022.0.0 <- dat$age_at_recruitment.21022.0.0 / sd(dat$age_at_recruitment.21022.0.0)
 
 # write out pheno for vGWAS
-write.table(dat, file="data/bmi.txt", row.names=F, quote=F, sep=",")
+write.table(dat, file="data/ukb_bmi.txt", row.names=F, quote=F, sep=",")
