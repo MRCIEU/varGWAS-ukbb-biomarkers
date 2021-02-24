@@ -30,6 +30,7 @@ Rscript extract.R
 Run C++ implementation of B-P
 
 ```sh
+module load build/gcc-5.5.0
 ~/projects/jlst_cpp/build/bin/jlst_cpp \
 -v data/ukb_bmi.txt \
 -s , \
