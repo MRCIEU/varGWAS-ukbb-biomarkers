@@ -9,7 +9,7 @@ set -euo pipefail
 module load build/gcc-5.5.0
 
 # run vGWAS using B-P
-./build/bin/jlst_cpp \
+/mnt/storage/home/ml18692/projects/jlst_cpp/build/bin/jlst_cpp \
 -v data/ukb_bmi.txt \
 -s , \
 -o data/ukb_bmi.vgwas.t1.txt \

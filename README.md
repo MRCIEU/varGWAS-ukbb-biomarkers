@@ -30,5 +30,5 @@ Rscript extract.R
 Run C++ implementation of B-P
 
 ```sh
-bash run.sh
+sbatch run.sh
 ```
