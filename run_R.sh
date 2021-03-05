@@ -2,7 +2,7 @@
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem 32G
-#SBATCH --time=500:00:00
+#SBATCH --time=200:00:00
 #SBATCH --partition=mrcieu
 set -euo pipefail
 
