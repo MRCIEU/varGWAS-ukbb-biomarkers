@@ -33,7 +33,6 @@ pheno <- fread(opt$p)
 
 # read in snp list
 snps <- fread(opt$s)
-snps <- snps[1]
 
 # GWAS
 results <- apply(snps, 1, function(snp) {
