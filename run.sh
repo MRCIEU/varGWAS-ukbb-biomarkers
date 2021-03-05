@@ -8,6 +8,9 @@ set -euo pipefail
 
 module load build/gcc-5.5.0
 
+# set chr from cmd arg
+chr="$1"
+
 # run vGWAS using B-P
 /mnt/storage/home/ml18692/projects/jlst_cpp/build/bin/jlst_cpp \
 -v data/ukb_bmi.txt \
