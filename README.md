@@ -38,6 +38,17 @@ done
 Run R implementation of B-P
 
 ```sh
-# run only chr22
-sbatch run_R.sh 22
+# randomly select 10000 SNPs for analysis
+module load apps/bgen/1.1.6
+echo -e "chromosome\tposition\tfirst_allele\talternative_alleles" > snps.txt
+bgenix \
+-g /mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/dosage_bgen/data.chr22.bgen \
+-incl-range 22:0- \
+-list | \
+awk 'NR > 2 {print $3"\t"$4"\t"$6"\t"$7}' | \
+shuf | \
+head -n 10000 >> data/snps.txt
+
+# run vGWAS on subset of SNPs
+sbatch run_R.sh
 ```

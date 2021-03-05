@@ -55,3 +55,64 @@ get_covariates <- function() {
     names(cov) = c("appieu", "sex", "chip")
     return(cov)
 }
+
+# Extract dosage for variant from BGEN file. Assumes all variants are diploid.
+#'
+#' @param chrom A single chromosome
+#' @param pos Basepair location
+#' @param ref Reference allele aka non-effect allele or major allele
+#' @param alt Alternative allele aka effect allele or minor allele
+#'
+#' @return Dataframe of dosages for supplied variant
+extract_variant_from_bgen <- function(chrom, pos, ref, alt){
+    
+    # check inputs
+    stopifnot(length(chrom) == 1 && typeof(chrom) == "character")
+    stopifnot(length(pos) == 1 && typeof(pos) == "double")
+    stopifnot(length(ref) == 1 && typeof(ref) == "character")
+    stopifnot(length(alt) == 1 && typeof(alt) == "character")
+    # format chrom as expected
+    chrom <- gsub("^chr", "", chrom)
+    chrom_n <- as.numeric(chrom)
+    if (!is.na(chrom_n) && chrom_n < 10){
+        chrom <- paste0("0", chrom_n)
+    }
+    message(paste0("Extracting variant: ", chrom, ":", pos, ref, ">", alt, " from BGEN file"))
+    
+    # extract variant from bgen
+    variant <- bgen.load(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/dosage_bgen/data.chr", chrom, ".bgen"),
+        data.frame(chromosome = chrom, start = pos, end = pos)
+    )
+    # check we have a single variant at the correct locus
+    if (nrow(variant$variants) == 0){
+        stop("Variant not found")
+    }
+    if (nrow(variant$variants) > 1){
+        stop("Variant is multiallelic and not currently supported")
+    }
+    if (variant$variants$chromosome != chrom){
+        stop("Wrong variant returned")
+    }
+    if (variant$variants$position != pos){
+        stop("Wrong variant returned")
+    }
+    # harmonise
+    if (variant$variants$allele0 == ref && variant$variants$allele1 == alt){
+        # convert dosage for each genotype to copies of alt allele
+        dosage <- as.data.frame(
+            apply(variant$data, 1, function(data) { return(data[,1]*0 + data[,2]*1 + data[,3]*2) })
+        )
+    } else if (variant$variants$allele1 == ref && variant$variants$allele0 == alt){
+        # convert dosage for each genotype to copies of alt allele
+        dosage <- as.data.frame(
+            apply(variant$data, 1, function(data) { return(data[,1]*2 + data[,2]*1 + data[,3]*0) })
+        )
+    } else {
+        stop("Alleles do not match input")
+    }
+    # tidy up
+    names(dosage) <- paste0("chr", gsub("^0", "", chrom), "_", pos, "_", ref, "_", alt)
+    dosage$appieu <- row.names(dosage)
+    row.names(dosage) <- NULL
+    return(dosage)
+}
