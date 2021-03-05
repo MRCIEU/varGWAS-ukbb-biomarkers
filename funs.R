@@ -1,5 +1,6 @@
 library('data.table')
 library('purrr')
+library('rbgen')
 
 get_filtered_linker <- function(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="16729") {
     message("Preparing IEU linker")
