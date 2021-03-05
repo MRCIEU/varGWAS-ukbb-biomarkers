@@ -20,6 +20,7 @@ opt <- data.frame(p="data/ukb_bmi.txt", t="body_mass_index.21001.0.0", s="data/s
 mod <- function(pheno, out, chr, pos, oa, ea) {
     dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
     pheno <- merge(pheno, dosage, "appieu")
+    pheno <- na.omit(pheno)
     s <- paste0("chr", chr, "_", pos, "_", oa, "_", ea)
     f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
     fit1 <- lm(as.formula(f), data=pheno)
