@@ -31,6 +31,13 @@ Run C++ implementation of B-P
 
 ```sh
 for chr in  $(seq -f "%02g" 1 22); do
-    sbatch run.sh "$chr"
+    sbatch run_cpp.sh "$chr"
 done
+```
+
+Run R implementation of B-P
+
+```sh
+# run only chr22
+sbatch run_R.sh 22
 ```
