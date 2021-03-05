@@ -30,5 +30,7 @@ Rscript extract.R
 Run C++ implementation of B-P
 
 ```sh
-sbatch run.sh
+for chr in  $(seq -f "%02g" 1 22); do
+    sbatch run.sh "$chr"
+done
 ```
