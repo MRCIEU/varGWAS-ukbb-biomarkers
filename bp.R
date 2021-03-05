@@ -15,8 +15,6 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-opt <- data.frame(p="data/ukb_bmi.txt", t="body_mass_index.21001.0.0", s="data/snps.txt", o="data/ukb_bmi.vgwas.r_subsample.txt", stringsAsFactors=F)
-
 mod <- function(pheno, out, chr, pos, oa, ea) {
     dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
     pheno <- merge(pheno, dosage, "appieu")
@@ -35,7 +33,7 @@ pheno <- fread(opt$p)
 
 # read in snp list
 snps <- fread(opt$s)
-snp <- snps[1]
+snps <- snps[1]
 
 # GWAS
 results <- apply(snps, 1, function(snp) {
