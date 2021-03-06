@@ -55,3 +55,6 @@ sbatch run_R.sh
 
 ## QC
 
+```sh
+Rscript qc.R
+```
