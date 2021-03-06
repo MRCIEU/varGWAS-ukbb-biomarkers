@@ -28,12 +28,14 @@ mod <- function(pheno, out, chr, pos, oa, ea) {
       f <- paste0("d ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
       fit2 <- lm(as.formula(f), data=pheno)
       return(tidy(fit2)[2,])
-  },
-  error=function(cond) {
+    },
+    error=function(cond) {
       return(NA)
     }
   )
 }
+
+message(paste0("vgwas of ", opt$t))
 
 # read in extracted phenotypes
 pheno <- fread(opt$p)
@@ -43,7 +45,7 @@ snps <- fread(opt$s)
 
 # GWAS
 results <- apply(snps, 1, function(snp) {
-  mod(pheno, opt$t, as.character(snp[['chromosome']]), as.numeric(snp[['position']]), snp[['first_allele']], snp[['alternative_alleles']])
+  mod(pheno, opt$t, as.character(snp[['chromosome']]), as.numeric(snp[['position']]), as.character(snp[['first_allele']]), as.character(snp[['alternative_alleles']]))
 })
 results <- rbindlist(results)
 
