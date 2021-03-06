@@ -11,6 +11,6 @@ module load languages/r/3.6.0
 # run vGWAS using B-P
 Rscript bp.R \
 -p data/ukb_bmi.txt \
--t "body_mass_index.21001.0.0" \
+-t body_mass_index.21001.0.0 \
 -s data/snps.txt \
 -o data/ukb_bmi.vgwas.r_subsample.txt
