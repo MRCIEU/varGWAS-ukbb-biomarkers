@@ -52,3 +52,9 @@ head -n 10000 >> data/snps.txt
 # run vGWAS on subset of SNPs
 sbatch run_R.sh
 ```
+
+## QC
+
+```sh
+Rscript qc.R
+```
