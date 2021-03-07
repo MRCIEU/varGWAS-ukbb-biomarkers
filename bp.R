@@ -47,7 +47,7 @@ snps <- fread(opt$s)
 results <- apply(snps, 1, function(snp) {
   mod(pheno, opt$t, as.character(snp[['chromosome']]), as.numeric(snp[['position']]), as.character(snp[['first_allele']]), as.character(snp[['alternative_alleles']]))
 })
-results <- rbindlist(results)
+results <- rbindlist(results[!is.na(results)])
 
 # save assoc
 write.csv(results, file=opt$o, row.names=F)
