@@ -4,7 +4,7 @@ source("funs.R")
 set.seed(1234)
 
 # load phenotypes
-f <- "/tmp/tmp.785ctU0Nrl/data.33352.csv"
+f <- "/tmp/tmp.exBYSnQ24w/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
         "31-0.0",
