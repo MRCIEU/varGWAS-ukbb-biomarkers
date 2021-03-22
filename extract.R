@@ -37,4 +37,4 @@ dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]])
 dat$age_at_recruitment.21022.0.0 <- dat$age_at_recruitment.21022.0.0 / sd(dat$age_at_recruitment.21022.0.0)
 
 # write out pheno for vGWAS
-write.table(dat, file=paste0("data/", opt$trait, ".txt", row.names=F, quote=F, sep=",")
+write.table(dat, file=paste0("data/", opt$trait, ".txt"), row.names=F, quote=F, sep=",")
