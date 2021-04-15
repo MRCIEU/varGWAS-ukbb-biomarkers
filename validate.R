@@ -65,7 +65,7 @@ sig <- gwas[gwas$RSID %in% sig$rsid]
 results <- apply(sig, 1, function(snp) {
   mod(pheno, opt$t, as.character(snp[['CHR']]), as.numeric(snp[['POS']]), as.character(snp[['OA']]), as.character(snp[['EA']]))
 })
-results <- rbindlist(results[!is.na(results)])
+results <- rbindlist(results[!is.na(results)], fill=T)
 
 # save assoc
 write.csv(results, file=opt$o, row.names=F)
