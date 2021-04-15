@@ -16,7 +16,7 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-mod <- function(pheno, out, chr, pos, oa, ea) {
+mod <- function(pheno, out, chr, pos, oa, ea, rsid) {
   tryCatch(
     {
       dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
@@ -34,7 +34,7 @@ mod <- function(pheno, out, chr, pos, oa, ea) {
       fit0 <- lm(as.formula(f), data=pheno)
       ftest <- tidy(anova(fit0, fit2))
       fit2 <- tidy(fit2)
-      return(data.frame(BETA_x=fit2$estimate[2], BETA_xq=fit2$estimate[3], SE_x=fit2$std.error[2], SE_xq=fit2$std.error[3], P=ftest$p.value[2]))
+      return(data.frame(rsid=rsid, SNP=s, BETA_x=fit2$estimate[2], BETA_xq=fit2$estimate[3], SE_x=fit2$std.error[2], SE_xq=fit2$std.error[3], P=ftest$p.value[2]))
     },
     error=function(cond) {
       return(NA)
@@ -63,7 +63,7 @@ sig <- gwas[gwas$RSID %in% sig$rsid]
 
 # GWAS
 results <- apply(sig, 1, function(snp) {
-  mod(pheno, opt$t, as.character(snp[['CHR']]), as.numeric(snp[['POS']]), as.character(snp[['OA']]), as.character(snp[['EA']]))
+  mod(pheno, opt$t, as.character(snp[['CHR']]), as.numeric(snp[['POS']]), as.character(snp[['OA']]), as.character(snp[['EA']]), as.character(snp[['RSID']]))
 })
 results <- rbindlist(results[!is.na(results)], fill=T)
 
