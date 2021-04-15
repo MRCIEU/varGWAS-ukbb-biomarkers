@@ -53,7 +53,7 @@ gwas <- gwas %>%
     filter(SE_x != -1)
 
 # select tophits
-sig <- gwas[gwas$P < 5e-8 & gwas$EAF >= 0.03 & gwas$EAF <= 0.98]
+sig <- gwas[gwas$P < 5e-8 & gwas$EAF >= 0.05 & gwas$EAF <= 0.95]
 sig <- sig[,c("RSID", "P")]
 names(sig) <- c("rsid", "pval")
 sig <- ld_clump(sig)
