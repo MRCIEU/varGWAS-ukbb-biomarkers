@@ -63,3 +63,13 @@ sbatch run_R.sh
 ```sh
 Rscript qc.R
 ```
+
+## Validation
+
+Vaidate tophits using B-F model
+
+```sh
+for trait in alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
+    sbatch run_validate.R.sh "$trait" "$chr"
+done
+```
