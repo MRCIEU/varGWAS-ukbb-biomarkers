@@ -34,7 +34,7 @@ mod <- function(pheno, out, chr, pos, oa, ea) {
       fit0 <- lm(as.formula(f), data=pheno)
       ftest <- tidy(anova(fit0, fit2))
       fit2 <- tidy(fit2)
-      return(list(ftest, fit2))
+      return(data.frame(BETA_x=fit2$estimate[2], BETA_xq=fit2$estimate[3], SE_x=fit2$std.error[2], SE_xq=fit2$std.error[3], P=ftest$p.value[2]))
     },
     error=function(cond) {
       return(NA)
@@ -53,7 +53,7 @@ gwas <- gwas %>%
     filter(SE_x != -1)
 
 # select tophits
-sig <- gwas[gwas$P < 5e-8 & gwas$EAF >= 0.05 & gwas$EAF <= 0.95]
+sig <- gwas[gwas$P < 5e-8 & gwas$EAF >= 0.03 & gwas$EAF <= 0.98]
 sig <- sig[,c("RSID", "P")]
 names(sig) <- c("rsid", "pval")
 sig <- ld_clump(sig)
