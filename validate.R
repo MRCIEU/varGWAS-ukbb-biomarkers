@@ -27,7 +27,7 @@ mod <- function(pheno, out, chr, pos, oa, ea, rsid) {
       pheno[[s2]] <- pheno[[s]]^2
       f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
       fit1 <- rq(as.formula(f), tau=0.5, data=pheno)
-      fit1m <- lm(as.formula(f), data=pheno)
+      fit1m <- tidy(lm(as.formula(f), data=pheno))
       pheno$d <- resid(fit1)^2
       f <- paste0("d ~ ", s, " + ", s2)
       fit2 <- lm(as.formula(f), data=pheno)
