@@ -27,6 +27,7 @@ mod <- function(pheno, out, chr, pos, oa, ea, rsid) {
       pheno[[s2]] <- pheno[[s]]^2
       f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
       fit1 <- rq(as.formula(f), tau=0.5, data=pheno)
+      fit1m <- lm(as.formula(f), data=pheno)
       pheno$d <- resid(fit1)^2
       f <- paste0("d ~ ", s, " + ", s2)
       fit2 <- lm(as.formula(f), data=pheno)
@@ -34,7 +35,20 @@ mod <- function(pheno, out, chr, pos, oa, ea, rsid) {
       fit0 <- lm(as.formula(f), data=pheno)
       ftest <- tidy(anova(fit0, fit2))
       fit2 <- tidy(fit2)
-      return(data.frame(rsid=rsid, SNP=s, BETA_x=fit2$estimate[2], BETA_xq=fit2$estimate[3], SE_x=fit2$std.error[2], SE_xq=fit2$std.error[3], P=ftest$p.value[2]))
+
+      return(data.frame(
+        rsid=rsid,
+        SNP=s,
+        BETA_x=fit2$estimate[2],
+        BETA_xq=fit2$estimate[3], 
+        SE_x=fit2$std.error[2],
+        SE_xq=fit2$std.error[3],
+        Pvar=ftest$p.value[2],
+        BETA=fit1m$estimate[2],
+        SE=fit1m$std.error[2],
+        Pmu=fit1m$p.value[2]
+        )
+      )
     },
     error=function(cond) {
       return(NA)

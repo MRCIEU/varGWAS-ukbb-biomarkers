@@ -1,0 +1,2 @@
+SNP outcome modifier
+rs2076258   calcium.30680.0.0   age_at_menopause.3581.0.0
