@@ -4,8 +4,8 @@ library("dplyr")
 library("TwoSampleMR")
 set.seed(1234)
 
-trait <- "alanine_aminotransferase.30620"
-trait_id <- "ukb-d-30620_irnt"
+trait <- "calcium.30680"
+trait_id <- "ukb-d-30680_irnt"
 
 vqtl <- data.frame()
 for (chr in seq(1,22)){
@@ -14,7 +14,9 @@ for (chr in seq(1,22)){
     } else {
         file <- paste0("data/", trait, ".validate.chr", chr, ".txt")
     }
-    vqtl <- rbind(vqtl, fread(file))
+    if (file.exists(file)){
+        vqtl <- rbind(vqtl, fread(file))
+    }
 }
 
 # select vQTLs with evidence of a mean effect on outcome

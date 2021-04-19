@@ -39,7 +39,11 @@ pheno <- fread(f, select=c(
         "30870-0.0",
         "30880-0.0",
         "30670-0.0",
-        "30890-0.0"
+        "30890-0.0",
+        "30140-0.0",
+        "30120-0.0",
+        "3581-0.0",
+        "2814-0.0"
     ),
     col.names=c(
         "eid", 
@@ -75,10 +79,21 @@ pheno <- fread(f, select=c(
         "triglycerides.30870",
         "urate.30880",
         "urea.30670",
-        "vitamin_d.30890"
+        "vitamin_d.30890",
+        "neutrophill_count.30140.0.0",
+        "lymphocyte_count.30120.0.0",
+        "age_at_menopause.3581.0.0",
+        "ever_used_hormone_replacement_therapy.2814.0.0"
     )
 )
 unlink(f)
+
+# process phenotypes
+pheno$neutrophill_to_lymphocyte_count_ratio <- pheno$neutrophill_count.30140.0.0 / pheno$lymphocyte_count.30120.0.0
+pheno <- pheno %>% mutate_at(c('age_at_menopause.3581.0.0'), na_if, -1)
+pheno <- pheno %>% mutate_at(c('age_at_menopause.3581.0.0'), na_if, -3)
+pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0'), na_if, -1)
+pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0'), na_if, -3)
 
 # save data
 save.image(file = "data/pheno.RData")
