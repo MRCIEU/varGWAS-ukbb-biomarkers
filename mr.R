@@ -16,6 +16,8 @@ for (chr in seq(1,22)){
     }
     if (file.exists(file)){
         vqtl <- rbind(vqtl, fread(file))
+    } else {
+        warning(paste0("File ", file, " does not exist"))
     }
 }
 
@@ -31,7 +33,7 @@ exposures <- phewas(vqtl$rsid)
 # select exposures associated with multiple vQTLs
 # TODO optimise threshold
 counts <- as.data.frame(table(exposures$id), stringsAsFactors=F)
-ids <- counts[counts$Freq > 2,]$Var1
+ids <- counts[counts$Freq > 1,]$Var1
 exposures.ms <- exposures[exposures$id %in% ids,]
 
 # MR of exposures/modifiers on outcome
@@ -54,6 +56,12 @@ for (exp_id in unique(exposures.ms$id)){
 # select exposures with a causal effect on outcome
 mr_exp_effect <- mr_res %>%
     filter(method == "Inverse variance weighted" & pval < 0.05) %>%
+    pull(id.exposure)
+mr_exp_effect <- as.character(mr_exp_effect)
+
+# MR sensitivity analysis
+mr_exp_effect <- mr_res[mr_res$id.exposure %in% mr_exp_effect,] %>%
+    filter(method == "Weighted median" & pval < 0.05) %>%
     pull(id.exposure)
 mr_exp_effect <- as.character(mr_exp_effect)
 
