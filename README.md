@@ -81,5 +81,5 @@ done
 Find disease outcomes associated with vQTLs
 
 ```sh
-sbatch run_mr.R "glycated_haemoglobin.30750" "ukb-d-30750_irnt"
+sbatch run_mr.sh "glycated_haemoglobin.30750" "ukb-d-30750_irnt"
 ```
