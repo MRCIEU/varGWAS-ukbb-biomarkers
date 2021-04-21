@@ -75,3 +75,11 @@ for chr in  $(seq -f "%02g" 1 22); do
     done
 done
 ```
+
+## MR
+
+Find disease outcomes associated with vQTLs
+
+```sh
+sbatch run_mr.R "glycated_haemoglobin.30750" "ukb-d-30750_irnt"
+```

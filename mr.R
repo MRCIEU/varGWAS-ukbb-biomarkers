@@ -1,18 +1,25 @@
 library("data.table")
 library("ieugwasr")
 library("dplyr")
+library('optparse')
 library("TwoSampleMR")
 set.seed(1234)
 
-trait <- "calcium.30680"
-trait_id <- "ukb-d-30680_irnt"
+option_list = list(
+  make_option(c("-i", "--id"), type="character", default=NULL, help="OpenGWAS ID", metavar="character"),
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
+  make_option(c("-o", "--out"), type="character", default=NULL, help="Output file", metavar="character")
+);
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
 
+# load vGWAS for biomarker risk factor
 vqtl <- data.frame()
 for (chr in seq(1,22)){
     if (chr < 10){
-        file <- paste0("data/", trait, ".validate.chr0", chr, ".txt")
+        file <- paste0("data/", opt$trait, ".validate.chr0", chr, ".txt")
     } else {
-        file <- paste0("data/", trait, ".validate.chr", chr, ".txt")
+        file <- paste0("data/", opt$trait, ".validate.chr", chr, ".txt")
     }
     if (file.exists(file)){
         vqtl <- rbind(vqtl, fread(file))
@@ -21,49 +28,45 @@ for (chr in seq(1,22)){
     }
 }
 
-# select vQTLs with evidence of a mean effect on outcome
+# select vQTLs with evidence of a mean effect on biomaker
 vqtl <- vqtl[vqtl$Pmu < 0.05]
 
-# select SNPs which are strongly associated with B-P
+# select SNPs which are strongly associated using B-P
 vqtl <- vqtl[vqtl$Pvar < 5e-5]
 
-# phewas vQTL
-exposures <- phewas(vqtl$rsid)
+# phewas vQTLs against disease outcomes
+outcomes <- phewas(vqtl$rsid, batch=c("bbj-a", "ebi-a", "finn-a", "ieu-a", "ieu-b", "ukb-a", "ukb-b", "ukb-d"))
 
-# select exposures associated with multiple vQTLs
-# TODO optimise threshold
-counts <- as.data.frame(table(exposures$id), stringsAsFactors=F)
-ids <- counts[counts$Freq > 1,]$Var1
-exposures.ms <- exposures[exposures$id %in% ids,]
-
-# MR of exposures/modifiers on outcome
+# select outcomes which have MR evidence
 mr_res <- data.frame()
-for (exp_id in unique(exposures.ms$id)){
-    message(paste0("MR for ", exp_id))
+for (out_id in unique(outcomes$id)){
+    message(paste0("MR for ", out_id))
     # Get instruments
-    exposure_dat <- extract_instruments(exp_id)
+    exposure_dat <- extract_instruments(opt$id)
 
     # Get effects of instruments on outcome
-    outcome_dat <- extract_outcome_data(snps=exposure_dat$SNP, outcomes=trait_id)
+    outcome_dat <- extract_outcome_data(snps=exposure_dat$SNP, outcomes=out_id)
 
     # Harmonise the exposure and outcome data
     dat <- harmonise_data(exposure_dat, outcome_dat)
 
     # Perform MR
-    mr_res <- rbind(mr_res, mr(dat), stringsAsFactors=F)
+    mr_res <- rbind(mr_res, mr(dat))
 }
 
-# select exposures with a causal effect on outcome
-mr_exp_effect <- mr_res %>%
+# select casual biomaker-outcome relationships
+mr_main <- mr_res %>%
     filter(method == "Inverse variance weighted" & pval < 0.05) %>%
-    pull(id.exposure)
-mr_exp_effect <- as.character(mr_exp_effect)
+    pull(id.outcome)
+mr_main <- as.character(mr_main)
 
-# MR sensitivity analysis
-mr_exp_effect <- mr_res[mr_res$id.exposure %in% mr_exp_effect,] %>%
+mr_sens <- mr_res[mr_res$id.outcome %in% mr_main,] %>%
     filter(method == "Weighted median" & pval < 0.05) %>%
-    pull(id.exposure)
-mr_exp_effect <- as.character(mr_exp_effect)
+    pull(id.outcome)
+mr_sens <- as.character(mr_sens)
 
-# filter vqtls where there is MR evidence of an exposure/modifier effect on outcome
-exposures.mr <- exposures.ms[exposures.ms$id %in% mr_exp_effect,]
+# filter vQTLs with MR evidence
+outcomes <- outcomes[outcomes$id %in% mr_sens,]
+
+# write out disease outcomes
+write.csv(outcomes, file=opt$out)
