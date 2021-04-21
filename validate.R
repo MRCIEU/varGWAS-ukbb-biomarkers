@@ -62,6 +62,9 @@ pheno <- fread(opt$p)
 # read in GWAS
 gwas <- fread(opt$g)
 
+# drop HLA region
+gwas <- gwas[!(gwas$CHR == 6 & gwas$POS >= 29691116 & gwas$POS <= 33054976),]
+
 # drop failed rows
 gwas <- gwas %>%
     filter(SE_x != -1)
