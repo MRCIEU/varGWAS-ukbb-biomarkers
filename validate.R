@@ -4,6 +4,7 @@ library('dplyr')
 library('ieugwasr')
 library('quantreg')
 library('broom')
+library("multcomp")
 source("funs.R")
 set.seed(124)
 
@@ -34,19 +35,33 @@ mod <- function(pheno, out, chr, pos, oa, ea, rsid) {
       f <- paste0("d ~ 1")
       fit0 <- lm(as.formula(f), data=pheno)
       ftest <- tidy(anova(fit0, fit2))
-      fit2 <- tidy(fit2)
+      fit2t <- tidy(fit2)
+
+      # linear combination
+      delta <- 1
+      ci <- tidy(glht(model=fit2, linfct=paste(s, "*", delta," + ", s2, "*", delta^2, " == 0")))
+      phi_hat1 <- as.numeric(ci$estimate[1])
+      phi_hat_se1 <- as.numeric(ci$std.error[1])
+      delta <- 2
+      ci <- tidy(glht(model=fit2, linfct=paste(s, "*", delta," + ", s2, "*", delta^2, " == 0")))
+      phi_hat2 <- as.numeric(ci$estimate[1])
+      phi_hat_se2 <- as.numeric(ci$std.error[1])
 
       return(data.frame(
         rsid=rsid,
         SNP=s,
-        BETA_x=fit2$estimate[2],
-        BETA_xq=fit2$estimate[3], 
-        SE_x=fit2$std.error[2],
-        SE_xq=fit2$std.error[3],
+        BETA_x=fit2t$estimate[2],
+        BETA_xq=fit2t$estimate[3], 
+        SE_x=fit2t$std.error[2],
+        SE_xq=fit2t$std.error[3],
         Pvar=ftest$p.value[2],
         BETA=fit1m$estimate[2],
         SE=fit1m$std.error[2],
-        Pmu=fit1m$p.value[2]
+        Pmu=fit1m$p.value[2],
+        BETAx1=phi_hat1,
+        BETAx2=phi_hat2,
+        SEx1=phi_hat_se1,
+        SEx2=phi_hat_se2
         )
       )
     },
