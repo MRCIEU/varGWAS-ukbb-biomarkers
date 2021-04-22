@@ -20,7 +20,7 @@ dat <- harmonise_data(exposure_dat, outcome_dat)
 mr_alt_hsd <- mr(dat)
 
 ### MR effect of HSD17B13 expression on ALT ###
-# Get instruments
+# Get instruments from eqtlgen
 exposure_dat <- extract_instruments("eqtl-a-ENSG00000170509")
 
 # Get effects of instruments on outcome
@@ -31,6 +31,36 @@ dat <- harmonise_data(exposure_dat, outcome_dat)
 
 # Perform MR
 mr_hsd_alt <- mr(dat)
+
+### MR effect of HSD17B13 expression in liver on ALT ###
+# Get instruments from gtex
+gtex <- fread("/mnt/storage/private/mrcieu/data/broad/public/gtex/released/2020-03-09/data/v8_eQTL_all_associations/Liver.allpairs.txt.gz")
+gtex <- gtex[startsWith(gtex$gene_id, "ENSG00000170509."),]
+gtex <- gtex[gtex$pval_nominal < 0.01 & gtex$maf >= 0.05 & gtex$maf <= 0.95]
+anno <- fread("https://storage.googleapis.com/gtex_analysis_v8/reference/GTEx_Analysis_2017-06-05_v8_WholeGenomeSeq_838Indiv_Analysis_Freeze.lookup_table.txt.gz")
+gtex <- merge(gtex, anno, "variant_id")
+exposure_dat <- format_data(
+    gtex, 
+    type="exposure", 
+    eaf_col = "maf",
+    snp_col = "rs_id_dbSNP151_GRCh38p7",
+    beta_col = "slope",
+    se_col = "slope_se",
+    effect_allele_col = "alt",
+    other_allele_col = "ref",
+    phenotype_col= "gene_id",
+    pval_col = "pval_nominal"
+)
+exposure_dat <- clump_data(exposure_dat)
+
+# Get effects of instruments on outcome
+outcome_dat <- extract_outcome_data(snps=exposure_dat$SNP, outcomes="ukb-d-30620_irnt")
+
+# Harmonise the exposure and outcome data
+dat <- harmonise_data(exposure_dat, outcome_dat)
+
+# Perform MR
+mr_hsd_gtex_alt <- mr(dat)
 
 ### LoF effect of HSD17B13 expression on ALT ###
 
