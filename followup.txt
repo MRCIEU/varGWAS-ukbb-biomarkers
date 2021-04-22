@@ -1,3 +1,3 @@
-SNP outcome modifier    notes
+vQTL outcome modifier    notes
 rs2076258   calcium.30680.0.0   age_at_menopause.3581.0.0
-rs13141441  alanine_aminotransferase.30620  ENSG00000170509 cis-SNP for expression of HSD17B13. Gene LoF is protective of liver damage.
+rs13141441  alanine_aminotransferase.30620  SNP is eQTL decreasing expression of HSD17B13 in liver; LoF/missense variants also lower ALT.
