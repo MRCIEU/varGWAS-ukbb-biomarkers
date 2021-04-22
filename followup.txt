@@ -1,3 +1,3 @@
 vQTL outcome modifier    notes
 rs2076258   calcium.30680.0.0   age_at_menopause.3581.0.0
-rs13141441  alanine_aminotransferase.30620  SNP is eQTL decreasing expression of HSD17B13 in liver; LoF/missense variants also lower ALT.
+rs13141441  alanine_aminotransferase.30620  SNP lowers variance of ALT and is eQTL for drug target HSD17B13; Missense variants in HSD17B13 lower ALT.
