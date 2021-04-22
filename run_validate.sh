@@ -1,9 +1,8 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
-#SBATCH --mem 16G
-#SBATCH --time=08:00:00
-#SBATCH --partition=serial
+#SBATCH --time=06:00:00
+#SBATCH --partition=veryshort
 set -euo pipefail
 
 module load languages/r/3.6.0
