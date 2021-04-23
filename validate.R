@@ -16,26 +16,27 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-model <- function(pheno, out, chr, pos, oa, ea, rsid) {
+model <- function(data, out, chr, pos, oa, ea, rsid) {
   # prepare data
   dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
-  pheno <- merge(pheno, dosage, "appieu")
-  pheno <- na.omit(pheno)
+  data <- merge(data, dosage, "appieu")
+  data <- na.omit(data)
   s <- paste0("chr", chr, "_", pos, "_", oa, "_", ea)
-  pheno$xsq <- (pheno %>% pull(!!s))^2
+  s <- gsub(" ", "", s, fixed = TRUE)
+  data$xsq <- (data %>% pull(!!s))^2
 
   # first-stage model
   f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
-  fit1q <- rq(as.formula(f), tau=0.5, data=pheno) # quantile
-  fit1r <- tidy(lmrob(as.formula(f), data=pheno)) # SE robust
+  fit1q <- rq(as.formula(f), tau=0.5, data=data) # quantile
+  fit1r <- tidy(lmrob(as.formula(f), data=data)) # SE robust
 
   # second-stage model
-  pheno$d <- resid(fit1q)^2
+  data$d <- resid(fit1q)^2
   f <- paste0("d ~ ", s, " + xsq")
-  fit2 <- lm(as.formula(f), data=pheno)
+  fit2 <- lm(as.formula(f), data=data)
 
   # F-test
-  fit0 <- lm(d ~ 1, data=pheno)
+  fit0 <- lm(d ~ 1, data=data)
   ftest <- tidy(anova(fit0, fit2))
   fit2t <- tidy(fit2)
 
