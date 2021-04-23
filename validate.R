@@ -66,11 +66,7 @@ for (chr in seq(1,22)){
     } else {
         file <- paste0("data/", opt$trait, ".vgwas.chr", chr, ".txt")
     }
-    if (file.exists(file)){
-        gwas <- rbind(gwas, fread(file))
-    } else {
-        warning(paste0("File ", file, " does not exist"))
-    }
+    gwas <- rbind(gwas, fread(file))
 }
 
 # drop HLA region
