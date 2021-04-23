@@ -17,9 +17,9 @@ opt = parse_args(opt_parser);
 vqtl <- data.frame()
 for (chr in seq(1,22)){
     if (chr < 10){
-        file <- paste0("data/", opt$trait, ".validate.chr0", chr, ".txt")
+        file <- paste0("data/", opt$trait, ".vgwas.chr0", chr, ".txt")
     } else {
-        file <- paste0("data/", opt$trait, ".validate.chr", chr, ".txt")
+        file <- paste0("data/", opt$trait, ".vgwas.chr", chr, ".txt")
     }
     if (file.exists(file)){
         vqtl <- rbind(vqtl, fread(file))
@@ -32,7 +32,7 @@ for (chr in seq(1,22)){
 vqtl <- vqtl[vqtl$Pmu < 0.05]
 
 # select SNPs which are strongly associated using B-P
-vqtl <- vqtl[vqtl$Pvar < 5e-5]
+vqtl <- vqtl[vqtl$Pvar < 5e-8]
 
 # phewas vQTLs against disease outcomes
 outcomes <- phewas(vqtl$rsid, batch=c("bbj-a", "ebi-a", "finn-a", "ieu-a", "ieu-b", "ukb-a", "ukb-b", "ukb-d"))

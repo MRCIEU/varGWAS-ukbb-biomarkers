@@ -11,7 +11,6 @@ set.seed(124)
 option_list = list(
   make_option(c("-p", "--pheno_file"), type="character", default=NULL, help="UKBB pheno CSV", metavar="character"),
   make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
-  make_option(c("-g", "--gwas"), type="character", default=NULL, help="Path to GWAS summary stats", metavar="character"),
   make_option(c("-o", "--out"), type="character", default=NULL, help="Output file", metavar="character")
 );
 opt_parser = OptionParser(option_list=option_list);
@@ -71,11 +70,25 @@ mod <- function(pheno, out, chr, pos, oa, ea, rsid) {
   )
 }
 
+#opt <- data.frame(trait="alkaline_phosphatase.30610", p="data/alkaline_phosphatase.30610.txt", stringsAsFactors=F)
+
 # read in extracted phenotypes
 pheno <- fread(opt$p)
 
-# read in GWAS
-gwas <- fread(opt$g)
+# load vGWAS for biomarker risk factor
+gwas <- data.frame()
+for (chr in seq(1,22)){
+    if (chr < 10){
+        file <- paste0("data/", opt$trait, ".vgwas.chr0", chr, ".txt")
+    } else {
+        file <- paste0("data/", opt$trait, ".vgwas.chr", chr, ".txt")
+    }
+    if (file.exists(file)){
+        gwas <- rbind(gwas, fread(file))
+    } else {
+        warning(paste0("File ", file, " does not exist"))
+    }
+}
 
 # drop HLA region
 gwas <- gwas[!(gwas$CHR == 6 & gwas$POS >= 29691116 & gwas$POS <= 33054976),]
