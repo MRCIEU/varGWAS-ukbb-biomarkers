@@ -5,6 +5,7 @@ library('ieugwasr')
 library('quantreg')
 library('broom')
 library("multcomp")
+library("robustbase")
 source("funs.R")
 set.seed(124)
 
@@ -16,7 +17,9 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-mod <- function(pheno, out, chr, pos, oa, ea, rsid) {
+opt <- data.frame(trait="alkaline_phosphatase.30610", p="data/alkaline_phosphatase.30610.txt", stringsAsFactors=F)
+
+bp <- function(pheno, out, chr, pos, oa, ea, rsid) {
   tryCatch(
     {
       dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
@@ -27,7 +30,7 @@ mod <- function(pheno, out, chr, pos, oa, ea, rsid) {
       pheno[[s2]] <- pheno[[s]]^2
       f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
       fit1 <- rq(as.formula(f), tau=0.5, data=pheno)
-      fit1m <- tidy(lm(as.formula(f), data=pheno))
+      fit1m <- tidy(lmrob(as.formula(f), data=pheno))
       pheno$d <- resid(fit1)^2
       f <- paste0("d ~ ", s, " + ", s2)
       fit2 <- lm(as.formula(f), data=pheno)
@@ -70,7 +73,30 @@ mod <- function(pheno, out, chr, pos, oa, ea, rsid) {
   )
 }
 
-#opt <- data.frame(trait="alkaline_phosphatase.30610", p="data/alkaline_phosphatase.30610.txt", stringsAsFactors=F)
+mu <- function(pheno, out, chr, pos, oa, ea, rsid) {
+  tryCatch(
+    {
+      dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
+      pheno <- merge(pheno, dosage, "appieu")
+      pheno <- na.omit(pheno)
+      s <- paste0("chr", chr, "_", pos, "_", oa, "_", ea)
+      f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
+      fit1m <- tidy(lmrob(as.formula(f), data=pheno))
+
+      return(data.frame(
+        rsid=rsid,
+        SNP=s,
+        BETA=fit1m$estimate[2],
+        SE=fit1m$std.error[2],
+        Pmu=fit1m$p.value[2]
+        )
+      )
+    },
+    error=function(cond) {
+      return(NA)
+    }
+  )
+}
 
 # read in extracted phenotypes
 pheno <- fread(opt$p)
@@ -98,7 +124,7 @@ gwas <- gwas %>%
     filter(SE_x != -1)
 
 # select tophits
-sig <- gwas[gwas$P < 5e-8 & gwas$EAF >= 0.05 & gwas$EAF <= 0.95]
+sig <- gwas[gwas$P < (5e-8/30) & gwas$EAF >= 0.05 & gwas$EAF <= 0.95]
 sig <- sig[,c("RSID", "P")]
 names(sig) <- c("rsid", "pval")
 sig <- ld_clump(sig)
@@ -108,7 +134,7 @@ sig <- gwas[gwas$RSID %in% sig$rsid]
 
 # GWAS
 results <- apply(sig, 1, function(snp) {
-  mod(pheno, opt$t, as.character(snp[['CHR']]), as.numeric(snp[['POS']]), as.character(snp[['OA']]), as.character(snp[['EA']]), as.character(snp[['RSID']]))
+  mu(pheno, opt$trait, as.character(snp[['CHR']]), as.numeric(snp[['POS']]), as.character(snp[['OA']]), as.character(snp[['EA']]), as.character(snp[['RSID']]))
 })
 results <- rbindlist(results[!is.na(results)], fill=T)
 
