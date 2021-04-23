@@ -3,7 +3,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --time=06:00:00
 #SBATCH --mem 8G
-#SBATCH --partition=veryshort
+#SBATCH --partition=mrcieu
 set -euo pipefail
 
 module load languages/r/3.6.0

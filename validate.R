@@ -57,6 +57,7 @@ model <- function(pheno, out, chr, pos, oa, ea, rsid) {
       )
     },
     error=function(cond) {
+      warning(paste0("Skipping ", rsid))
       return(NA)
     }
   )
