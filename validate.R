@@ -17,49 +17,40 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 model <- function(pheno, out, chr, pos, oa, ea, rsid) {
-  tryCatch(
-    {
-      # prepare data
-      dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
-      pheno <- merge(pheno, dosage, "appieu")
-      pheno <- na.omit(pheno)
-      s <- paste0("chr", chr, "_", pos, "_", oa, "_", ea)
-      s2 <- paste0(s, "2")
-      pheno[[s2]] <- pheno[[s]]^2
+  # prepare data
+  dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
+  pheno <- merge(pheno, dosage, "appieu")
+  pheno <- na.omit(pheno)
+  s <- paste0("chr", chr, "_", pos, "_", oa, "_", ea)
+  pheno$xsq <- (pheno %>% pull(!!s))^2
 
-      # first-stage model
-      f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
-      fit1q <- rq(as.formula(f), tau=0.5, data=pheno) # quantile
-      fit1r <- tidy(lmrob(as.formula(f), data=pheno)) # SE robust
+  # first-stage model
+  f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
+  fit1q <- rq(as.formula(f), tau=0.5, data=pheno) # quantile
+  fit1r <- tidy(lmrob(as.formula(f), data=pheno)) # SE robust
 
-      # second-stage model
-      pheno$d <- resid(fit1q)^2
-      f <- paste0("d ~ ", s, " + ", s2)
-      fit2 <- lm(as.formula(f), data=pheno)
+  # second-stage model
+  pheno$d <- resid(fit1q)^2
+  f <- paste0("d ~ ", s, " + xsq")
+  fit2 <- lm(as.formula(f), data=pheno)
 
-      # F-test
-      fit0 <- lm(d ~ 1, data=pheno)
-      ftest <- tidy(anova(fit0, fit2))
-      fit2t <- tidy(fit2)
+  # F-test
+  fit0 <- lm(d ~ 1, data=pheno)
+  ftest <- tidy(anova(fit0, fit2))
+  fit2t <- tidy(fit2)
 
-      return(data.frame(
-          rsid=rsid,
-          SNP=s,
-          BETA_x=fit2t$estimate[2],
-          BETA_xq=fit2t$estimate[3], 
-          SE_x=fit2t$std.error[2],
-          SE_xq=fit2t$std.error[3],
-          Pvar=ftest$p.value[2],
-          BETA=fit1r$estimate[2],
-          SE=fit1r$std.error[2],
-          Pmu=fit1r$p.value[2]
-        )
-      )
-    },
-    error=function(cond) {
-      warning(paste0("Skipping ", rsid))
-      return(NA)
-    }
+  return(data.frame(
+      rsid=rsid,
+      SNP=s,
+      BETA_x=fit2t$estimate[2],
+      BETA_xq=fit2t$estimate[3], 
+      SE_x=fit2t$std.error[2],
+      SE_xq=fit2t$std.error[3],
+      Pvar=ftest$p.value[2],
+      BETA=fit1r$estimate[2],
+      SE=fit1r$std.error[2],
+      Pmu=fit1r$p.value[2]
+    )
   )
 }
 
