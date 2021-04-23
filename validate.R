@@ -4,7 +4,6 @@ library('dplyr')
 library('ieugwasr')
 library('quantreg')
 library('broom')
-library("multcomp")
 library("robustbase")
 source("funs.R")
 set.seed(124)
@@ -17,78 +16,43 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-opt <- data.frame(trait="alkaline_phosphatase.30610", p="data/alkaline_phosphatase.30610.txt", stringsAsFactors=F)
-
-bp <- function(pheno, out, chr, pos, oa, ea, rsid) {
+model <- function(pheno, out, chr, pos, oa, ea, rsid) {
   tryCatch(
     {
+      # prepare data
       dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
       pheno <- merge(pheno, dosage, "appieu")
       pheno <- na.omit(pheno)
       s <- paste0("chr", chr, "_", pos, "_", oa, "_", ea)
       s2 <- paste0(s, "2")
       pheno[[s2]] <- pheno[[s]]^2
+
+      # first-stage model
       f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
-      fit1 <- rq(as.formula(f), tau=0.5, data=pheno)
-      fit1m <- tidy(lmrob(as.formula(f), data=pheno))
-      pheno$d <- resid(fit1)^2
+      fit1q <- rq(as.formula(f), tau=0.5, data=pheno) # quantile
+      fit1r <- tidy(lmrob(as.formula(f), data=pheno)) # SE robust
+
+      # second-stage model
+      pheno$d <- resid(fit1q)^2
       f <- paste0("d ~ ", s, " + ", s2)
       fit2 <- lm(as.formula(f), data=pheno)
-      f <- paste0("d ~ 1")
-      fit0 <- lm(as.formula(f), data=pheno)
+
+      # F-test
+      fit0 <- lm(d ~ 1, data=pheno)
       ftest <- tidy(anova(fit0, fit2))
       fit2t <- tidy(fit2)
 
-      # linear combination
-      delta <- 1
-      ci <- tidy(glht(model=fit2, linfct=paste(s, "*", delta," + ", s2, "*", delta^2, " == 0")))
-      phi_hat1 <- as.numeric(ci$estimate[1])
-      phi_hat_se1 <- as.numeric(ci$std.error[1])
-      delta <- 2
-      ci <- tidy(glht(model=fit2, linfct=paste(s, "*", delta," + ", s2, "*", delta^2, " == 0")))
-      phi_hat2 <- as.numeric(ci$estimate[1])
-      phi_hat_se2 <- as.numeric(ci$std.error[1])
-
       return(data.frame(
-        rsid=rsid,
-        SNP=s,
-        BETA_x=fit2t$estimate[2],
-        BETA_xq=fit2t$estimate[3], 
-        SE_x=fit2t$std.error[2],
-        SE_xq=fit2t$std.error[3],
-        Pvar=ftest$p.value[2],
-        BETA=fit1m$estimate[2],
-        SE=fit1m$std.error[2],
-        Pmu=fit1m$p.value[2],
-        BETAx1=phi_hat1,
-        BETAx2=phi_hat2,
-        SEx1=phi_hat_se1,
-        SEx2=phi_hat_se2
-        )
-      )
-    },
-    error=function(cond) {
-      return(NA)
-    }
-  )
-}
-
-mu <- function(pheno, out, chr, pos, oa, ea, rsid) {
-  tryCatch(
-    {
-      dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
-      pheno <- merge(pheno, dosage, "appieu")
-      pheno <- na.omit(pheno)
-      s <- paste0("chr", chr, "_", pos, "_", oa, "_", ea)
-      f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
-      fit1m <- tidy(lmrob(as.formula(f), data=pheno))
-
-      return(data.frame(
-        rsid=rsid,
-        SNP=s,
-        BETA=fit1m$estimate[2],
-        SE=fit1m$std.error[2],
-        Pmu=fit1m$p.value[2]
+          rsid=rsid,
+          SNP=s,
+          BETA_x=fit2t$estimate[2],
+          BETA_xq=fit2t$estimate[3], 
+          SE_x=fit2t$std.error[2],
+          SE_xq=fit2t$std.error[3],
+          Pvar=ftest$p.value[2],
+          BETA=fit1r$estimate[2],
+          SE=fit1r$std.error[2],
+          Pmu=fit1r$p.value[2]
         )
       )
     },
@@ -133,8 +97,8 @@ sig <- ld_clump(sig)
 sig <- gwas[gwas$RSID %in% sig$rsid]
 
 # GWAS
-results <- apply(sig, 1, function(snp) {
-  mu(pheno, opt$trait, as.character(snp[['CHR']]), as.numeric(snp[['POS']]), as.character(snp[['OA']]), as.character(snp[['EA']]), as.character(snp[['RSID']]))
+results <- apply(sig[1], 1, function(snp) {
+  model(pheno, opt$trait, as.character(snp[['CHR']]), as.numeric(snp[['POS']]), as.character(snp[['OA']]), as.character(snp[['EA']]), as.character(snp[['RSID']]))
 })
 results <- rbindlist(results[!is.na(results)], fill=T)
 
