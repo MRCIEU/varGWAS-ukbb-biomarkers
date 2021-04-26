@@ -47,16 +47,16 @@ for (snp in mvqtl$rsid){
         iv <- tophits(outcomes$id[i])
         
         # calc absolute Z score
-        iv$z <- abs(iv$beta / iv$se)
+        iv$t <- abs(iv$beta / iv$se)
 
         # extract vQTLs for instruments
         gwas.outcome <- gwas[gwas$RSID %in% iv$rsid,]
 
         # add IV-exp effect size
-        gwas.outcome <- merge(gwas.outcome, iv[,c("rsid", "z")], by.x="RSID", by.y="rsid")
+        gwas.outcome <- merge(gwas.outcome, iv[,c("rsid", "t")], by.x="RSID", by.y="rsid")
 
-        # correlate IV-exp Z score with IV-outcome F statistic
-        fit <- lm("F ~ z", data=gwas.outcome)
+        # regress IV-outcome F statistic on absolute IV-exp t-score 
+        fit <- lm("F ~ t", data=gwas.outcome)
 
         # add to results
         results <- rbind(results, data.frame(snp, p=tidy(fit)$p.value[2], id=outcomes$id[i], trait=outcomes$trait[i]))
