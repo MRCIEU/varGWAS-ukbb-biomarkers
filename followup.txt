@@ -9,3 +9,6 @@ rs1260326 & rs2889414 are mvQTLs for ApoB and also strongly associated with CRP.
 rs2980885 & rs1169297 are mvQTLs for TC and also storngly associate with alkaline phosphatase. Independent IVs ALK associate with TC variance
 rs115246607 & rs34872471 are mvQTL for glucose which are strong predictors of metaformin use. Probable interaction with drug use.
 rs7121264 is a mvQTL for HDL and also strongly associates with FADS1 expression. Independent instruments for FADS1 predict HDL variance. Possible interaction with linoleic acid as described in https://pubmed.ncbi.nlm.nih.gov/28774683/.
+rs12972156 is mvQTL for LDL-c and associated with Alz. Independent instruments for Alz are associated with variance of LDL. Need to stratify by ApoE to check is not driven by a single SNP.
+Several mvQTLs for LDL are associated with ALK. Independent instruments for ALK are associated with LDL-c variance.
+Several mvQTLs for SHBG are associated with testosterone. Independent instrumentaion of testosterone is associated with variance of SHBG.

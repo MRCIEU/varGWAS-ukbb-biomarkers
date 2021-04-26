@@ -87,6 +87,11 @@ Completed
 - ApoB
 - ApoA
 - Ca
+- Alanine aminotransferase
+- LDL
+- LipoA
+- SHBG
+- 
 
 ## mvQTL disease outcomes
 

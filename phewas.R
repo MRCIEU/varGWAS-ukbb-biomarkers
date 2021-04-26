@@ -33,6 +33,7 @@ vqtl <- vqtl[vqtl$Pvar < 5e-5]
 mvqtl <- vqtl[vqtl$Pmu < 0.05]
 
 message(paste0("Found ", nrow(mvqtl), " independent mvQTLs"))
+stopifnot( nrow(mvqtl) > 0)
 
 # loop over mvQTL
 results <- data.frame()
