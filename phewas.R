@@ -56,10 +56,10 @@ for (snp in mvqtl$rsid){
         gwas.outcome <- merge(gwas.outcome, iv[,c("rsid", "z")], by.x="RSID", by.y="rsid")
 
         # correlate IV-exp Z score with IV-outcome F statistic
-        fit <- cor.test(gwas.outcome$z, gwas.outcome$F)
+        fit <- lm("z ~ F", data=gwas.outcome)
 
         # add to results
-        results <- rbind(results, data.frame(snp, p=tidy(fit)$p.value, id=outcomes$id[i], trait=outcomes$trait[i]))
+        results <- rbind(results, data.frame(snp, p=tidy(fit)$p.value[2], id=outcomes$id[i], trait=outcomes$trait[i]))
     }
 }
 
