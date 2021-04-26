@@ -31,6 +31,8 @@ model <- function(data, out, chr, pos, oa, ea, rsid) {
   s <- paste0("chr", chr, "_", pos, "_", oa, "_", ea)
   s <- gsub(" ", "", s, fixed = TRUE)
   data$xsq <- (data %>% pull(!!s))^2
+  names(data) <- gsub("-", "_", names(data))
+  out <- gsub("-", "_", out)
 
   # first-stage model
   f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
