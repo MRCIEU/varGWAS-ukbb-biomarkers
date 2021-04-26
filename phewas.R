@@ -1,0 +1,68 @@
+library("data.table")
+library("ieugwasr")
+library("dplyr")
+library('optparse')
+library("TwoSampleMR")
+library("broom")
+set.seed(1234)
+
+option_list = list(
+  make_option(c("-i", "--id"), type="character", default=NULL, help="OpenGWAS ID", metavar="character"),
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
+  make_option(c("-o", "--out"), type="character", default=NULL, help="Output file", metavar="character")
+);
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
+
+# load vGWAS for biomarker risk factor
+gwas <- data.frame()
+for (chr in seq(1,22)){
+    if (chr < 10){
+        file <- paste0("data/", opt$trait, ".vgwas.chr0", chr, ".txt")
+    } else {
+        file <- paste0("data/", opt$trait, ".vgwas.chr", chr, ".txt")
+    }
+    gwas <- rbind(gwas, fread(file))
+}
+
+# load B-P vQTLs
+vqtl <- fread(paste0("data/", opt$trait, ".validate.txt"))
+
+# select SNPs which are strongly associated using B-F
+vqtl <- vqtl[vqtl$Pvar < 5e-5]
+
+# select vQTLs with evidence of a mean effect on biomaker
+mvqtl <- vqtl[vqtl$Pmu < 0.05]
+
+# loop over mvQTL
+results <- data.frame()
+for (snp in mvqtl$rsid){
+    message(paste0("Working on ", snp))
+
+    # phewas and take top ten traits
+    outcomes <- phewas(snp)[1:10,]
+
+    # instrument each trait
+    for (i in 1:nrow(outcomes)){
+        message(paste0("Working on ", outcomes$trait[i]))
+        # get instruments for this trait
+        iv <- tophits(outcomes$id[i])
+        
+        # calc absolute Z score
+        iv$z <- abs(iv$beta / iv$se)
+
+        # extract vQTLs for instruments
+        gwas.outcome <- gwas[gwas$RSID %in% iv$rsid,]
+
+        # add IV-exp effect size
+        gwas.outcome <- merge(gwas.outcome, iv[,c("rsid", "z")], by.x="RSID", by.y="rsid")
+
+        # correlate IV-exp Z score with IV-outcome F statistic
+        fit <- cor.test(gwas.outcome$z, gwas.outcome$F)
+
+        # add to results
+        results <- rbind(results, data.frame(snp, p=tidy(fit)$p.value, id=outcomes$id[i], trait=outcomes$trait[i]))
+    }
+}
+
+print(results)

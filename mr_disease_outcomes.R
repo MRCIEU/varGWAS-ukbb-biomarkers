@@ -14,25 +14,13 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 # load vGWAS for biomarker risk factor
-vqtl <- data.frame()
-for (chr in seq(1,22)){
-    if (chr < 10){
-        file <- paste0("data/", opt$trait, ".vgwas.chr0", chr, ".txt")
-    } else {
-        file <- paste0("data/", opt$trait, ".vgwas.chr", chr, ".txt")
-    }
-    if (file.exists(file)){
-        vqtl <- rbind(vqtl, fread(file))
-    } else {
-        warning(paste0("File ", file, " does not exist"))
-    }
-}
+vqtl <- fread(paste0("data/", opt$trait, ".validate.txt"))
 
 # select vQTLs with evidence of a mean effect on biomaker
 vqtl <- vqtl[vqtl$Pmu < 0.05]
 
 # select SNPs which are strongly associated using B-P
-vqtl <- vqtl[vqtl$Pvar < 5e-8]
+vqtl <- vqtl[vqtl$Pvar < 5e-5]
 
 # phewas vQTLs against disease outcomes
 outcomes <- phewas(vqtl$rsid, batch=c("bbj-a", "ebi-a", "finn-a", "ieu-a", "ieu-b", "ukb-a", "ukb-b", "ukb-d"))
