@@ -91,7 +91,7 @@ Completed
 - LDL
 - LipoA
 - SHBG
-- 
+- testosterone
 
 ## mvQTL disease outcomes
 

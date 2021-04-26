@@ -12,6 +12,8 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
+message(paste0("trait ", opt$trait))
+
 # load vGWAS for biomarker risk factor
 gwas <- data.frame()
 for (chr in seq(1,22)){

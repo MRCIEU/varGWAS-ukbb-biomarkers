@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=1
-#SBATCH --time=06:00:00
+#SBATCH --time=48:00:00
 #SBATCH --mem 8G
 #SBATCH --partition=mrcieu
 set -euo pipefail

@@ -12,3 +12,8 @@ rs7121264 is a mvQTL for HDL and also strongly associates with FADS1 expression.
 rs12972156 is mvQTL for LDL-c and associated with Alz. Independent instruments for Alz are associated with variance of LDL. Need to stratify by ApoE to check is not driven by a single SNP.
 Several mvQTLs for LDL are associated with ALK. Independent instruments for ALK are associated with LDL-c variance.
 Several mvQTLs for SHBG are associated with testosterone. Independent instrumentaion of testosterone is associated with variance of SHBG.
+Several mvQTLs for urate associated with TG. Independent instruments for TG associated with urate variance.
+rs12209125 is a mvQTL for urate and also assocaited with IGF-1, IVs for IGF-1 associated with variance of urate. 
+rs1260326 is a mvQTL for urate and associated with SHBG. IVs for SHBG are associated with variance of urate.
+rs6811809 is a mvQTL for urate and associated iwth SLC2A9 expression which independent instrumentation of assocaited with variacne of urate. ? interaction with drug use
+rs2070895 is a mvQTL for vitamin D and associates with several lipid phenotypes. Independent IVs for these traits assocaited with the variance of vitamin D conc.

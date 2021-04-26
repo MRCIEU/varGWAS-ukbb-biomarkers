@@ -16,9 +16,16 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
+message(paste0("trait ", opt$trait))
+
 model <- function(data, out, chr, pos, oa, ea, rsid) {
+    dosage = tryCatch({
+      extract_variant_from_bgen(chr, pos, oa, ea)
+  }, error = function(error_condition) {
+      return(NA)
+  })
+
   # prepare data
-  dosage <- extract_variant_from_bgen(chr, pos, oa, ea)
   data <- merge(data, dosage, "appieu")
   data <- na.omit(data)
   s <- paste0("chr", chr, "_", pos, "_", oa, "_", ea)
