@@ -40,16 +40,18 @@ for (snp in mvqtl$rsid){
     message(paste0("Working on ", snp))
 
     # phewas and take top ten traits
-    outcomes <- phewas(snp)[1:10,]
+    outcomes <- phewas(snp)
+
+    if (nrow(outcomes) >= 10){
+        outcomes <- outcomes[1:10,]
+    } else if (nrow(outcomes) == 0){
+        next
+    }
 
     # instrument each trait
     for (i in 1:nrow(outcomes)){
-        if (is.na(outcomes$id[8])){
-            next
-        }
-
         message(paste0("Working on ", outcomes$trait[i]))
-        
+
         # get instruments for this trait
         iv <- tophits(outcomes$id[i])
 
