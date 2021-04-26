@@ -93,6 +93,7 @@ sig <- ld_clump(sig)
 sig <- gwas[gwas$RSID %in% sig$rsid]
 
 # GWAS
+message(paste0("Found ", nrow(sig), " variants"))
 results <- apply(sig, 1, function(snp) {
   model(pheno, opt$trait, as.character(snp[['CHR']]), as.numeric(snp[['POS']]), as.character(snp[['OA']]), as.character(snp[['EA']]), as.character(snp[['RSID']]))
 })
