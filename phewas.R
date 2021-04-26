@@ -59,8 +59,8 @@ for (snp in mvqtl$rsid){
         fit <- lm("F ~ t", data=gwas.outcome)
 
         # add to results
-        results <- rbind(results, data.frame(snp, p=tidy(fit)$p.value[2], id=outcomes$id[i], trait=outcomes$trait[i]))
+        results <- rbind(results, data.frame(snp, nsnp=nrow(iv), p=tidy(fit)$p.value[2], id=outcomes$id[i], trait=outcomes$trait[i]))
     }
 }
 
-print(results[order(results$p, decreasing=T),])
+print(results[order(results$p, decreasing=F),])
