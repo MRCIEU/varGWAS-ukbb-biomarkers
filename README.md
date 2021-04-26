@@ -76,6 +76,18 @@ for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 
 done
 ```
 
+## PheWAS and reverse MR
+
+Completed
+- Glucose
+- HDL
+- total_protein.30860
+- rheumatoid_factor.30820
+- TC
+- ApoB
+- ApoA
+- Ca
+
 ## mvQTL disease outcomes
 
 Find disease outcomes associated with mvQTLs

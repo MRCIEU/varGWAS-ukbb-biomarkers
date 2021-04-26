@@ -8,3 +8,4 @@ rs75984076  aspartate aminotransferase  mvQTL for AST & phewas = SEC31B expressi
 rs1260326 & rs2889414 are mvQTLs for ApoB and also strongly associated with CRP. CRP IVs associate with ApoB variance
 rs2980885 & rs1169297 are mvQTLs for TC and also storngly associate with alkaline phosphatase. Independent IVs ALK associate with TC variance
 rs115246607 & rs34872471 are mvQTL for glucose which are strong predictors of metaformin use. Probable interaction with drug use.
+rs7121264 is a mvQTL for HDL and also strongly associates with FADS1 expression. Independent instruments for FADS1 predict HDL variance. Possible interaction with linoleic acid as described in https://pubmed.ncbi.nlm.nih.gov/28774683/.
