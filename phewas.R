@@ -7,9 +7,7 @@ library("broom")
 set.seed(1234)
 
 option_list = list(
-  make_option(c("-i", "--id"), type="character", default=NULL, help="OpenGWAS ID", metavar="character"),
-  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
-  make_option(c("-o", "--out"), type="character", default=NULL, help="Output file", metavar="character")
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")
 );
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
