@@ -87,6 +87,7 @@ gwas <- gwas %>%
 
 # select tophits
 sig <- gwas[gwas$P < (5e-8/30) & gwas$EAF >= 0.05 & gwas$EAF <= 0.95]
+stopifnot(nrow(sig)>0)
 sig <- sig[,c("RSID", "P")]
 names(sig) <- c("rsid", "pval")
 sig <- ld_clump(sig)

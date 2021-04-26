@@ -92,6 +92,7 @@ Completed
 - LipoA
 - SHBG
 - testosterone
+- albumin (no mvQTLs)
 
 ## mvQTL disease outcomes
 
