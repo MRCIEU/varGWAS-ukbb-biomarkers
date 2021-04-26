@@ -49,7 +49,7 @@ pheno <- fread(f, select=c(
         "eid", 
         "sex.31.0.0",
         "age_at_recruitment.21022.0.0",
-        "body_mass_index.21001.0.0",
+        "body_mass_index.21001",
         "alanine_aminotransferase.30620",
         "albumin.30600",
         "alkaline_phosphatase.30610",
