@@ -63,4 +63,4 @@ for (snp in mvqtl$rsid){
     }
 }
 
-print(results)
+print(results[order(results$p, decreasing=T),])
