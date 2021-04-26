@@ -44,7 +44,12 @@ for (snp in mvqtl$rsid){
 
     # instrument each trait
     for (i in 1:nrow(outcomes)){
+        if (is.na(outcomes$id[8])){
+            next
+        }
+
         message(paste0("Working on ", outcomes$trait[i]))
+        
         # get instruments for this trait
         iv <- tophits(outcomes$id[i])
 

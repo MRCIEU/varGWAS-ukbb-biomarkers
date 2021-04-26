@@ -5,4 +5,6 @@ rs56009438  alkaline_phosphatase.30610  SNP is associated with smokings and ALP 
 rs12721030  apolipoprotein_a.30630  SNP is m/v QTL & cis-APOA1
 APOB has 3 cis-mvQTL for apolipoprotein_b
 rs75984076  aspartate aminotransferase  mvQTL for AST & phewas = SEC31B expression
-rs1260326 & rs2889414 are mvQTLs for ApoB and also strongly associated with CRP
+rs1260326 & rs2889414 are mvQTLs for ApoB and also strongly associated with CRP. CRP IVs associate with ApoB variance
+rs2980885 & rs1169297 are mvQTLs for TC and also storngly associate with alkaline phosphatase. Independent IVs ALK associate with TC variance
+rs115246607 & rs34872471 are mvQTL for glucose which are strong predictors of metaformin use. Probable interaction with drug use.
