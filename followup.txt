@@ -5,3 +5,4 @@ rs56009438  alkaline_phosphatase.30610  SNP is associated with smokings and ALP 
 rs12721030  apolipoprotein_a.30630  SNP is m/v QTL & cis-APOA1
 APOB has 3 cis-mvQTL for apolipoprotein_b
 rs75984076  aspartate aminotransferase  mvQTL for AST & phewas = SEC31B expression
+rs1260326 & rs2889414 are mvQTLs for ApoB and also strongly associated with CRP

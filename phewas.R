@@ -47,6 +47,10 @@ for (snp in mvqtl$rsid){
         message(paste0("Working on ", outcomes$trait[i]))
         # get instruments for this trait
         iv <- tophits(outcomes$id[i])
+
+        if (nrow(iv) == 0){
+            next
+        }
         
         # calc absolute Z score
         iv$t <- abs(iv$beta / iv$se)
