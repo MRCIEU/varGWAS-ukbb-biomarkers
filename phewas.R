@@ -32,6 +32,8 @@ vqtl <- vqtl[vqtl$Pvar < 5e-5]
 # select vQTLs with evidence of a mean effect on biomaker
 mvqtl <- vqtl[vqtl$Pmu < 0.05]
 
+message(paste0("Found ", nrow(mvqtl), " independent mvQTLs"))
+
 # loop over mvQTL
 results <- data.frame()
 for (snp in mvqtl$rsid){
