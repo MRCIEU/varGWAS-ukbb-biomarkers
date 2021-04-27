@@ -1,6 +1,7 @@
 library('data.table')
 library('dplyr')
 library('qqman')
+library('stringr')
 library('optparse')
 set.seed(1234)
 
@@ -10,7 +11,12 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
+trait_name <- opt$trait
+trait_name <- str_split(trait_name, "\\.", simplify = TRUE)[,1]
+trait_name <- gsub("_", " ", trait_name)
+trait_name <- stringr::str_to_title(trait_name)
 message(paste0("trait ", opt$trait))
+message(paste0("trait name ", trait_name))
 
 # load vGWAS for biomarker risk factor
 gwas <- data.frame()
@@ -31,13 +37,11 @@ gwas <- gwas %>%
     filter(SE_x != -1)
 
 # manhattan
-gwas$Ptemp <- gwas$P
-gwas$Ptemp[gwas$Ptemp == 0] <- .Machine$double.xmin
 png(paste0("data/", opt$trait, "_manhattan.png"))
-manhattan(gwas, chr="CHR", bp="POS", p="Ptemp", snp="RSID", main = paste0("Manhattan plot of variance GWAS p-values: ", opt$trait))
+manhattan(gwas, ylim = c(0, 30), chr="CHR", bp="POS", p="P", snp="RSID", main = paste0("vGWAS p-values: ", trait_name))
 dev.off()
 
 # qq plot
 png(paste0("data/", opt$trait, "_qq.png"))
-qq(gwas$P, main = paste0("Q-Q plot of variance GWAS p-values: ", opt$trait))
+qq(gwas$P, main = paste0("vGWAS Q-Q plot: ", trait_name))
 dev.off()
