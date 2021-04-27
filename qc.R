@@ -1,17 +1,26 @@
 library('data.table')
 library('dplyr')
 library('qqman')
+library('optparse')
+set.seed(1234)
 
-# read in GWAS data
+option_list = list(
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")
+);
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
+
+message(paste0("trait ", opt$trait))
+
+# load vGWAS for biomarker risk factor
 gwas <- data.frame()
 for (chr in seq(1,22)){
     if (chr < 10){
-        path <- paste0("data/ukb_bmi.vgwas.chr0", chr, ".txt")
+        file <- paste0("data/", opt$trait, ".vgwas.chr0", chr, ".txt")
     } else {
-        path <- paste0("data/ukb_bmi.vgwas.chr", chr, ".txt")
+        file <- paste0("data/", opt$trait, ".vgwas.chr", chr, ".txt")
     }
-    message(paste0("Reading GWAS: ", path))
-    gwas <- rbind(gwas, fread(path))
+    gwas <- rbind(gwas, fread(file))
 }
 
 # drop failed rows
@@ -19,11 +28,11 @@ gwas <- gwas %>%
     filter(SE != -1 & P != -1)
 
 # manhattan
-png("manhattan.png")
-manhattan(gwas, chr="CHR", bp="POS", p="P", snp="RSID", main = "Manhattan plot of variance GWAS p-values")
+png(paste0(opt$trait, "_manhattan.png"))
+manhattan(gwas, chr="CHR", bp="POS", p="P", snp="RSID", main = paste0("Manhattan plot of variance GWAS p-values: ", opt$trait))
 dev.off()
 
 # qq plot
-png("qq.png")
-qq(gwas$P, main = "Q-Q plot of variance GWAS p-values")
+png(paste0(opt$trait, "_qq.png"))
+qq(gwas$P, main = paste0("Q-Q plot of variance GWAS p-values: ", opt$trait))
 dev.off()
