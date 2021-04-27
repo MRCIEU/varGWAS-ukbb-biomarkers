@@ -93,6 +93,15 @@ Completed
 - SHBG
 - testosterone
 - albumin (no mvQTLs)
+- ALK
+- CRP
+- cystatin c
+- IGF-1
+- total billirubin
+- TG
+- urate
+- urea
+- vit D
 
 ## mvQTL disease outcomes
 

@@ -17,3 +17,8 @@ rs12209125 is a mvQTL for urate and also assocaited with IGF-1, IVs for IGF-1 as
 rs1260326 is a mvQTL for urate and associated with SHBG. IVs for SHBG are associated with variance of urate.
 rs6811809 is a mvQTL for urate and associated iwth SLC2A9 expression which independent instrumentation of assocaited with variacne of urate. ? interaction with drug use
 rs2070895 is a mvQTL for vitamin D and associates with several lipid phenotypes. Independent IVs for these traits assocaited with the variance of vitamin D conc.
+rs7979473 is a mvQTL for CRP and also affects expression of HNF1A. Independent expression of HNF1A affects variance of CRP.
+rs74842349 is a mvQTL for cystatin C and associates with expression of RRAGD in blood. Independent instruments for  RRAGD associated with cystatin c variance.
+rs1471251 is a mvQTL for TG and assocaited with SHBG, independent instruments for SHBG were assocaited with TG
+rs10095737, rs35456930 & rs2980885 are mvQTLs for TG and associated with ALK, independent instruments for ALK associated with TG variance.
+rs4665378 is a mvQTL for CRP and associated with TG. Independent instruments for CRP associated with variance of TG.
