@@ -28,11 +28,11 @@ gwas <- gwas %>%
     filter(SE != -1 & P != -1)
 
 # manhattan
-png(paste0(opt$trait, "_manhattan.png"))
+png(paste0("data/", opt$trait, "_manhattan.png"))
 manhattan(gwas, chr="CHR", bp="POS", p="P", snp="RSID", main = paste0("Manhattan plot of variance GWAS p-values: ", opt$trait))
 dev.off()
 
 # qq plot
-png(paste0(opt$trait, "_qq.png"))
+png(paste0("data/", opt$trait, "_qq.png"))
 qq(gwas$P, main = paste0("Q-Q plot of variance GWAS p-values: ", opt$trait))
 dev.off()
