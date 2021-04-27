@@ -87,6 +87,8 @@ gwas <- gwas %>%
 
 # select tophits
 sig <- gwas[gwas$P < (5e-8/30) & gwas$EAF >= 0.05 & gwas$EAF <= 0.95]
+
+# clump
 stopifnot(nrow(sig)>0)
 sig <- sig[,c("RSID", "P")]
 names(sig) <- c("rsid", "pval")
@@ -94,6 +96,10 @@ sig <- ld_clump(sig)
 
 # subset rows
 sig <- gwas[gwas$RSID %in% sig$rsid]
+
+# drop multialllelic variants
+ma <- as.data.frame(table(sig$RSID)) %>% filter(Freq == 2) %>% mutate_if(is.factor, as.character) %>% pull(Var1)
+sig <- sig[!(sig$RSID %in% ma)]
 
 # GWAS
 message(paste0("Found ", nrow(sig), " variants"))
