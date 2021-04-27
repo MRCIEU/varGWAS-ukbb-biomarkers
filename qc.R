@@ -38,10 +38,10 @@ gwas <- gwas %>%
 
 # manhattan
 png(paste0("data/", opt$trait, "_manhattan.png"))
-manhattan(gwas, ylim = c(0, 30), chr="CHR", bp="POS", p="P", snp="RSID", main = paste0("vGWAS Manhattan plot: ", trait_name))
+manhattan(gwas, ylim = c(0, 30), chr="CHR", bp="POS", p="P", snp="RSID", main = trait_name)
 dev.off()
 
 # qq plot
 png(paste0("data/", opt$trait, "_qq.png"))
-qq(gwas$P, main = paste0("vGWAS Q-Q plot: ", trait_name))
+qq(gwas$P, main = trait_name)
 dev.off()
