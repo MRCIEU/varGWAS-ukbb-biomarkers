@@ -36,7 +36,11 @@ model <- function(data, out, chr, pos, oa, ea, rsid) {
 
   # first-stage model
   f <- paste0(out, " ~ ", s, " + sex.31.0.0 + age_at_recruitment.21022.0.0 +", paste0("PC", seq(1, 10), collapse="+"))
-  fit1q <- rq(as.formula(f), tau=0.5, data=data) # quantile
+  fit1q = tryCatch({
+      rq(as.formula(f), tau=0.5, data=data) # quantile
+  }, error = function(error_condition) {
+      return(NA)
+  })
   fit1r <- tidy(lmrob(as.formula(f), data=data)) # SE robust
 
   # second-stage model
