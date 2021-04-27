@@ -1,6 +1,6 @@
-vQTL outcome modifier    notes
+Provisional
+
 rs2076258   calcium.30680.0.0   age_at_menopause.3581.0.0   ?SNP-by-HRT use effect on age at menopause OR Vit D?
-rs13141441  alanine_aminotransferase.30620  SNP lowers variance of ALT and is eQTL for drug target HSD17B13; Missense variants in HSD17B13 lower ALT.
 rs56009438  alkaline_phosphatase.30610  SNP is associated with smokings and ALP m/v (only analysed chr1)
 rs12721030  apolipoprotein_a.30630  SNP is m/v QTL & cis-APOA1
 APOB has 3 cis-mvQTL for apolipoprotein_b
@@ -22,3 +22,7 @@ rs74842349 is a mvQTL for cystatin C and associates with expression of RRAGD in 
 rs1471251 is a mvQTL for TG and assocaited with SHBG, independent instruments for SHBG were assocaited with TG
 rs10095737, rs35456930 & rs2980885 are mvQTLs for TG and associated with ALK, independent instruments for ALK associated with TG variance.
 rs4665378 is a mvQTL for CRP and associated with TG. Independent instruments for CRP associated with variance of TG.
+
+Final
+
+rs13141441 is a mvQTL for alanine_aminotransferase.30620 and associated with HSD17B13 expression. MR gave inverse association between HSD17B13 expression in blood and ALT/liver disease. Other instruments for HSD17B13 expression have vQTL effect on ALT. Abul-Husn et al report LoF in HSD17B13 is protective on liver disease. UKBB LoF/deleterious missense HSD17B13 has negative effect on ALT. Read paper https://www.nejm.org/doi/full/10.1056/NEJMoa1712191
