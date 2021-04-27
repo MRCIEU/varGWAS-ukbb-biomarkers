@@ -29,10 +29,12 @@ gwas <- gwas[!(gwas$CHR == 6 & gwas$POS >= 29691116 & gwas$POS <= 33054976),]
 # drop failed rows
 gwas <- gwas %>%
     filter(SE_x != -1)
-    
+
 # manhattan
+gwas$Ptemp <- gwas$P
+gwas$Ptemp[gwas$Ptemp == 0] <- .Machine$double.xmin
 png(paste0("data/", opt$trait, "_manhattan.png"))
-manhattan(gwas, chr="CHR", bp="POS", p="P", snp="RSID", main = paste0("Manhattan plot of variance GWAS p-values: ", opt$trait))
+manhattan(gwas, chr="CHR", bp="POS", p="Ptemp", snp="RSID", main = paste0("Manhattan plot of variance GWAS p-values: ", opt$trait))
 dev.off()
 
 # qq plot
