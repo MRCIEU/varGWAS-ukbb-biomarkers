@@ -23,10 +23,13 @@ for (chr in seq(1,22)){
     gwas <- rbind(gwas, fread(file))
 }
 
+# drop HLA region
+gwas <- gwas[!(gwas$CHR == 6 & gwas$POS >= 29691116 & gwas$POS <= 33054976),]
+
 # drop failed rows
 gwas <- gwas %>%
-    filter(SE != -1 & P != -1)
-
+    filter(SE_x != -1)
+    
 # manhattan
 png(paste0("data/", opt$trait, "_manhattan.png"))
 manhattan(gwas, chr="CHR", bp="POS", p="P", snp="RSID", main = paste0("Manhattan plot of variance GWAS p-values: ", opt$trait))
