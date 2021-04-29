@@ -38,7 +38,7 @@ gwas <- gwas %>%
 
 # manhattan
 png(paste0("data/", opt$trait, "_manhattan.png"))
-manhattan(gwas, ylim = c(0, 30), chr="CHR", bp="POS", p="P", snp="RSID", main = trait_name)
+manhattan(gwas, ylim = c(0, 25), chr="CHR", bp="POS", p="P", snp="RSID", main = trait_name)
 dev.off()
 
 # qq plot
