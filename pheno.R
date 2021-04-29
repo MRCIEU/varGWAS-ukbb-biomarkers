@@ -4,7 +4,7 @@ source("funs.R")
 set.seed(1234)
 
 # load phenotypes
-f <- "/tmp/tmp.exBYSnQ24w/data.33352.csv"
+f <- "/tmp/tmp.N80NEyTzIM/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
         "31-0.0",
@@ -43,7 +43,8 @@ pheno <- fread(f, select=c(
         "30140-0.0",
         "30120-0.0",
         "3581-0.0",
-        "2814-0.0"
+        "2814-0.0",
+        "20116-0.0"
     ),
     col.names=c(
         "eid", 
@@ -83,7 +84,8 @@ pheno <- fread(f, select=c(
         "neutrophill_count.30140.0.0",
         "lymphocyte_count.30120.0.0",
         "age_at_menopause.3581.0.0",
-        "ever_used_hormone_replacement_therapy.2814.0.0"
+        "ever_used_hormone_replacement_therapy.2814.0.0",
+        "smoking_status.20116.0.0"
     )
 )
 unlink(f)
@@ -94,6 +96,7 @@ pheno <- pheno %>% mutate_at(c('age_at_menopause.3581.0.0'), na_if, -1)
 pheno <- pheno %>% mutate_at(c('age_at_menopause.3581.0.0'), na_if, -3)
 pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0'), na_if, -1)
 pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0'), na_if, -3)
+pheno <- pheno %>% mutate_at(c('smoking_status.20116.0.0'), na_if, -3)
 
 # save data
 save.image(file = "data/pheno.RData")
