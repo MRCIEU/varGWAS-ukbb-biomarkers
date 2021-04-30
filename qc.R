@@ -20,7 +20,7 @@ message(paste0("trait name ", trait_name))
 
 # load vGWAS for biomarker risk factor
 gwas <- data.frame()
-for (chr in seq(1,22)){
+for (chr in seq(16,22)){
     if (chr < 10){
         file <- paste0("data/", opt$trait, ".vgwas.chr0", chr, ".txt")
     } else {
@@ -30,18 +30,26 @@ for (chr in seq(1,22)){
 }
 
 # drop HLA region
-gwas <- gwas[!(gwas$CHR == 6 & gwas$POS >= 29691116 & gwas$POS <= 33054976),]
+gwas <- gwas[!(gwas$chr == 6 & gwas$pos >= 29691116 & gwas$pos <= 33054976),]
 
 # drop failed rows
 gwas <- gwas %>%
-    filter(SE_x != -1)
+    filter(n != -1)
 
 # manhattan
-png(paste0("data/", opt$trait, "_manhattan.png"))
-manhattan(gwas, ylim = c(0, 25), chr="CHR", bp="POS", p="P", snp="RSID", main = trait_name)
+png(paste0("data/", opt$trait, "_mean_manhattan.png"))
+manhattan(gwas, ylim = c(0, 25), chr="chr", bp="pos", p="p", snp="rsid", main = trait_name)
+dev.off()
+
+png(paste0("data/", opt$trait, "_phi_manhattan.png"))
+manhattan(gwas, ylim = c(0, 25), chr="chr", bp="pos", p="phi_p", snp="rsid", main = trait_name)
 dev.off()
 
 # qq plot
-png(paste0("data/", opt$trait, "_qq.png"))
-qq(gwas$P, main = trait_name)
+png(paste0("data/", opt$trait, "_mean_qq.png"))
+qq(gwas$p, main = trait_name)
+dev.off()
+
+png(paste0("data/", opt$trait, "_phi_qq.png"))
+qq(gwas$phi_p, main = trait_name)
 dev.off()
