@@ -57,8 +57,6 @@ get_simulated_genotypes <- function(q, n_obs) {
   return(x)
 }
 
-opt <- data.frame(trait="body_mass_index.21001", stringsAsFactors=F)
-
 # load linker
 linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
 
