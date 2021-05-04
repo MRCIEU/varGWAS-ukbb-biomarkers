@@ -86,7 +86,7 @@ dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]])
 dat$age_at_recruitment.21022.0.0 <- dat$age_at_recruitment.21022.0.0 / sd(dat$age_at_recruitment.21022.0.0)
 
 # simulate exposure
-n_sim <- 10
+n_sim <- 10000
 results <- data.frame()
 for (i in 1:n_sim){
     results <- rbind(results, model(dat, opt$trait))
