@@ -97,7 +97,7 @@ dat$age_at_recruitment.21022.0.0 <- dat$age_at_recruitment.21022.0.0 / sd(dat$ag
 
 if (opt$norm == "sd"){
     dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]])
-} else if (){
+} else if (opt$norm == "irnt"){
     dat[[opt$trait]] <- irnt(dat[[opt$trait]])
 } else {
     stop(paste0("Norm strategy not known:", opt$norm))
