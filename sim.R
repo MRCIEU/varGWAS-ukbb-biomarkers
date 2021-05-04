@@ -98,4 +98,4 @@ qq(results$Pvar)
 dev.off()
 
 # T1E
-write.csv(tidy(binom.test(sum(results$Pvar < 0.05), n_sim)), row.names=F, file=paste0("data/", opt$trait, "_phi_sim-null_T1E.txt"))
+write.csv(tidy(binom.test(sum(results$Pvar < 0.05), n_sim)), row.names=F, file=paste0("data/", opt$trait, "_phi_sim-null_T1E.csv"))
