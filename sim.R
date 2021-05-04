@@ -86,9 +86,7 @@ dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]])
 dat$age_at_recruitment.21022.0.0 <- dat$age_at_recruitment.21022.0.0 / sd(dat$age_at_recruitment.21022.0.0)
 
 # simulate exposure
-n_obs <- 200
-n_sim <- 5
-af <- 0.4
+n_sim <- 10000
 results <- data.frame()
 for (i in 1:n_sim){
     results <- rbind(results, model(dat, opt$trait))
@@ -96,5 +94,8 @@ for (i in 1:n_sim){
 
 # plot QQ
 png(paste0("data/", opt$trait, "_phi_sim-null_qq.png"))
-qq(results$P.r)
+qq(results$Pvar)
 dev.off()
+
+# T1E
+write.csv(tidy(binom.test(sum(results$Pvar < 0.05), n_sim)), row.names=F, file=paste0("data/", opt$trait, "_phi_sim-null_T1E.txt"))
