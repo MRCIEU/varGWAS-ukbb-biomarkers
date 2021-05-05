@@ -22,26 +22,11 @@ message(paste0("trait ", opt$trait))
 # read in extracted phenotypes
 pheno <- fread(opt$p)
 
-# load vGWAS for biomarker risk factor
-gwas <- data.frame()
-for (chr in seq(1,22)){
-    if (chr < 10){
-        file <- paste0("data/", opt$trait, ".vgwas.chr0", chr, ".txt")
-    } else {
-        file <- paste0("data/", opt$trait, ".vgwas.chr", chr, ".txt")
-    }
-    gwas <- rbind(gwas, fread(file))
-}
-
-# drop HLA region
-gwas <- gwas[!(gwas$CHR == 6 & gwas$POS >= 29691116 & gwas$POS <= 33054976),]
-
-# drop failed rows
-gwas <- gwas %>%
-    filter(SE_x != -1)
+# load vGWAS and QC
+gwas <- get_variants(opt$trait)
 
 # select tophits
-sig <- gwas[gwas$P < (5e-8/30) & gwas$EAF >= 0.05 & gwas$EAF <= 0.95]
+sig <- gwas[gwas$P < (5e-8/30)]
 
 # clump
 stopifnot(nrow(sig)>0)

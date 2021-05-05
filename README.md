@@ -55,7 +55,7 @@ shuf | \
 head -n 10000 >> data/snps.txt
 
 # run vGWAS on subset of SNPs
-sbatch run_R.sh
+sbatch runR.sh Rscript bp.R -p data/ukb_bmi.txt -t body_mass_index.21001 -s data/snps.txt -o data/ukb_bmi.vgwas.r_subsample.txt
 ```
 
 ## QC
@@ -64,7 +64,7 @@ Plot QQ & Manhattan
 
 ```sh
 for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
-    sbatch run_qc.sh "$trait"
+    sbatch runR.sh qc.R -t "$trait"
 done
 ```
 
@@ -74,12 +74,9 @@ Vaidate tophits using B-F model
 
 ```sh
 for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
-    sbatch run_validate.sh "$trait"
+    sbatch runR.sh Rscript validate.R -p data/"$trait".txt -t "$trait" -o data/"$trait".validate.txt
 done
 ```
-
-## PheWAS and reverse MR
-
 
 ## mvQTL disease outcomes
 
@@ -87,6 +84,20 @@ Find disease outcomes associated with mvQTLs
 
 ```sh
 for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
-    sbatch mr_disease_outcomes.sh "$trait" $(echo "$trait" | cut -d. -f2 | sed 's/^/ukb-d-/g' | sed 's/$/_irnt/g')
+    sbatch runR.sh \
+    mr_disease_outcomes.R \
+    -t "$trait" \
+    -i $(echo "$trait" | cut -d. -f2 | sed 's/^/ukb-d-/g' | sed 's/$/_irnt/g') \
+    -o data/"$trait".disease_outcomes.txt
+done
+```
+
+## mvQTL pheWAS and reverse MR
+
+Find outcomes associated with mvQTLs which also independently associate with variance
+
+```sh
+for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
+    sbatch runR.sh phewas.R "$trait"
 done
 ```
