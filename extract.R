@@ -14,10 +14,6 @@ opt = parse_args(opt_parser);
 # export phenotypes for vGWAS
 message(opt$trait)
 
-# remove participants with > 5 SD from mean
-pheno$z <- abs(scale(pheno[[opt$trait]]))
-pheno <- pheno[pheno$z < 5]
-
 # load linker
 linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
 

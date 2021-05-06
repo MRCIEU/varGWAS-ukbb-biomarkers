@@ -21,6 +21,6 @@ chr="$2"
 -o data/"$trait".vgwas.chr"$chr".txt \
 -b /mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/dosage_bgen/data.chr"$chr".bgen \
 -p "$trait" \
--c sex.31.0.0,age_at_recruitment.21022.0.0,chip,PC1,PC2,PC3,PC4,PC5,PC6,PC7,PC8,PC9,PC10,PC11,PC12,PC13,PC14,PC15,PC16,PC17,PC18,PC19,PC20 \
+-c sex.31.0.0,age_at_recruitment.21022.0.0,PC1,PC2,PC3,PC4,PC5,PC6,PC7,PC8,PC9,PC10 \
 -i appieu \
 -t 6
