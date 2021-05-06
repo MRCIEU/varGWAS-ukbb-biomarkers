@@ -4,6 +4,7 @@ library("dplyr")
 library('optparse')
 library("TwoSampleMR")
 library("broom")
+source("funs.R")
 set.seed(1234)
 
 option_list = list(
@@ -14,21 +15,13 @@ opt = parse_args(opt_parser);
 
 message(paste0("trait ", opt$trait))
 
-# load vGWAS for biomarker risk factor
-gwas <- data.frame()
-for (chr in seq(1,22)){
-    if (chr < 10){
-        file <- paste0("data/", opt$trait, ".vgwas.chr0", chr, ".txt")
-    } else {
-        file <- paste0("data/", opt$trait, ".vgwas.chr", chr, ".txt")
-    }
-    gwas <- rbind(gwas, fread(file))
-}
+# load vGWAS and QC
+data <- get_variants(opt$trait)
 
 # load B-P vQTLs
 vqtl <- fread(paste0("data/", opt$trait, ".validate.txt"))
 
-# select SNPs which are strongly associated using B-F
+# select SNPs which are moderately associated using B-F
 vqtl <- vqtl[vqtl$Pvar < 5e-5]
 
 # select vQTLs with evidence of a mean effect on biomaker
@@ -66,10 +59,10 @@ for (snp in mvqtl$rsid){
         iv$t <- abs(iv$beta / iv$se)
 
         # extract vQTLs for instruments
-        gwas.outcome <- gwas[gwas$RSID %in% iv$rsid,]
+        gwas.outcome <- gwas[gwas$rsid %in% iv$rsid,]
 
         # add IV-exp effect size
-        gwas.outcome <- merge(gwas.outcome, iv[,c("rsid", "t")], by.x="RSID", by.y="rsid")
+        gwas.outcome <- merge(gwas.outcome, iv[,c("rsid", "t")], "rsid")
 
         # regress IV-outcome F statistic on absolute IV-exp t-score 
         fit <- lm("F ~ t", data=gwas.outcome)

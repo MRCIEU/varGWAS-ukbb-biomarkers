@@ -19,7 +19,7 @@ vqtl <- fread(paste0("data/", opt$trait, ".validate.txt"))
 # select vQTLs with evidence of a mean effect on biomaker
 vqtl <- vqtl[vqtl$Pmu < 0.05]
 
-# select SNPs which are strongly associated using B-P
+# select SNPs which are moderately associated using B-P
 vqtl <- vqtl[vqtl$Pvar < 5e-5]
 
 # phewas vQTLs against disease outcomes

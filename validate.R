@@ -26,7 +26,7 @@ pheno <- fread(opt$p)
 gwas <- get_variants(opt$trait)
 
 # select tophits
-sig <- gwas[gwas$P < (5e-8/30)]
+sig <- gwas[gwas$phi_p < (5e-8/30)]
 
 # clump
 stopifnot(nrow(sig)>0)
@@ -35,16 +35,12 @@ names(sig) <- c("rsid", "pval")
 sig <- ld_clump(sig)
 
 # subset rows
-sig <- gwas[gwas$RSID %in% sig$rsid]
-
-# drop multialllelic variants
-ma <- as.data.frame(table(sig$RSID)) %>% filter(Freq == 2) %>% mutate_if(is.factor, as.character) %>% pull(Var1)
-sig <- sig[!(sig$RSID %in% ma)]
+sig <- gwas[gwas$rsid %in% sig$rsid]
 
 # GWAS
 message(paste0("Found ", nrow(sig), " variants"))
 results <- apply(sig, 1, function(snp) {
-  model(pheno, opt$trait, as.character(snp[['CHR']]), as.numeric(snp[['POS']]), as.character(snp[['OA']]), as.character(snp[['EA']]), as.character(snp[['RSID']]))
+  model(pheno, opt$trait, as.character(snp[['chr']]), as.numeric(snp[['pos']]), as.character(snp[['oa']]), as.character(snp[['ea']]), as.character(snp[['rsid']]))
 })
 results <- rbindlist(results[!is.na(results)], fill=T)
 
