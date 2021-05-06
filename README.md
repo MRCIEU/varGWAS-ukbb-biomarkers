@@ -22,7 +22,7 @@ Save variables to csv for vGWAS
 
 ```sh
 module load languages/r/3.6.0
-for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     Rscript extract.R --trait "$trait"
 done
 ```
@@ -34,7 +34,7 @@ Run C++ implementation of B-P
 ```sh
 # more efficient to run the larger chromosomes first
 for chr in  $(seq -f "%02g" 1 22); do
-    for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
+    for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
         sbatch run_cpp.sh "$trait" "$chr"
     done
 done
@@ -63,7 +63,7 @@ sbatch runR.sh Rscript bp.R -p data/ukb_bmi.txt -t body_mass_index.21001 -s data
 Plot QQ & Manhattan
 
 ```sh
-for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh qc.R -t "$trait"
 done
 ```
@@ -73,7 +73,7 @@ done
 Vaidate tophits using B-F model
 
 ```sh
-for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh Rscript validate.R -p data/"$trait".txt -t "$trait" -o data/"$trait".validate.txt
 done
 ```
@@ -83,7 +83,7 @@ done
 Find disease outcomes associated with mvQTLs
 
 ```sh
-for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh \
     mr_disease_outcomes.R \
     -t "$trait" \
@@ -97,7 +97,7 @@ done
 Find outcomes associated with mvQTLs which also independently associate with variance
 
 ```sh
-for trait in body_mass_index.21001 alanine_aminotransferase.30620 albumin.30600 alkaline_phosphatase.30610 apolipoprotein_a.30630 apolipoprotein_b.30640 aspartate_aminotransferase.30650 c-reactive_protein.30710 calcium.30680 cholesterol.30690 creatinine.30700 cystatin_c.30720 direct_bilirubin.30660 gamma_glutamyltransferase.30730 glucose.30740 glycated_haemoglobin.30750 hdl_cholesterol.30760 igf-1.30770 ldl_direct.30780 lipoprotein_a.30790 oestradiol.30800 phosphate.30810 rheumatoid_factor.30820 shbg.30830 testosterone.30850 total_bilirubin.30840 total_protein.30860 triglycerides.30870 urate.30880 urea.30670 vitamin_d.30890; do
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh phewas.R "$trait"
 done
 ```

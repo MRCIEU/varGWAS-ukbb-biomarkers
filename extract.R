@@ -23,6 +23,7 @@ linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TR
 
 # load covariates
 covariates <- get_covariates()
+covariates$chip <- as.numeric(as.factor(covariates$chip)) - 1
 pc <- get_genetic_principal_components()
 
 # merge data
@@ -31,7 +32,7 @@ dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
 dat <- merge(dat, pc, "appieu")
 
 # select fields for GWAS
-dat <- dat[,c("appieu", "sex.31.0.0", "age_at_recruitment.21022.0.0", opt$trait, paste0("PC", seq(1, 10))), with=F]
+dat <- dat[,c("appieu", "sex.31.0.0", "age_at_recruitment.21022.0.0", "chip", opt$trait, paste0("PC", seq(1, 20))), with=F]
 
 # drop missing values
 dat <- dat[complete.cases(dat), ]

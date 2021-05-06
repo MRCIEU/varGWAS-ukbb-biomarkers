@@ -158,11 +158,12 @@ get_variants <- function(trait){
         snp_stats <- snp_stats[!(snp_stats$chromosome == 6 & snp_stats$position >= 28477797 & snp_stats$position <= 33448354),]
 
         # drop vGWAS failed rows
-        gwas <- gwas %>% filter(P != -1)
+        gwas <- gwas %>% filter(phi_p != -1)
 
         # merge/filter vGWAS
         snp_stats$key <- paste0(snp_stats$chromosome, "_", snp_stats$position, "_", snp_stats$alleleA, "_", snp_stats$alleleB)
-        gwas$key <- paste0(gwas$CHR, "_", gwas$POS, "_", gwas$OA, "_", gwas$EA)
+        snp_stats$rsid <- NULL
+        gwas$key <- paste0(gwas$chr, "_", gwas$pos, "_", gwas$ea, "_", gwas$oa)
         gwas <- merge(gwas, snp_stats, "key")
 
         # store results

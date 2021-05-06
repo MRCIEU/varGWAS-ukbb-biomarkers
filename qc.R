@@ -24,10 +24,10 @@ data <- get_variants(opt$trait)
 
 # manhattan
 png(paste0("data/", opt$trait, "_phi_manhattan.png"))
-manhattan(data, ylim = c(0, 25), chr="CHR", bp="POS", p="P", snp="RSID", main = trait_name)
+manhattan(data, ylim = c(0, 25), chr="chr", bp="pos", p="phi_p", snp="rsid", main = trait_name)
 dev.off()
 
 # qq plot
 png(paste0("data/", opt$trait, "_phi_qq.png"))
-qq(data$P, main = trait_name)
+qq(data$phi_p, main = trait_name)
 dev.off()
