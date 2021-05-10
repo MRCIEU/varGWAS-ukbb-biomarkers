@@ -29,8 +29,6 @@ done
 
 ## vGWAS
 
-Run C++ implementation of B-P
-
 ```sh
 # more efficient to run the larger chromosomes first
 for chr in  $(seq -f "%02g" 1 22); do
