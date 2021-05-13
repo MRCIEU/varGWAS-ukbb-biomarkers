@@ -98,5 +98,9 @@ pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0')
 pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0'), na_if, -3)
 pheno <- pheno %>% mutate_at(c('smoking_status.20116.0.0'), na_if, -3)
 
+# log skewed traits
+pheno$alanine_aminotransferase.30620.0.0_log <- log(pheno$alanine_aminotransferase.30620.0.0)
+pheno$aspartate_aminotransferase.30650.0.0_log <- log(pheno$aspartate_aminotransferase.30650.0.0)
+
 # save data
 save.image(file = "data/pheno.RData")
