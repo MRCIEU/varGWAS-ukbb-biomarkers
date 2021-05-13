@@ -176,7 +176,7 @@ ols_est <- calc_power(results, "ols_p", n_sim, c("effect", "exposure", "dist"), 
 write.table(ols_est, quote=F, row.names=F, sep="\t", file="ols_power.txt")
 
 bp_est <- calc_power(results, "bp_p", n_sim, c("effect", "exposure", "dist"), 0.05)
-write.table(bf_est, quote=F, row.names=F, sep="\t", file="bp_power.txt")
+write.table(bp_est, quote=F, row.names=F, sep="\t", file="bp_power.txt")
 
 bf_est <- calc_power(results, "bf_p", n_sim, c("effect", "exposure", "dist"), 0.05)
 write.table(bf_est, quote=F, row.names=F, sep="\t", file="bf_power.txt")
