@@ -101,6 +101,12 @@ pheno <- pheno %>% mutate_at(c('smoking_status.20116.0.0'), na_if, -3)
 # log skewed traits
 pheno$alanine_aminotransferase.30620.0.0_log <- log(pheno$alanine_aminotransferase.30620.0.0)
 pheno$aspartate_aminotransferase.30650.0.0_log <- log(pheno$aspartate_aminotransferase.30650.0.0)
+pheno$alkaline_phosphatase.30610.0.0_log <- log(pheno$alkaline_phosphatase.30610.0.0)
+pheno$c_reactive_protein.30710.0.0_log <- log(pheno$c_reactive_protein.30710.0.0)
+pheno$creatinine.30700.0.0_log <- log(pheno$creatinine.30700.0.0)
+pheno$direct_bilirubin.30660.0.0_log <- log(pheno$direct_bilirubin.30660.0.0)
+pheno$gamma_glutamyltransferase.30730.0.0_log <- log(pheno$gamma_glutamyltransferase.30730.0.0)
+pheno$total_bilirubin.30840.0.0_log <- log(pheno$total_bilirubin.30840.0.0)
 
 # save data
 save.image(file = "data/pheno.RData")
