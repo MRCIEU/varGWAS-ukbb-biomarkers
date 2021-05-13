@@ -7,23 +7,16 @@ set.seed(1234)
 
 option_list = list(
   make_option(c("-i", "--id"), type="character", default=NULL, help="OpenGWAS ID", metavar="character"),
-  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
-  make_option(c("-o", "--out"), type="character", default=NULL, help="Output file", metavar="character")
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")
 );
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 # load vGWAS for biomarker risk factor
-vqtl <- fread(paste0("data/", opt$trait, ".validate.txt"))
+mvqtl <- fread(paste0("data/", opt$trait, ".clump.txt"))
 
-# select vQTLs with evidence of a mean effect on biomaker
-vqtl <- vqtl[vqtl$Pmu < 0.05]
-
-# select SNPs which are moderately associated using B-P
-vqtl <- vqtl[vqtl$Pvar < 5e-5]
-
-# phewas vQTLs against disease outcomes
-outcomes <- phewas(vqtl$rsid, batch=c("bbj-a", "ebi-a", "finn-a", "ieu-a", "ieu-b", "ukb-a", "ukb-b", "ukb-d"))
+# phewas mvQTLs against disease outcomes
+outcomes <- phewas(mvqtl$rsid, batch=c("bbj-a", "ebi-a", "finn-a", "ieu-a", "ieu-b", "ukb-a", "ukb-b", "ukb-d"))
 
 # select outcomes which have MR evidence
 mr_res <- data.frame()
@@ -48,6 +41,7 @@ mr_main <- mr_res %>%
     pull(id.outcome)
 mr_main <- as.character(mr_main)
 
+# retain only those meeting sens
 mr_sens <- mr_res[mr_res$id.outcome %in% mr_main,] %>%
     filter(method == "Weighted median" & pval < 0.05) %>%
     pull(id.outcome)
@@ -57,4 +51,4 @@ mr_sens <- as.character(mr_sens)
 outcomes <- outcomes[outcomes$id %in% mr_sens,]
 
 # write out disease outcomes
-write.csv(outcomes, file=opt$out)
+write.csv(outcomes, file=paste0("data/", opt$trait, ".disease_outcomes.txt"))
