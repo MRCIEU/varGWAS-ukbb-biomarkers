@@ -1,5 +1,6 @@
 library('optparse')
 library('data.table')
+library('dplyr')
 library('broom')
 source("funs.R")
 set.seed(1234)
@@ -40,4 +41,7 @@ for (i in 1:length(vqtls)){
 }
 
 # filter P < 0.05
-results %>% filter(p.value < nrow(results) / 0.05)
+sig <- results %>% filter(p.value < 0.05 / nrow(results))
+
+# save
+write.table(sig, sep="\t", quote=F, row.names=F, file=opt$o)
