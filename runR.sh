@@ -7,6 +7,8 @@
 set -euo pipefail
 
 module load languages/r/3.6.0
+module load apps/plink/1.90
+PATH=$PATH:/mnt/storage/home/ml18692/scratch/db/locuszoom/locuszoom/bin
 
 # Run R script
 Rscript $@
