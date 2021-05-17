@@ -1,55 +1,46 @@
 # compare tophits with OSCA tools performed by Wang et al. Genotype-by-environment interactions inferred from genetic effects on phenotypic variability in the UK Biobank
+library('data.table')
+library('dplyr')
+library('broom')
+source("funs.R")
+set.seed(1234)
 
 # load summary stats
-osca <- fread("BMI.ma")
-gwas <- data.frame()
-for (chr in seq(1,22)){
-    if (chr < 10){
-        path <- paste0("../jlst-cpp-vgwas/data//ukb_bmi.vgwas.chr0", chr, ".txt")
-    } else {
-        path <- paste0("../jlst-cpp-vgwas/data//ukb_bmi.vgwas.chr", chr, ".txt")
-    }
-    gwas <- rbind(gwas, fread(path))
-}
+osca <- fread("../13-QT-vQTL-summary-data/BMI.ma")
+gwas <- get_variants("body_mass_index.21001.0.0")
 
 # merge datasets
-m < -merge(osca[,c("SNP", "p"),], gwas[,c("RSID", "P"),], by.x="SNP", by.y="RSID", suffixes=c(".osca", ".cpp"))
+m <- merge(osca[,c("SNP", "p"),], gwas[,c("rsid", "phi_p"),], by.x="SNP", by.y="rsid")
 
 # correlate P values
-cor.test(m$p, m$P)
+tidy(cor.test(m$p, m$phi_p))
 
-#
-#	Pearson's product-moment correlation
-#
-#data:  m$p and m$P
-#t = 730.56, df = 5554547, p-value < 2.2e-16
-#alternative hypothesis: true correlation is not equal to 0
-#95 percent confidence interval:
-# 0.2953215 0.2968390
-#sample estimates:
-#      cor 
-#0.2960804 
+#  estimate statistic p.value parameter conf.low conf.high method     alternative
+#     <dbl>     <dbl>   <dbl>     <int>    <dbl>     <dbl> <chr>      <chr>      
+#1    0.378      960.       0   5512280    0.378     0.379 Pearson's~ two.sided  
 
-# count n genome-wide hits in CPP where OSCA is genome-wide
-table(m[m$p < 5e-8]$P < 5e-8)
+# count number of OSCA hits that are also B-P hits
+table(m[m$p < 5e-8]$phi_p < 5e-8)
 
 #FALSE  TRUE 
-# 2247  1947 
+# 1228  1295 
 
-# count n genome-wide hits in OSCA where CPP is genome-wide
-table(m[m$P < 5e-8]$p < 5e-8)
+# count number of B-P hits that are also OSCA hits
+table(m[m$phi_p < 5e-8]$p < 5e-8)
 
 #FALSE  TRUE 
-#  190  1947 
+#   51  1295 
 
 # count total number of genome-wide hits in OSCA
 table(m$p < 5e-8)
 
 #  FALSE    TRUE 
-#5550355    4194 
+#5509759    2523 
 
-# count total number of genome-wide hits in CPP
-table(m$P < 5e-8)
+# count total number of genome-wide hits in B-P
+table(m$phi_p < 5e-8)
 
 #  FALSE    TRUE 
-#5552412    2137
+#5510936    1346 
+
+# is OSCA more sensitive than B-P or higher T1E?

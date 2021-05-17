@@ -1,4 +1,5 @@
 library('data.table')
+library('dplyr')
 library('purrr')
 library('rbgen')
 

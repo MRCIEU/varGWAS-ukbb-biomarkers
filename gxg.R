@@ -14,8 +14,6 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-opt <- data.frame(p="data/urate.30880.0.0.txt", t="urate.30880.0.0", s="data/urate.30880.0.0.clump.txt", stringsAsFactors=F)
-
 # read in extracted phenotypes
 pheno <- fread(opt$p)
 
@@ -41,7 +39,7 @@ for (i in 1:length(vqtls)){
 }
 
 # filter P < 0.05
-sig <- results %>% filter(p.value < 0.05 / nrow(results))
+sig <- results %>% filter(p.value < 0.05 / (nrow(results)/2))
 
 # save
 write.table(sig, sep="\t", quote=F, row.names=F, file=opt$o)
