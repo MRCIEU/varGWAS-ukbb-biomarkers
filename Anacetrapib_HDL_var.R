@@ -19,6 +19,8 @@ treatment_sd <- get_sd(82, 117, 285)
 # df=1, T=244.620276094346, P=0
 
 ### log of ratio of variability (logVR)
+library(metafor)
+
 # Taken from https://github.com/harrietlmills/DetectingDifferencesInVariance/blob/master/AnalyseIndividualTrials.R
 rdat_logVR <- escalc(measure = "VR", #m1=exp, m2=con
                      m1i = placebo_mean, n1i = placebo_n, sd1i = placebo_sd, 
