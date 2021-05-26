@@ -14,6 +14,8 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
+message(paste0("trait ", opt$trait))
+
 # read in extracted phenotypes
 pheno <- fread(opt$p)
 

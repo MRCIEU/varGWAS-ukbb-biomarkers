@@ -132,6 +132,16 @@ get_variants <- function(trait){
             gwas <- fread(paste0("data/", trait, ".vgwas.chr", chr, ".txt"))
             snp_stats <- fread(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/snp-stats/data.chr", chr, ".snp-stats"), skip=15)
         }
+
+        # drop multiallelics by rsid
+        counts <- table(snp_stats$rsid)
+        ma <- as.data.frame(counts[which(counts>1)])
+        snp_stats <- snp_stats[!snp_stats$rsid %in% ma$Var1]
+
+        # drop multiallelics by position
+        counts <- table(snp_stats$position)
+        ma <- as.data.frame(counts[which(counts>1)])
+        snp_stats <- snp_stats[!snp_stats$position %in% ma$Var1]
         
         # exclude MAF < 0.05
         snp_stats <- snp_stats[which(snp_stats$minor_allele_frequency > 0.05)]
@@ -144,16 +154,6 @@ get_variants <- function(trait){
 
         # exclude low imputation quality
         snp_stats <- snp_stats[which(snp_stats$info > 0.3)]
-
-        # drop multiallelics by rsid
-        counts <- table(snp_stats$rsid)
-        ma <- as.data.frame(counts[which(counts>1)])
-        snp_stats <- snp_stats[!snp_stats$rsid %in% ma$Var1]
-
-        # drop multiallelics by position
-        counts <- table(snp_stats$position)
-        ma <- as.data.frame(counts[which(counts>1)])
-        snp_stats <- snp_stats[!snp_stats$position %in% ma$Var1]
 
         # drop HLA region
         snp_stats <- snp_stats[!(snp_stats$chromosome == 6 & snp_stats$position >= 28477797 & snp_stats$position <= 33448354),]
