@@ -19,7 +19,7 @@ gwas <- get_variants(opt$trait)
 
 # select tophits
 sig <- gwas[gwas$phi_p < (5e-8/30)]
-sig <- sig[sig$p < (0.1/nrow(sig))]
+#sig <- sig[sig$p < (0.1/nrow(sig))]
 
 # clump
 stopifnot(nrow(sig)>0)
