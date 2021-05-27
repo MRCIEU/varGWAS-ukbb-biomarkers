@@ -20,5 +20,12 @@ data <- get_variants(opt$trait)
 # stringent filter on INFO
 data <- data[which(data$info > .9),]
 
+# calculate Z score
+data$z <- data$beta / data$se
+
+# subset
+data<- data[,c("rsid", "n", "z", "ea", "oa")]
+names(data) <- c("SNP", "N", "Z", "A1", "A2")
+
 # select fields for LDSC
-write.table(data[,c("rsid", "ea", "oa", "n", "p", "beta", "eaf", "info")], sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".ldsc"))
+write.table(data, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".ldsc"))

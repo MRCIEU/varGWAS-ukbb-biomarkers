@@ -6,25 +6,10 @@
 #SBATCH --partition=mrcieu
 set -euo pipefail
 
-module load languages/anaconda3/2020.02-tflow-2.2.0
-source activate ldsc
-PATH=$PATH:/mnt/storage/home/ml18692/scratch/apps/ldsc
+module load languages/anaconda2/5.3.1.tensorflow-1.12
 
-# munge GWAS
-munge_sumstats.py \
---sumstats "data/alanine_aminotransferase.30620.0.0.ldsc" \
---out "data/alanine_aminotransferase.30620.0.0" \
---merge-alleles /mnt/storage/home/ml18692/scratch/db/ldsc/w_hm3.snplist \
---snp rsid \
---N-col n \
---a2 ea \
---a1 oa \
---p p \
---frq eaf \
---signed-sumstats beta,0 \
---info info
-
-# clean up
-rm "data/alanine_aminotransferase.30620.0.0.ldsc"
-
-ldsc.py -h
+/mnt/storage/scratch/ml18692/.conda/ldsc/bin/python /mnt/storage/home/ml18692/apps/ldsc/ldsc.py \
+--h2 "$1" \
+--ref-ld-chr /mnt/storage/home/ml18692/db/ldsc/eur_w_ld_chr/ \
+--w-ld-chr /mnt/storage/home/ml18692/db/ldsc/eur_w_ld_chr/ \
+--out "$1"
