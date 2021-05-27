@@ -206,3 +206,36 @@ biomarkers <- c(
     "urea.30670.0.0",
     "vitamin_d.30890.0.0"
 )
+
+biomarkers_abr <- c(
+    "ALT",
+    "ALB",
+    "ALP",
+    "ApoA",
+    "ApoB",
+    "AST",
+    "CRP",
+    "Calcium",
+    "TC",
+    "Creatinine",
+    "Cystatin C",
+    "Direct bilirubin",
+    "GGT",
+    "Glucose",
+    "HbA1C",
+    "HDL",
+    "IGF-1",
+    "LDL",
+    "LipoA",
+    "Oestradiol",
+    "Phosphate",
+    "RF",
+    "SHBG",
+    "Testosterone",
+    "Total bilirubin",
+    "Protein",
+    "TG",
+    "Urate",
+    "Urea",
+    "Vitamin D"
+)
