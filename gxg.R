@@ -21,6 +21,7 @@ pheno <- fread(opt$p)
 
 # read in snp list
 snps <- fread(opt$s)
+snps$key <- paste0("chr", snps$chr, "_", snps$pos, "_", snps$oa, "_", snps$ea)
 
 # load dosages
 for (i in 1:nrow(snps)){
@@ -35,9 +36,32 @@ vqtls <- grep("^chr", names(pheno), value=T)
 results <- data.frame()
 for (i in 1:length(vqtls)){
   for (j in 1:length(vqtls)){
+
+    # skip GxG on same chromosome within 1Mb
+    i_chr <- snps %>% filter(key == vqtls[i]) %>% pull("chr")
+    i_pos <- snps %>% filter(key == vqtls[i]) %>% pull("pos")
+    j_chr <- snps %>% filter(key == vqtls[j]) %>% pull("chr")
+    j_pos <- snps %>% filter(key == vqtls[j]) %>% pull("pos")
+
+    if (i_chr == j_chr){
+      if (abs(i_pos - j_pos) < 1000000){
+        message("Skipping test (<1Mb) for: ", vqtls[i], " ", vqtls[j])
+        next
+      }
+    }
+
+    if (paste0(vqtls[j], ":" ,vqtls[i]) %in% results$term){
+        message("Skipping test (already done) for: ", vqtls[i], " ", vqtls[j])
+        next
+    }
+
+    # test GxG
+    message("Testing GxG for: ", vqtls[i], " ", vqtls[j])
     f <- as.formula(paste0(opt$t, " ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(vqtls[i], " * " ,vqtls[j], collapse=" + ")))
     fit <- lm(f, pheno)
     t <- tidy(fit)
+
+    # store results
     results <- rbind(results, t[grep(":", t$term),])
   }
 }
