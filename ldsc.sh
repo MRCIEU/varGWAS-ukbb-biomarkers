@@ -21,7 +21,9 @@ munge_sumstats.py \
 --a2 oa \
 --p p \
 --frq eaf \
-
+--signed-sumstats beta \
+--info info \
+--a1-inc
 
 # clean up
 rm "data/alanine_aminotransferase.30620.0.0.ldsc"
