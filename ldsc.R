@@ -21,4 +21,4 @@ data <- get_variants(opt$trait)
 data <- data[which(data$info > .9),]
 
 # select fields for LDSC
-write.table(data[,c("rsid", "ea", "oa", "n", "p", "beta")], sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".ldsc"))
+write.table(data[,c("rsid", "ea", "oa", "n", "p", "beta", "eaf")], sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".ldsc"))

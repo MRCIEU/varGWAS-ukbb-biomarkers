@@ -12,9 +12,18 @@ PATH=$PATH:/mnt/storage/home/ml18692/scratch/apps/ldsc
 
 # munge GWAS
 munge_sumstats.py \
---sumstats "alanine_aminotransferase.30620.0.0.vgwas.chr01.txt" \
---out "alanine_aminotransferase.30620.0.0" \
+--sumstats "data/alanine_aminotransferase.30620.0.0.ldsc" \
+--out "data/alanine_aminotransferase.30620.0.0" \
+--merge-alleles /mnt/storage/home/ml18692/scratch/db/ldsc/w_hm3.snplist \
+--snp rsid \
+--N-col n \
+--a1 ea \
+--a2 oa \
+--p p \
+--frq eaf \
 
 
+# clean up
+rm "data/alanine_aminotransferase.30620.0.0.ldsc"
 
 ldsc.py -h
