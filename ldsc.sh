@@ -17,13 +17,12 @@ munge_sumstats.py \
 --merge-alleles /mnt/storage/home/ml18692/scratch/db/ldsc/w_hm3.snplist \
 --snp rsid \
 --N-col n \
---a1 ea \
---a2 oa \
+--a2 ea \
+--a1 oa \
 --p p \
 --frq eaf \
---signed-sumstats beta \
---info info \
---a1-inc
+--signed-sumstats beta,0 \
+--info info
 
 # clean up
 rm "data/alanine_aminotransferase.30620.0.0.ldsc"
