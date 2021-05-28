@@ -4,7 +4,7 @@ source("funs.R")
 set.seed(1234)
 
 option_list = list(
-  make_option(c("-c", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
   make_option(c("-o", "--opengwas"), type="character", default=NULL, help="biomarker ID in opengwas", metavar="character")
 );
 opt_parser = OptionParser(option_list=option_list);
