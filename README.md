@@ -143,6 +143,16 @@ for trait in alanine_aminotransferase.30620.0.0 alkaline_phosphatase.30610.0.0 a
 done
 ```
 
+## MR of expression on biomarker concentration
+
+For cis-gene region effects with coloc evidence ONLY
+
+Estimate casual effect of colocalised loci on biomaker concentration & test for reverse causation effect
+
+## Subset mvQTLs with drug target loci
+
+Optional - if coloc analysis does not detect drug targets
+
 ## GxE interaction analysis
 
 TODO

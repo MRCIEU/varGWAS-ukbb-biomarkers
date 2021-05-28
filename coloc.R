@@ -78,6 +78,8 @@ for (i in 1:nrow(mvqtl)){
 
     # exclude snps with missing values 
     eqtl <- eqtl[!is.na(eqtl$eaf),]
+    eqtl <- eqtl[eqtl$eaf > 0,]
+    eqtl <- eqtl[eqtl$eaf < 1,]
 
     if (nrow(eqtl) < 500){
       message(paste0("Skipping, not enough SNPs in interval"))
