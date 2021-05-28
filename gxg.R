@@ -67,4 +67,4 @@ for (i in 1:length(vqtls)){
 }
 
 # save
-write.table(sig, sep="\t", quote=F, row.names=F, file=opt$o)
+write.table(results, sep="\t", quote=F, row.names=F, file=opt$o)
