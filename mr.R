@@ -1,5 +1,6 @@
 library("data.table")
 library("TwoSampleMR")
+library('optparse')
 source("funs.R")
 set.seed(1234)
 
