@@ -14,3 +14,5 @@ module load languages/anaconda2/5.3.1.tensorflow-1.12
 --ref-ld-chr /mnt/storage/home/ml18692/db/ldsc/eur_w_ld_chr/ \
 --w-ld-chr /mnt/storage/home/ml18692/db/ldsc/eur_w_ld_chr/ \
 --out "$1"
+
+rm "$1"

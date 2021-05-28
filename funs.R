@@ -164,7 +164,7 @@ get_variants <- function(trait){
         # merge/filter vGWAS
         snp_stats$key <- paste0(snp_stats$chromosome, "_", snp_stats$position, "_", snp_stats$alleleA, "_", snp_stats$alleleB)
         snp_stats$rsid <- NULL
-        gwas$key <- paste0(gwas$chr, "_", gwas$pos, "_", gwas$ea, "_", gwas$oa)
+        gwas$key <- paste0(gwas$chr, "_", gwas$pos, "_", gwas$oa, "_", gwas$ea)
         gwas <- merge(gwas, snp_stats, "key")
 
         # store results

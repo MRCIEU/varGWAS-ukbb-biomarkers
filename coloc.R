@@ -49,7 +49,7 @@ vgwas <- get_variants(opt$trait)
 mvqtl <- fread(paste0("data/", opt$trait, ".clump.txt"))
 
 # find gene expression changes in blood associated with mvQTLs
-genes <- phewas(mvqtl$rsid, pval = 5e-8, batch = c("eqtl-a"))
+genes <- phewas(mvqtl$rsid, pval = 5e-8, batch = c("eqtl-a", "prot-a", "prot-b", "prot-c"))
 ugenes <- unique(genes$id)
 
 # drop mvQTLs that are not eQTLs
