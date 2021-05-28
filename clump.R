@@ -51,7 +51,7 @@ sig <- ld_clump(sig)
 # subset rows
 sig <- gwas[gwas$rsid %in% sig$rsid]
 
-# test for mean effect on trait using heteroscedastiy robust model
+# test for mean effect on trait using heteroscedastiy robust model & mean-variance effect using method of moments
 
 # read in extracted phenotypes
 pheno <- fread(paste0("data/", opt$trait, ".txt"))
