@@ -66,8 +66,5 @@ for (i in 1:length(vqtls)){
   }
 }
 
-# filter P < 0.05
-sig <- results %>% filter(p.value < 0.05 / (nrow(results)/2))
-
 # save
 write.table(sig, sep="\t", quote=F, row.names=F, file=opt$o)
