@@ -77,7 +77,7 @@ for (i in 1:nrow(mvqtl)){
     eqtl <- associations(region, ugenes[j], proxies=0)
 
     # exclude snps with missing values 
-    eqtl <- eqtl[!is.na(eqtl$eaf)]
+    eqtl <- eqtl[!is.na(eqtl$eaf),]
 
     if (nrow(eqtl) < 500){
       message(paste0("Skipping, not enough SNPs in interval"))
