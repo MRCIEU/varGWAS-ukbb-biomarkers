@@ -19,6 +19,7 @@ coloc <- fread(paste0("data/", opt$trait, ".coloc.txt"))
 
 # retain high prob of shared casual variant
 coloc <- coloc[coloc$PP.H4.abf > .8]
+stopifnot(nrow(coloc)>0)
 
 results <- data.frame()
 for (id in unique(coloc$gene)){
@@ -49,7 +50,7 @@ for (id in unique(coloc$gene)){
 
     # Perform MR
     res <- mr(dat)
-    res <- cbind(res, directionality_test(dat))
+    res <- cbind(res, directionality_test(dat)[5:8])
     results <- rbind(results, res)
 
     # Test for effect of biomarker on gene product
@@ -65,6 +66,6 @@ for (id in unique(coloc$gene)){
 
     # Perform MR
     res <- mr(dat)
-    res <- cbind(res, directionality_test(dat))
+    res <- cbind(res, directionality_test(dat)[5:8])
     results <- rbind(results, res)
 }

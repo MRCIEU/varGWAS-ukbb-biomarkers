@@ -30,7 +30,7 @@ locuszoom <- function(gchr, gpos, ga1, ga2, gpval, chr, start, end, trait){
   write.table(gwas, sep="\t", row.names=F, quote=F, file="lz.txt")
 
   # call LocusZoom
-  system(paste0("locuszoom --rundir ./data --metal lz.txt -p ", trait, " --plotonly --pop EUR --build hg19 --source 1000G_Nov2014 --no-date --chr ", chr, " --start " ,start, " --end ", end))
+  system(paste0("locuszoom --cache None --rundir ./data --metal lz.txt -p ", trait, " --plotonly --pop EUR --build hg19 --source 1000G_Nov2014 --no-date --chr ", chr, " --start " ,start, " --end ", end))
 
   # delete temp data
   unlink("lz.txt")
@@ -42,11 +42,14 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-# load all vGWAS for trait
-vgwas <- get_variants(opt$trait)
+message(paste0("working on ", opt$trait))
 
 # load clumped mvQTLs for biomarker concentration
 mvqtl <- fread(paste0("data/", opt$trait, ".clump.txt"))
+stopifnot(nrow(mvqtl)>0)
+
+# load all vGWAS for trait
+vgwas <- get_variants(opt$trait)
 
 # find gene expression changes in blood associated with mvQTLs
 genes <- phewas(mvqtl$rsid, pval = 5e-8, batch = c("eqtl-a", "prot-a", "prot-b", "prot-c"))
@@ -75,6 +78,16 @@ for (i in 1:nrow(mvqtl)){
 
     # load eQTL data for interval
     eqtl <- associations(region, ugenes[j], proxies=0)
+
+    if (nrow(eqtl) == 0){
+      message(paste0("Skipping, not enough SNPs in interval"))
+      next
+    }
+
+    if (!"eaf" %in% names(eqtl)){
+      message(paste0("Skipping, eaf not given"))
+      next
+    }
 
     # exclude snps with missing values 
     eqtl <- eqtl[!is.na(eqtl$eaf),]
