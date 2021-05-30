@@ -27,13 +27,11 @@ locuszoom <- function(gchr, gpos, ga1, ga2, gpval, chr, start, end, trait){
   names(gwas)[2] <- "P-value"
 
   # write out records
-  write.table(gwas, sep="\t", row.names=F, quote=F, file="lz.txt")
+  t <- tempfile()
+  write.table(gwas, sep="\t", row.names=F, quote=F, file=t)
 
   # call LocusZoom
-  system(paste0("locuszoom --cache None --rundir ./data --metal lz.txt -p ", trait, " --plotonly --pop EUR --build hg19 --source 1000G_Nov2014 --no-date --chr ", chr, " --start " ,start, " --end ", end))
-
-  # delete temp data
-  unlink("lz.txt")
+  system(paste0("locuszoom --cache None --rundir ./data --metal ", t ," -p ", trait, " --plotonly --pop EUR --build hg19 --source 1000G_Nov2014 --no-date --chr ", chr, " --start " ,start, " --end ", end))
 }
 
 option_list = list(
@@ -53,6 +51,7 @@ vgwas <- get_variants(opt$trait)
 
 # find gene expression changes in blood associated with mvQTLs
 genes <- phewas(mvqtl$rsid, pval = 5e-8, batch = c("eqtl-a", "prot-a", "prot-b", "prot-c"))
+stopifnot(nrow(genes)>0)
 ugenes <- unique(genes$id)
 
 # drop mvQTLs that are not eQTLs
