@@ -32,6 +32,7 @@ for (id in unique(coloc$gene)){
 
     # Get effects of instruments on outcome
     outcome_dat <- data[data$rsid %in% exposure_dat$SNP]
+    outcome_dat$pheno <- opt$trait
     outcome_dat <- format_data(
         outcome_dat,
         type="outcome",
@@ -42,6 +43,7 @@ for (id in unique(coloc$gene)){
         effect_allele_col="ea",
         other_allele_col="oa", 
         pval_col="p",
+        phenotype_col = "pheno",
         samplesize_col="n"
     )
 
@@ -50,8 +52,18 @@ for (id in unique(coloc$gene)){
 
     # Perform MR
     res <- mr(dat)
-    res <- cbind(res, directionality_test(dat)[5:8])
-    results <- rbind(results, res)
+
+    # Steiger test
+    result = tryCatch({
+        directionality_test(dat)
+    }, error = function(error_condition) {
+        NULL
+    })
+    if (!is.null(result)){
+      res <- cbind(res, result[5:8])
+    }
+
+    results <- plyr::rbind.fill(results, res)
 
     # Test for effect of biomarker on gene product
 
@@ -66,6 +78,20 @@ for (id in unique(coloc$gene)){
 
     # Perform MR
     res <- mr(dat)
-    res <- cbind(res, directionality_test(dat)[5:8])
-    results <- rbind(results, res)
+
+    # Steiger test
+    result = tryCatch({
+        directionality_test(dat)
+    }, error = function(error_condition) {
+        NULL
+    })
+    if (!is.null(result)){
+      res <- cbind(res, result[5:8])
+    }
+
+    results <- plyr::rbind.fill(results, res)
 }
+
+write.table(results, sep="\t", row.names=F, quote=F, file=paste0("data/", opt$trait, ".mr.txt"))
+
+### NOTE - only interpret findings in coding gene cis regions; other loci may suffer from pleiotropy ###
