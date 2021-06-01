@@ -174,6 +174,10 @@ cat data/*.0.0.mr.txt | grep -v ^id >> data/mr.txt
 
 Report only unidirectional effects of gene product on biomarker conc where coloc evidence is in cis-region of coding gene
 
+```sh
+Rscript mr_analysis.R
+```
+
 ## Subset mvQTLs with drug target loci
 
 Optional - if coloc analysis does not detect drug targets
