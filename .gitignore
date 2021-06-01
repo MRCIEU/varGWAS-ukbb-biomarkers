@@ -1,3 +1,4 @@
 data/
 *.out
 ~$esults.docx
+.DS_Store
