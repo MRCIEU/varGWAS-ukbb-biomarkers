@@ -19,8 +19,7 @@ main <- d %>% filter(method == "Inverse variance weighted" | method == "Wald rat
 main <- main %>% filter(pval < (0.05/nrow(main)))
 
 # drop estimates not supported by weighted median
-sens <- d %>% filter(method == "Weighted median")
-sens <- sens %>% filter(pval < 0.05)
+sens <- d %>% filter(method != "Inverse variance weighted" & method != "Wald ratio") %>% filter(pval < 0.05)
 sig <- main[main$key %in% sens$key | main$method == "Wald ratio"]
 
 # filter out bidirectional effects
