@@ -8,7 +8,9 @@ library("stringr")
 library("TwoSampleMR")
 set.seed(123)
 
-# extract tables
+### prepare chembl data ###
+
+# extract drug-target-gene data from chembl
 con <- dbConnect(drv=RSQLite::SQLite(), dbname="data/chembl/chembl_28/chembl_28_sqlite/chembl_28.db")
 MOLECULE_DICTIONARY <- dbGetQuery(conn=con, statement="SELECT molregno,pref_name,molecule_type FROM MOLECULE_DICTIONARY")
 names(MOLECULE_DICTIONARY)[names(MOLECULE_DICTIONARY) == "pref_name"] <- "molecule_name"
@@ -20,7 +22,7 @@ COMPONENT_SYNONYMS <- dbGetQuery(conn=con, statement="SELECT component_id,compon
 COMPONENT_SEQUENCES <- dbGetQuery(conn=con, statement="SELECT component_id,accession FROM COMPONENT_SEQUENCES WHERE organism=='Homo sapiens'")
 dbDisconnect(con)
 
-# merge
+# merge records
 dat <- merge(MOLECULE_DICTIONARY, DRUG_MECHANISM, "molregno")
 dat <- merge(dat, TARGET_DICTIONARY, "tid")
 dat <- merge(dat, TARGET_COMPONENTS, "tid")
@@ -30,7 +32,17 @@ dat$component_id <- NULL
 dat$tid <- NULL
 dat$molregno <- NULL
 
-# subset mvQTLs at drug target loci
+# add genomic coordinates for gene targets to chembl
+ens <- fread("data/Homo_sapiens.GRCh37.82.bed")
+names(ens)<-c("chrom", "start", "end", "ensg", "symbol")
+anno <- merge(dat, ens, by.y="symbol", by.x="component_synonym")
+
+# pad drug target loci by 500kb
+anno$interval <- paste0(anno$chrom, ":", anno$start - 500000, "-", anno$end + 500000)
+chembl_intervals <- GRanges(anno$interval)
+stopifnot(length(chembl_intervals)==length(anno$interval))
+
+# load mvQTLs for biomarkers
 d <- "/mnt/storage/scratch/ml18692/projects/jlst-cpp-vgwas/data"
 files <- paste0(d, "/", list.files(d, pattern="*.clump.txt", full.names=F))
 mvqtl <- data.frame()
@@ -40,15 +52,9 @@ for (file in files){
     mvqtl <- rbind(mvqtl, f)
 }
 
-# add genomic coordinates for gene targets
-ens <- fread("data/Homo_sapiens.GRCh37.82.bed")
-names(ens)<-c("chrom", "start", "end", "ensg", "symbol")
-anno <- merge(dat, ens, by.y="symbol", by.x="component_synonym")
-anno$interval <- paste0(anno$chrom, ":", anno$start - 500000, "-", anno$end + 500000)
-chembl_intervals <- GRanges(anno$interval)
-stopifnot(length(chembl_intervals)==length(anno$interval))
+### intersect mvQTLs at drug target loci ###
 
-# intersect vQTLs at drug target loci
+# select vQTLs at drug target loci
 results <- data.frame()
 for (i in 1:nrow(mvqtl)){
     mvqtl_interval <- GRanges(paste0(mvqtl$chr[i], ":", mvqtl$pos[i], "-", mvqtl$pos[i]))
@@ -64,12 +70,14 @@ for (i in 1:nrow(mvqtl)){
     }
 }
 
-# process eQTL
+### MR of drug target loci on biomarker conc ###
+
+# drug target eQTLs
 erels <- unique(results[,c("ensg", "trait")]) %>% filter(trait!="body_mass_index.21001.0.0")
 names(erels)[1] <- "target"
 erels$target <- paste0("eqtl-a-", erels$target)
 
-# process pQTL
+# drug target pQTLs
 ao <- available_outcomes()
 sun <- ao %>% filter(pmid == 29875488)
 lookup <- fread("data/001_SOMALOGIC_GWAS_protein_info.csv")
@@ -78,7 +86,7 @@ genes <- fread("data/soma_genes.txt", check.names=T)
 genes <- genes %>% filter(Chromosome.scaffold.name %in% c("X", seq(1,22)))
 sun <- merge(sun, genes, by.x="Target", by.y="Gene.name")
 prels <- unique(results[,c("ensg", "trait")]) %>% filter(trait!="body_mass_index.21001.0.0")
-prels <- merge(prels, sun, by.x="ensg", by.y="Gene.stable.ID") 
+prels <- merge(prels, sun, by.x="ensg", by.y="Gene.stable.ID")
 prels <- unique(prels[c("id", "trait.x")])
 names(prels)[1] <- "target"
 names(prels)[2] <- "trait"

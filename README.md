@@ -184,9 +184,11 @@ Rscript mr_analysis.R
 Rscript chembl.R
 ```
 
+## Test for vQTL effect on biomarker using pQTLs
 
+```sh
 
-
+```
 
 ## GxE interaction analysis
 
