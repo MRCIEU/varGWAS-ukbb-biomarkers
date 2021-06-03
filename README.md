@@ -180,7 +180,13 @@ Rscript mr_analysis.R
 
 ## Subset mvQTLs with drug target loci
 
-Optional - if coloc analysis does not detect drug targets
+```sh
+Rscript chembl.R
+```
+
+
+
+
 
 ## GxE interaction analysis
 
