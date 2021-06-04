@@ -186,6 +186,12 @@ Rscript chembl.R
 
 ## Test for vQTL effect on biomarker using pQTLs
 
+Extract Tier1 pQTLs from Zheng et al
+
+```cypher
+MATCH (e:Exposure)<-[r:INST_EXP { tier: 'Tier1', trans_cis:'cis' }]-(i:Instruments) RETURN r.rs_ID as rsid, r.pval_exp as pval, r.se_exp as se, r.nea as nea, r.ea as ea, r.eaf_exp as eaf, r.beta_exp as beta, r.samplesize_exp as n, r.expID as gene, r.author_exp as study, r.units_exp as units
+```
+
 ```sh
 
 ```

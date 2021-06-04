@@ -1,0 +1,1 @@
+sex, age, physical activity (PA), sedentary behavior (SB), and smoking, BMI

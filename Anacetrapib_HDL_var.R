@@ -23,8 +23,8 @@ library(metafor)
 
 # Taken from https://github.com/harrietlmills/DetectingDifferencesInVariance/blob/master/AnalyseIndividualTrials.R
 rdat_logVR <- escalc(measure = "VR", #m1=exp, m2=con
-                     m1i = placebo_mean, n1i = placebo_n, sd1i = placebo_sd, 
-                     m2i = treatment_mean, n2i = treatment_n, sd2i = treatment_sd)
+                     m1i = treatment_mean, n1i = treatment_n, sd1i = treatment_sd, 
+                     m2i = placebo_mean, n2i = placebo_n, sd2i = placebo_sd)
 
 # calculate confidence intervals, etc
 srdat_logVR <- summary(rdat_logVR, digits = 2)
