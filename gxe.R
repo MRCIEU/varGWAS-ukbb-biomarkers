@@ -15,6 +15,11 @@ set.seed(1234)
 # Age
 # Sex
 
+https://biobank.ndph.ox.ac.uk/showcase/field.cgi?id=22034
+https://biobank.ndph.ox.ac.uk/showcase/field.cgi?id=1558
+https://biobank.ndph.ox.ac.uk/showcase/field.cgi?id=100004
+https://biobank.ndph.ox.ac.uk/showcase/field.cgi?id=100008
+
 option_list = list(
   make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")
 );
