@@ -2,14 +2,12 @@ library('optparse')
 library('data.table')
 library('dplyr')
 library('broom')
+library('ieugwasr')
 source("funs.R")
 set.seed(1234)
 
 option_list = list(
-  make_option(c("-p", "--pheno_file"), type="character", default=NULL, help="UKBB pheno CSV", metavar="character"),
-  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
-  make_option(c("-s", "--snp_file"), type="character", default=NULL, help="SNP file", metavar="character"),
-  make_option(c("-o", "--out"), type="character", default=NULL, help="Output file", metavar="character")
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")
 );
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -17,10 +15,19 @@ opt = parse_args(opt_parser);
 message(paste0("trait ", opt$trait))
 
 # read in extracted phenotypes
-pheno <- fread(opt$p)
+pheno <- fread(paste0("data/", opt$trait, ".txt"))
 
-# read in snp list
-snps <- fread(opt$s)
+# read in vGWAS
+snps <- get_variants(opt$trait)
+
+# filter on P value
+vqtls <- snps %>% filter(phi_p < 5e-5) %>% select("rsid", "phi_p") %>% rename(pval = phi_p)
+
+# clump records
+vqtls <- ld_clump(vqtls)
+snps <- snps[snps$rsid %in% vqtls$rsid]
+
+# add key
 snps$key <- paste0("chr", snps$chr, "_", snps$pos, "_", snps$oa, "_", snps$ea)
 
 # load dosages
@@ -37,15 +44,15 @@ results <- data.frame()
 for (i in 1:length(vqtls)){
   for (j in 1:length(vqtls)){
 
-    # skip GxG on same chromosome within 1Mb
+    # skip GxG on same chromosome within 10Mb
     i_chr <- snps %>% filter(key == vqtls[i]) %>% pull("chr")
     i_pos <- snps %>% filter(key == vqtls[i]) %>% pull("pos")
     j_chr <- snps %>% filter(key == vqtls[j]) %>% pull("chr")
     j_pos <- snps %>% filter(key == vqtls[j]) %>% pull("pos")
 
     if (i_chr == j_chr){
-      if (abs(i_pos - j_pos) < 1000000){
-        message("Skipping test (<1Mb) for: ", vqtls[i], " ", vqtls[j])
+      if (abs(i_pos - j_pos) < 10000000){
+        message("Skipping test (<10Mb) for: ", vqtls[i], " ", vqtls[j])
         next
       }
     }
@@ -57,7 +64,7 @@ for (i in 1:length(vqtls)){
 
     # test GxG
     message("Testing GxG for: ", vqtls[i], " ", vqtls[j])
-    f <- as.formula(paste0(opt$t, " ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(vqtls[i], " * " ,vqtls[j], collapse=" + ")))
+    f <- as.formula(paste0(opt$trait, " ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(vqtls[i], " * " ,vqtls[j], collapse=" + ")))
     fit <- lm(f, pheno)
     t <- tidy(fit)
 
@@ -67,4 +74,4 @@ for (i in 1:length(vqtls)){
 }
 
 # save
-write.table(results, sep="\t", quote=F, row.names=F, file=opt$o)
+write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxg.txt"))

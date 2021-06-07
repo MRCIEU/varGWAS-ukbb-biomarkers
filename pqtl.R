@@ -45,9 +45,4 @@ dat$molregno <- NULL
 # filter mvQTLs at drug target loci
 drugs <- merge(top, dat, by.x="gene", by.y="component_synonym")
 
-# TODO compare RCT variance estimate with SNP estimate
-
-### PCSK9 effect on LDL-c ###
-# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4845239/
-# RCT - PCSK9 inhibitors lower LDL-c mean and variance (p=0.005; n=29)
-# MR - rs191448950:A at PCSK9 lowers LDL-c mean and variance (p=3.15 x 10-8)
+# only targets that are close to biomarker coding region detected

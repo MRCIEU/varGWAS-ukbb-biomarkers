@@ -178,3 +178,6 @@ if (nrow(bi) > 0){
     bi$rev_key <- paste0(bi$id.outcome, ".", bi$id.exposure)
     sig <- sig[!sig$key %in% bi$rev_key,]
 }
+
+# write to file
+write.table(sig, file="data/filter_mvqtl_chembl.txt", sep="\t", quote=F, row.names=F)

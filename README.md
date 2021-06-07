@@ -61,7 +61,7 @@ shuf | \
 head -n 10000 >> data/snps.txt
 
 # run vGWAS on subset of SNPs
-sbatch runR.sh Rscript bp.R -p data/ukb_bmi.txt -t body_mass_index.21001 -s data/snps.txt -o data/ukb_bmi.vgwas.r_subsample.txt
+sbatch runR.sh Rscript validate_app.R -p data/ukb_bmi.txt -t body_mass_index.21001 -s data/snps.txt -o data/ukb_bmi.vgwas.r_subsample.txt
 ```
 
 ## QC
@@ -82,6 +82,12 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
 done
 ```
 
+Combine results
+
+```sh
+grep Intercept data/*ldsc.log | sed 's/.ldsc.log:/\t/g' | sed 's/data\///g' | sed 's/Intercept: //g' | sed 's/ (/\t/g' | tr -d ')' > data/ldsc.txt
+```
+
 Plot QQ & Manhattan
 
 ```sh
@@ -89,7 +95,7 @@ Plot QQ & Manhattan
 sbatch runR.sh qc-fig.R
 ```
 
-Failed QC due to T1E inflation of variance test:
+Failed QC due to excessive T1E inflation of variance test:
 
 - alanine_aminotransferase.30620.0.0
 - alkaline_phosphatase.30610.0.0
@@ -118,32 +124,11 @@ Not vQTLs detected:
 
 - albumin.30600.0.0
 
-## GxG interaction analysis
-
-Test each vQTL for interaction with all other vQTLs to find GxG interaction effects
-
-```sh
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh gxg.R \
-    -p data/"$trait".txt \
-    -t "$trait" \
-    -s data/"$trait".clump.txt \
-    -o data/"$trait".gxg.txt
-done
-```
-
-Combine GxG analyses
-
-```sh
-echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg.txt
-grep -v term data/*.0.0.gxg.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg.txt:/\t/g' >> data/gxg.txt
-```
-
 ## Colocalization with eQTLs and pQTLs
 
 ```sh
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh coloc.R -t "$trait"
+    sbatch runR.sh run_coloc.R -t "$trait"
 done
 ```
 
@@ -154,14 +139,62 @@ echo -e "nsnps\tPP.H0.abf\tPP.H1.abf\tPP.H2.abf\tPP.H3.abf\tPP.H4.abf\tgene\treg
 grep -hv nsnps data/*.0.0.coloc.txt >> data/coloc.txt
 ```
 
-## MR of expression on biomarker concentration
+## Filter colocalization results to encoding gene cis region
+
+Select mvQTL that colocalize with gene / protein expression in blood that are in the cis region of gene coding sequence
+
+```sh
+Rscript filter_coloc_cis.R
+```
+
+| Biomarker                          | Target        |
+|------------------------------------|---------------|
+| c_reactive_protein.30710.0.0       | CRP           |
+| apolipoprotein_a.30630.0.0         | DDX28         |
+| triglycerides.30870.0.0            | DOCK7         |
+| apolipoprotein_a.30630.0.0         | DPEP3         |
+| apolipoprotein_a.30630.0.0         | DUS2          |
+| alanine_aminotransferase.30620.0.0 | HSD17B13      |
+| shbg.30830.0.0                     | MRPL45P2      |
+| vitamin_d.30890.0.0                | NADSYN1       |
+| apolipoprotein_a.30630.0.0         | NFATC3        |
+| hdl_cholesterol.30760.0.0          | NUP160        |
+| apolipoprotein_b.30640.0.0         | PSRC1         |
+| cholesterol.30690.0.0              | PSRC1         |
+| ldl_direct.30780.0.0               | PSRC1         |
+| hdl_cholesterol.30760.0.0          | PTPRJ         |
+| vitamin_d.30890.0.0                | RP11-660L16.2 |
+| hdl_cholesterol.30760.0.0          | SLC12A3       |
+| apolipoprotein_b.30640.0.0         | SLC12A3       |
+| cholesterol.30690.0.0              | TMEM258       |
+| shbg.30830.0.0                     | ZNF554        |
+
+## Filter mvQTLs at drug target loci with MR evidence for uni-directional target effect on biomarker conc
+
+Select mvQTLs at drug target loci and perform bidirectional MR & Stieger filtering to retain targets with evidence of a mean and variance effect on biomarker concentration
+
+```sh
+Rscript filter_mvqtl_chembl.R
+```
+
+| Biomarker                 | Target|
+|---------------------------|-------|
+| hdl_cholesterol.30760.0.0 | NR1H3 |
+| triglycerides.30870.0.0   | KIF11 |
+| vitamin_d.30890.0.0       | PDE3B |
+
+- NR1H3 agonists increase LXR-alpha activity which reduces cholesterol. rs60515486:A increases expression and reduces mean and variance of cholesterol. Not other mvQTLs detected. No mvQTLs detected at NR1H2.
+- Increased KIF11 is associated with lower non-HDL and increased HDL. Existing drugs inhibit KIF11. Not progressed further.
+- Increased PDE3B is associated with reduced adiposity and increased BP and reduced Vit D. Lead SNP in high LD with CYP2R1 synonymous variant which is probably the casual gene. Not progressed furhter due to lack of data.
+
+## MR of gene & protein expression on biomarker concentration where coloc evidence exists
 
 Estimate casual effect of gene product on biomaker concentration & bidirectional effect
 Estimate reverse causation effect using Stiger filtering
 
 ```sh
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh mr.R -t "$trait" -o $(echo "$trait" | cut -d. -f2 | sed 's/^/ukb-d-/g' | sed 's/$/_irnt/g')
+    sbatch runR.sh run_coloc_mr.R -t "$trait" -o $(echo "$trait" | cut -d. -f2 | sed 's/^/ukb-d-/g' | sed 's/$/_irnt/g')
 done
 ```
 
@@ -175,13 +208,7 @@ cat data/*.0.0.mr.txt | grep -v ^id >> data/mr.txt
 Report only unidirectional effects of gene product on biomarker conc where coloc evidence is in cis-region of coding gene
 
 ```sh
-Rscript mr_analysis.R
-```
-
-## Subset mvQTLs with drug target loci
-
-```sh
-Rscript chembl.R
+Rscript filter_coloc_mr.R
 ```
 
 ## Test for vQTL effect on biomarker using pQTLs
@@ -193,9 +220,40 @@ MATCH (e:Exposure)<-[r:INST_EXP { tier: 'Tier1', trans_cis:'cis' }]-(i:Instrumen
 ```
 
 ```sh
+Rscript pqlt.R
+```
 
+- This analysis identified effects of ATP1B2 & PLG on variance of biomarker conc. but these genes are close to coding region of biomakers so do not represent a casual effect of the target but LD
+
+## Select mvQTLs at LDL-c drug target loci
+
+Select instruments for LDL-c at drug target loci and test for variance effect on LDL-c & compare with RCT evidence
+
+```sh
+Rscript lipids_drug_targets.R
+```
+
+## GxG interaction analysis
+
+Test each vQTL for interaction with all other vQTLs to find GxG interaction effects
+
+```sh
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
+    sbatch runR.sh gxg.R -t "$trait"
+done
+```
+
+Combine GxG analyses
+
+```sh
+echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg.txt
+grep -v term data/*.0.0.gxg.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg.txt:/\t/g' >> data/gxg.txt
 ```
 
 ## GxE interaction analysis
 
-TODO
+```sh
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
+    sbatch runR.sh gxe.R -t "$trait"
+done
+```

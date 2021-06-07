@@ -3,6 +3,8 @@ library('dplyr')
 source("funs.R")
 set.seed(1234)
 
+# Smoking
+
 # load phenotypes
 f <- "/tmp/tmp.Fat2JpDqCl/data.33352.csv"
 pheno <- fread(f, select=c(

@@ -104,6 +104,13 @@ for (i in 1:length(biomarkers)){
     var_qq[[i]] <- qq_plot(data, "phi_p")
 }
 
+# load LDSC results
+# TODO add to plot
+d <- fread("data/ldsc.txt")
+names(d) <- c("trait", "intercept", "se")
+d$lci <- d$intercept - (1.96 * d$se)
+d$uci <- d$intercept + (1.96 * d$se)
+
 png("var_qq.png", width = 480 * 2.5, height = 480 * 3)
 p <- ggarrange(plotlist=var_qq, labels = biomarkers_abr, ncol = 5, nrow = 6, align = "hv", font.label=list(size = 18))
 annotate_figure(p, left = grid::textGrob("Observed -log10(P)", rot = 90, vjust = 1, gp = grid::gpar(cex = 1.5)),
