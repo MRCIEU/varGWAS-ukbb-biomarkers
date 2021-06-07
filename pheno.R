@@ -3,10 +3,8 @@ library('dplyr')
 source("funs.R")
 set.seed(1234)
 
-# Smoking
-
 # load phenotypes
-f <- "/tmp/tmp.Fat2JpDqCl/data.33352.csv"
+f <- "/tmp/tmp.2HvlHW4hm2/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
         "31-0.0",
@@ -46,7 +44,11 @@ pheno <- fread(f, select=c(
         "30120-0.0",
         "3581-0.0",
         "2814-0.0",
-        "20116-0.0"
+        "20116-0.0",
+        "22034-0.0",
+        "1558-0.0",
+        "100004-0.0",
+        "100008-0.0"
     ),
     col.names=c(
         "eid", 
@@ -87,7 +89,11 @@ pheno <- fread(f, select=c(
         "lymphocyte_count.30120.0.0",
         "age_at_menopause.3581.0.0",
         "ever_used_hormone_replacement_therapy.2814.0.0",
-        "smoking_status.20116.0.0"
+        "smoking_status.20116.0.0",
+        "summed_minutes_activity.22034.0.0",
+        "alcohol_intake_frequency.1558.0.0",
+        "estimated_fat_yesterday.100004.0.0",
+        "estimated_total_sugars_yesterday.100008.0.0"
     )
 )
 unlink(f)
@@ -99,16 +105,7 @@ pheno <- pheno %>% mutate_at(c('age_at_menopause.3581.0.0'), na_if, -3)
 pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0'), na_if, -1)
 pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0'), na_if, -3)
 pheno <- pheno %>% mutate_at(c('smoking_status.20116.0.0'), na_if, -3)
-
-# log skewed traits
-pheno$alanine_aminotransferase.30620.0.0_log <- log(pheno$alanine_aminotransferase.30620.0.0)
-pheno$aspartate_aminotransferase.30650.0.0_log <- log(pheno$aspartate_aminotransferase.30650.0.0)
-pheno$alkaline_phosphatase.30610.0.0_log <- log(pheno$alkaline_phosphatase.30610.0.0)
-pheno$c_reactive_protein.30710.0.0_log <- log(pheno$c_reactive_protein.30710.0.0)
-pheno$creatinine.30700.0.0_log <- log(pheno$creatinine.30700.0.0)
-pheno$direct_bilirubin.30660.0.0_log <- log(pheno$direct_bilirubin.30660.0.0)
-pheno$gamma_glutamyltransferase.30730.0.0_log <- log(pheno$gamma_glutamyltransferase.30730.0.0)
-pheno$total_bilirubin.30840.0.0_log <- log(pheno$total_bilirubin.30840.0.0)
+pheno <- pheno %>% mutate_at(c('alcohol_intake_frequency.1558.0.0'), na_if, -3)
 
 # save data
 save.image(file = "data/pheno.RData")
