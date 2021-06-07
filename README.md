@@ -124,7 +124,7 @@ Not vQTLs detected:
 
 - albumin.30600.0.0
 
-## Colocalization with eQTLs and pQTLs
+## Perform colocalization with eQTLs and pQTLs
 
 ```sh
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
@@ -169,6 +169,8 @@ Rscript filter_coloc_cis.R
 | cholesterol.30690.0.0              | TMEM258       |
 | shbg.30830.0.0                     | ZNF554        |
 
+- No interaction effects reported for these genes except for HSD17B13
+
 ## Filter mvQTLs at drug target loci with MR evidence for uni-directional target effect on biomarker conc
 
 Select mvQTLs at drug target loci and perform bidirectional MR & Stieger filtering to retain targets with evidence of a mean and variance effect on biomarker concentration
@@ -187,7 +189,7 @@ Rscript filter_mvqtl_chembl.R
 - Increased KIF11 is associated with lower non-HDL and increased HDL. Existing drugs inhibit KIF11. Not progressed further.
 - Increased PDE3B is associated with reduced adiposity and increased BP and reduced Vit D. Lead SNP in high LD with CYP2R1 synonymous variant which is probably the casual gene. Not progressed furhter due to lack of data.
 
-## MR of gene & protein expression on biomarker concentration where coloc evidence exists
+## All targets where coloc evidence exists & MR evidence for effect of gene / protein expression on biomarker concentration
 
 Estimate casual effect of gene product on biomaker concentration & bidirectional effect
 Estimate reverse causation effect using Stiger filtering
@@ -210,6 +212,13 @@ Report only unidirectional effects of gene product on biomarker conc where coloc
 ```sh
 Rscript filter_coloc_mr.R
 ```
+
+Results
+
+Previously reported targets
+- APOA5
+- APOE
+- HSD17B13
 
 ## Test for vQTL effect on biomarker using pQTLs
 
