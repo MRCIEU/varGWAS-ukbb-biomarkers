@@ -27,6 +27,10 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
 done
 ```
 
+The following have low sample size ~ 50k
+- oestradiol.30800.0.0
+- rheumatoid_factor.30820
+
 ## Histogram && QQ plot of trait
 
 ```sh
@@ -61,7 +65,11 @@ shuf | \
 head -n 10000 >> data/snps.txt
 
 # run vGWAS on subset of SNPs
-sbatch runR.sh Rscript validate_app.R -p data/ukb_bmi.txt -t body_mass_index.21001 -s data/snps.txt -o data/ukb_bmi.vgwas.r_subsample.txt
+sbatch runR.sh validate_app.R \
+-p data/alkaline_phosphatase.30610.0.0.txt \
+-t alkaline_phosphatase.30610.0.0 \
+-s data/snps.txt \
+-o data/alkaline_phosphatase.30610.0.0.r.subsample.txt
 ```
 
 ## QC
@@ -265,4 +273,11 @@ grep -v term data/*.0.0.gxg.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg.t
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh gxe.R -t "$trait"
 done
+```
+
+Combine GxE analyses
+
+```sh
+echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe.txt
+grep -v term data/*.0.0.gxe.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe.txt:/\t/g' >> data/gxe.txt
 ```
