@@ -7,10 +7,12 @@ library("viridis")
 set.seed(123)
 
 #read in gxg results
-d <- fread("~/Desktop/gxg.top.csv")
+d <- fread("data/gxg.txt")
 d$lci <- d$estimate - (d$std.error * 1.96)
 d$uci <- d$estimate + (d$std.error * 1.96)
-d$x <- paste0(d$Gene1, " x ", d$Gene2)
+
+# drop oestradiol.30800.0.0 which excess t1e
+d <- d %>% filter(trait!="oestradiol.30800.0.0")
 
 p <- ggplot(d, aes(x=x, y=estimate, ymin=lci, ymax=uci, group=trait, color=trait)) +
     geom_point(position=position_dodge(width=0.75)) +
