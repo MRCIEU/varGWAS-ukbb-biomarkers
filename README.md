@@ -65,15 +65,18 @@ shuf | \
 head -n 10000 >> data/alkaline_phosphatase.30610.0.0.10k_snps.txt
 
 # run vGWAS on subset of SNPs
-sbatch runR.sh validate_app.R \
+sbatch runR.sh \
+validate_app.R \
 -t alkaline_phosphatase.30610.0.0 \
 -m BP
 
-sbatch runR.sh validate_app.R \
+sbatch runR.sh \
+validate_app.R \
 -t alkaline_phosphatase.30610.0.0 \
 -m JLSSC
 
-sbatch runR.sh validate_app.R \
+sbatch runR.sh \
+validate_app.R \
 -t alkaline_phosphatase.30610.0.0 \
 -m MOM
 ```
@@ -124,7 +127,7 @@ Failed QC due to excessive T1E inflation of variance test:
 - total_bilirubin.30840.0.0
 - urea.30670.0.0
 
-## Clump vQTL
+## Clump mvQTL
 
 Clump tophits & filter out vQTLs without mean effect
 
