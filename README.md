@@ -55,21 +55,19 @@ Run R implementation of B-P
 ```sh
 # randomly select 10000 SNPs for analysis
 module load apps/bgen/1.1.6
-echo -e "chromosome\tposition\tfirst_allele\talternative_alleles" > snps.txt
+echo -e "chromosome\tposition\tfirst_allele\talternative_alleles" > data/alkaline_phosphatase.30610.0.0.10k_snps.txt
 bgenix \
 -g /mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/dosage_bgen/data.chr22.bgen \
 -incl-range 22:0- \
 -list | \
 awk 'NR > 2 {print $3"\t"$4"\t"$6"\t"$7}' | \
 shuf | \
-head -n 10000 >> data/snps.txt
+head -n 10000 >> data/alkaline_phosphatase.30610.0.0.10k_snps.txt
 
 # run vGWAS on subset of SNPs
 sbatch runR.sh validate_app.R \
--p data/alkaline_phosphatase.30610.0.0.txt \
 -t alkaline_phosphatase.30610.0.0 \
--s data/snps.txt \
--o data/alkaline_phosphatase.30610.0.0.r.subsample.txt
+-m BP
 ```
 
 ## QC
