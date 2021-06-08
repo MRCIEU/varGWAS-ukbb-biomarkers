@@ -68,6 +68,14 @@ head -n 10000 >> data/alkaline_phosphatase.30610.0.0.10k_snps.txt
 sbatch runR.sh validate_app.R \
 -t alkaline_phosphatase.30610.0.0 \
 -m BP
+
+sbatch runR.sh validate_app.R \
+-t alkaline_phosphatase.30610.0.0 \
+-m JLSSC
+
+sbatch runR.sh validate_app.R \
+-t alkaline_phosphatase.30610.0.0 \
+-m MOM
 ```
 
 ## QC
