@@ -7,6 +7,7 @@ library('ieugwasr')
 library("plm")
 library('sandwich')
 library('lmtest')
+library("stringr")
 source("funs.R")
 set.seed(1234)
 
@@ -68,27 +69,25 @@ dat$age_at_recruitment.21022.0.0 <- dat$age_at_recruitment.21022.0.0 / sd(dat$ag
 pheno <- dat
 pheno$famid <- as.factor(pheno$famid)
 
-# read in vGWAS
-snps <- get_variants(opt$trait)
+# read in GxG associations
+snps <- fread(paste0("data/", opt$trait, ".gxg.txt"))
 
 # filter on P value
-vqtls <- snps %>% filter(phi_p < 5e-5) %>% select("rsid", "phi_p") %>% rename(pval = phi_p)
+snps <- snps %>% filter(p.value < 0.05 / (1e+6 + 250000) / 30)
+snps <- snps[1]
 
-# clump records
-vqtls <- ld_clump(vqtls)
-snps <- snps[snps$rsid %in% vqtls$rsid]
-
-# add key
-snps$key <- paste0("chr", snps$chr, "_", snps$pos, "_", snps$oa, "_", snps$ea)
+# split term
+snps <- cbind(snps, str_split(snps$term, ":", simplify=T), stringsAsFactors=F)
+usnps <- unique(c(snps$V1,snps$V2), stringsAsFactors=F)
+usnps <- as.data.frame(str_split(usnps, "_", simplify=T), stringsAsFactors=F)
+usnps$V1 <- gsub("chr", "", usnps$V1)
+usnps$V2 <- as.numeric(usnps$V2)
 
 # load dosages
-for (i in 1:nrow(snps)){
-    dosage <- extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$oa[i], snps$ea[i])
+for (i in 1:nrow(usnps)){
+    dosage <- extract_variant_from_bgen(usnps$V1[i], usnps$V2[i], usnps$V3[i], usnps$V4[i])
     pheno <- merge(pheno, dosage, "appieu")
 }
-
-# select vQTLs
-vqtls <- grep("^chr", names(pheno), value=T)
 
 # drop missing values
 pheno <- pheno[complete.cases(pheno), ]
@@ -100,34 +99,14 @@ pheno <- pheno %>%
 
 # test for interaction between each snp
 results <- data.frame()
-for (i in 1:length(vqtls)){
-  for (j in 1:length(vqtls)){
+for (i in 1:length(snps$term)){
+  # test GxG
+  pair <- str_split(snps$term[i], ":", simplify=T)
+  message("Testing GxG for: ", pair[1], " ", pair[2])
+  fit <- related_plm(pheno, opt$trait, pair[1], pair[2])
 
-    # skip GxG on same chromosome within 10Mb
-    i_chr <- snps %>% filter(key == vqtls[i]) %>% pull("chr")
-    i_pos <- snps %>% filter(key == vqtls[i]) %>% pull("pos")
-    j_chr <- snps %>% filter(key == vqtls[j]) %>% pull("chr")
-    j_pos <- snps %>% filter(key == vqtls[j]) %>% pull("pos")
-
-    if (i_chr == j_chr){
-      if (abs(i_pos - j_pos) < 10000000){
-        message("Skipping test (<10Mb) for: ", vqtls[i], " ", vqtls[j])
-        next
-      }
-    }
-
-    if (paste0(vqtls[j], ":" ,vqtls[i]) %in% results$term){
-        message("Skipping test (already done) for: ", vqtls[i], " ", vqtls[j])
-        next
-    }
-
-    # test GxG
-    message("Testing GxG for: ", vqtls[i], " ", vqtls[j])
-    fit <- related_plm(pheno, opt$trait, vqtls[i], vqtls[j])
-
-    # store results
-    results <- rbind(results, fit)
-  }
+  # store results
+  results <- rbind(results, fit)
 }
 
 # save

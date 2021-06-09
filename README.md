@@ -42,6 +42,7 @@ done
 ## vGWAS
 
 TODO - if re-running add 20 genetic PCs
+TODO - ? add snp x covariate in model
 
 ```sh
 # more efficient to run the larger chromosomes first
