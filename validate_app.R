@@ -25,7 +25,7 @@ mod <- function(pheno, out, chr, pos, oa, ea, model) {
       if (model == "BP"){
         t <- vartest(pheno[[out]], pheno[[s]], covar=pheno[,c("age_at_recruitment.21022.0.0", "sex.31.0.0", paste0("PC", seq(1, 10)))], covar.var=T, type=1, x.sq=T)
         return(data.frame(p=t$test$P, snp=s, model))
-      } else if (model == "JLSC"){
+      } else if (model == "JLSSC"){
         t <- jlssc(pheno[[out]], pheno[[s]], covar=pheno[,c("age_at_recruitment.21022.0.0", "sex.31.0.0", paste0("PC", seq(1, 10)))], type=1, x.sq=T)
         return(data.frame(p=t$P, snp=s, model))
       } else if (model == "MOM"){
