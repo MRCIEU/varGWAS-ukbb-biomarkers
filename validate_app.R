@@ -46,7 +46,7 @@ message(paste0("vgwas of ", opt$t))
 pheno <- fread(paste0("data/", opt$t, ".txt"))
 
 # read in snp list
-snps <- fread(paste0("data/", opt$t, ".10k_snps.txt"))
+snps <- fread(paste0("data/", opt$t, ".30k_snps.txt"))
 
 # GWAS
 results <- apply(snps, 1, function(snp) {
@@ -55,4 +55,4 @@ results <- apply(snps, 1, function(snp) {
 results <- rbindlist(results[!is.na(results)])
 
 # save assoc
-write.table(results, file=paste0("data/", opt$t, ".10k_snps.", opt$m,".txt"), row.names=F,quote=F, sep="\t")
+write.table(results, file=paste0("data/", opt$t, ".30k_snps.", opt$m,".txt"), row.names=F,quote=F, sep="\t")
