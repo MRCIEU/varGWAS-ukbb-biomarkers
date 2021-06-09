@@ -74,7 +74,6 @@ snps <- fread(paste0("data/", opt$trait, ".gxg.txt"))
 
 # filter on P value
 snps <- snps %>% filter(p.value < 0.05 / (1e+6 + 250000) / 30)
-snps <- snps[1]
 
 # split term
 snps <- cbind(snps, str_split(snps$term, ":", simplify=T), stringsAsFactors=F)
