@@ -123,13 +123,13 @@ get_variants <- function(trait){
     # load vGWAS & SNP stats; QC loci
     data <- data.frame()
 
-    for (chr in seq(1,22)){
+    for (chr in seq(22,22)){
         message(paste0("loading chr", chr))
         if (chr < 10){
-            gwas <- fread(paste0("data/", trait, ".vgwas.chr0", chr, ".txt"))
+            gwas <- fread(paste0("data/", trait, ".sex1.vgwas.chr0", chr, ".txt"))
             snp_stats <- fread(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/snp-stats/data.chr0", chr, ".snp-stats"), skip=15)
         } else {
-            gwas <- fread(paste0("data/", trait, ".vgwas.chr", chr, ".txt"))
+            gwas <- fread(paste0("data/", trait, ".sex1.vgwas.chr", chr, ".txt"))
             snp_stats <- fread(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/snp-stats/data.chr", chr, ".snp-stats"), skip=15)
         }
 
@@ -155,8 +155,8 @@ get_variants <- function(trait){
         # exclude low imputation quality
         snp_stats <- snp_stats[which(snp_stats$info > 0.3)]
 
-        # drop HLA region
-        snp_stats <- snp_stats[!(snp_stats$chromosome == 6 & snp_stats$position >= 28477797 & snp_stats$position <= 33448354),]
+        # drop HLA region with 10Mb pad
+        snp_stats <- snp_stats[!(snp_stats$chromosome == 6 & snp_stats$position >= (28477797-5000000) & snp_stats$position <= 33448354+5000000),]
 
         # drop vGWAS failed rows
         gwas <- gwas %>% filter(phi_p != -1)

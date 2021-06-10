@@ -82,6 +82,11 @@ sbatch runR.sh \
 validate_app.R \
 -t alkaline_phosphatase.30610.0.0 \
 -m MOM
+
+sbatch runR.sh \
+validate_app.R \
+-t alkaline_phosphatase.30610.0.0 \
+-m GxS
 ```
 
 ## QC

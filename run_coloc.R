@@ -35,15 +35,18 @@ locuszoom <- function(gchr, gpos, ga1, ga2, gpval, chr, start, end, trait){
 }
 
 option_list = list(
-  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
+  make_option(c("-o", "--out"), type="character", default=NULL, help="Output filename", metavar="character"),
+  make_option(c("-s", "--snps"), type="character", default=NULL, help="File snp list", metavar="character"),
+  make_option(c("-l", "--lz"), action="store_true", default=FALSE, help="Run locuszoom")
 );
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 message(paste0("working on ", opt$trait))
 
-# load clumped mvQTLs for biomarker concentration
-mvqtl <- fread(paste0("data/", opt$trait, ".clump.txt"))
+# load snps
+mvqtl <- fread(opt$snps)
 stopifnot(nrow(mvqtl)>0)
 
 # load all vGWAS for trait
@@ -131,36 +134,38 @@ for (i in 1:nrow(mvqtl)){
 }
 
 # write out results
-write.table(file=paste0("data/", opt$trait, ".coloc.txt"), results, sep="\t", quote=F, row.names=F)
+write.table(file=opt$o, results, sep="\t", quote=F, row.names=F)
 
-# select loci with shared casual variant
-h4 <- results[results$PP.H4.abf > .8,]
-df <- as.data.frame(str_split(h4$region, ":", 2, simplify=T), stringsAsFactors=F)
-names(df) <- c("chr", "interval")
-h4 <- cbind(h4, df)
+if (opt$l){
+  # select loci with shared casual variant
+  h4 <- results[results$PP.H4.abf > .8,]
+  df <- as.data.frame(str_split(h4$region, ":", 2, simplify=T), stringsAsFactors=F)
+  names(df) <- c("chr", "interval")
+  h4 <- cbind(h4, df)
 
-# collapse intervals for each gene and plot region
-for (gene in unique(h4$gene)){
-  intervals <- h4[h4$gene == gene,]$interval
+  # collapse intervals for each gene and plot region
+  for (gene in unique(h4$gene)){
+    intervals <- h4[h4$gene == gene,]$interval
 
-  # define overlapping interval
-  intervals <- as.data.frame(
-    GenomicRanges::reduce(
-      GRanges(
-        h4[h4$gene == gene,]$chr, 
-        IRanges(
-          h4[h4$gene == gene,]$interval
+    # define overlapping interval
+    intervals <- as.data.frame(
+      GenomicRanges::reduce(
+        GRanges(
+          h4[h4$gene == gene,]$chr, 
+          IRanges(
+            h4[h4$gene == gene,]$interval
+          )
         )
       )
     )
-  )
 
-  # plot vGWAS
-  locuszoom(vgwas$chr, vgwas$pos, vgwas$oa, vgwas$ea, vgwas$phi_p, intervals$seqnames, intervals$start, intervals$end, opt$trait)
+    # plot vGWAS
+    locuszoom(vgwas$chr, vgwas$pos, vgwas$oa, vgwas$ea, vgwas$phi_p, intervals$seqnames, intervals$start, intervals$end, opt$trait)
 
-  # extract eQTL
-  eqtl <- associations(paste0(intervals$seqnames, ":", intervals$start, "-", intervals$end), gene, proxies=0)
+    # extract eQTL
+    eqtl <- associations(paste0(intervals$seqnames, ":", intervals$start, "-", intervals$end), gene, proxies=0)
 
-  # plot eQTL
-  locuszoom(eqtl$chr, eqtl$position, eqtl$ea, eqtl$nea, eqtl$p, intervals$seqnames, intervals$start, intervals$end, gene)
+    # plot eQTL
+    locuszoom(eqtl$chr, eqtl$position, eqtl$ea, eqtl$nea, eqtl$p, intervals$seqnames, intervals$start, intervals$end, gene)
+  }
 }
