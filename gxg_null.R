@@ -26,7 +26,7 @@ vqtls$pval <- 0
 
 # clump records
 vqtls <- ld_clump(vqtls)
-vqtls <- head(vqtls, n=250)
+vqtls <- head(vqtls, n=500)
 snps <- snps[snps$rsid %in% vqtls$rsid]
 
 # add key
