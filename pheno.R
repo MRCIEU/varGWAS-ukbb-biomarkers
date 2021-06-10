@@ -4,6 +4,9 @@ source("funs.R")
 set.seed(1234)
 
 # load phenotypes
+disease_id <- paste0("41270-0.", seq(0, 222))
+disease_name <- paste0("diagnoses_icd10_41270.0.", seq(0, 33))
+
 f <- "/tmp/tmp.2HvlHW4hm2/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
@@ -48,7 +51,8 @@ pheno <- fread(f, select=c(
         "22034-0.0",
         "1558-0.0",
         "100004-0.0",
-        "100008-0.0"
+        "100008-0.0",
+        disease_id
     ),
     col.names=c(
         "eid", 
@@ -93,7 +97,8 @@ pheno <- fread(f, select=c(
         "summed_minutes_activity.22034.0.0",
         "alcohol_intake_frequency.1558.0.0",
         "estimated_fat_yesterday.100004.0.0",
-        "estimated_total_sugars_yesterday.100008.0.0"
+        "estimated_total_sugars_yesterday.100008.0.0",
+        disease_name
     )
 )
 unlink(f)
@@ -106,6 +111,14 @@ pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0')
 pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0'), na_if, -3)
 pheno <- pheno %>% mutate_at(c('smoking_status.20116.0.0'), na_if, -3)
 pheno <- pheno %>% mutate_at(c('alcohol_intake_frequency.1558.0.0'), na_if, -3)
+
+# derive binary disease
+pheno$liver_disease <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "K7"), na.rm=T)>0})
+pheno$CKD <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "N18"), na.rm=T)>0})
+pheno$gout <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "M10"), na.rm=T)>0})
+pheno$T2DM <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "E11"), na.rm=T)>0})
+pheno$HF <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "I50"), na.rm=T)>0})
+pheno$MI <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "I21"), na.rm=T)>0})
 
 # save data
 save.image(file = "data/pheno.RData")
