@@ -123,13 +123,13 @@ get_variants <- function(trait){
     # load vGWAS & SNP stats; QC loci
     data <- data.frame()
 
-    for (chr in seq(22,22)){
+    for (chr in seq(1,22)){
         message(paste0("loading chr", chr))
         if (chr < 10){
-            gwas <- fread(paste0("data/", trait, ".sex1.vgwas.chr0", chr, ".txt"))
+            gwas <- fread(paste0("data/", trait, ".vgwas.chr0", chr, ".txt"))
             snp_stats <- fread(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/snp-stats/data.chr0", chr, ".snp-stats"), skip=15)
         } else {
-            gwas <- fread(paste0("data/", trait, ".sex1.vgwas.chr", chr, ".txt"))
+            gwas <- fread(paste0("data/", trait, ".vgwas.chr", chr, ".txt"))
             snp_stats <- fread(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/snp-stats/data.chr", chr, ".snp-stats"), skip=15)
         }
 
