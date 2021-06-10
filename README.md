@@ -285,6 +285,35 @@ echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg.txt
 grep -v term data/*.0.0.gxg.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg.txt:/\t/g' >> data/gxg.txt
 ```
 
+Print out top GxG hits as independent variants for coloc/nearest gene analysis
+
+```sh
+Rscript gxg_usnps.R -t "aspartate_aminotransferase.30650.0.0"
+```
+
+Perform coloc
+
+```sh
+Rscript run_coloc.R \
+-t "aspartate_aminotransferase.30650.0.0" \
+-o "data/aspartate_aminotransferase.30650.0.0.gxg-coloc.txt" \
+-snps "data/aspartate_aminotransferase.30650.0.0.gxg-usnps.txt" \
+-lz FALSE
+```
+
+Find closest gene
+
+bedtools closest 
+
+```sh
+module load apps/bedtools/2.3.0
+bedtools \
+closest \
+-a <(awk 'NR>1 {print $2"\t"$3-1"\t"$3}' data/aspartate_aminotransferase.30650.0.0.gxg-usnps.txt | sort -n -k1,1 -k2,2) \
+-b data/Homo_sapiens.GRCh37.82.sorted.bed \
+> data/aspartate_aminotransferase.30650.0.0.gxg-usnps-closest.txt
+```
+
 ## GxE interaction analysis
 
 ```sh
