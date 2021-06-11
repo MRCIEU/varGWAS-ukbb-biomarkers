@@ -80,11 +80,11 @@ forestplot(
     results$term,
     boxsize = 0.05,
     xticks = c(-.5, -.25, 0, .25, .5),
-    legend = c("MR", "Within-family MR"),
-    mean = results[,c("estimate", "beta")],
+    legend = c("Main", "Senstivity", "Within-family"),
+    mean = results[,c("estimate.main", "estimate.sens", "beta")],
     lower = results[,c("estimate.main.lci","estimate.sens.lci", "beta.lci")],
     upper = results[,c("estimate.main.uci", "estimate.sens.uci", "beta.uci")],
-    col=fpColors(lines=c("#3182bd", "#31a354"), box=c("#3182bd","#31a354")),
+    col=fpColors(lines=c("#3182bd", "#a28bf7", "#31a354"), box=c("#3182bd","#a28bf7", "#31a354")),
     xlab=paste0("GxG effect on ",opt$trait," (SD [95% CI])"),
     txt_gp = fpTxtGp(ticks=gpar(cex=1), xlab=gpar(cex=1))
 )

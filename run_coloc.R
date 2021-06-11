@@ -43,7 +43,7 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-#opt <- data.frame(trait="aspartate_aminotransferase.30650.0.0", out="data/aspartate_aminotransferase.30650.0.0.gxg-coloc.txt", snps="data/aspartate_aminotransferase.30650> .0.gxg-usnps.txt", lz=FALSE, stringsAsFactors=F)
+#opt <- data.frame(trait="aspartate_aminotransferase.30650.0.0", out="data/aspartate_aminotransferase.30650.0.0.gxg-coloc.txt", snps="data/aspartate_aminotransferase.30650.0.0.gxg-usnps.txt", lz=FALSE, stringsAsFactors=F)
 
 message(paste0("working on ", opt$trait))
 
