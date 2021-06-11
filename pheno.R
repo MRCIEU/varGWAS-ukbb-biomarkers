@@ -7,7 +7,7 @@ set.seed(1234)
 disease_id <- paste0("41270-0.", seq(0, 212))
 disease_name <- paste0("diagnoses_icd10_41270.0.", seq(0, 212))
 
-f <- "/tmp/tmp.39fz03u41s/data.33352.csv"
+f <- "/tmp/tmp.Ut2KSPMsMh/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
         "31-0.0",
@@ -52,6 +52,10 @@ pheno <- fread(f, select=c(
         "1558-0.0",
         "100004-0.0",
         "100008-0.0",
+        "6150-0.0",
+        "6150-0.1",
+        "6150-0.2",
+        "6150-0.3",
         disease_id
     ),
     col.names=c(
@@ -98,6 +102,10 @@ pheno <- fread(f, select=c(
         "alcohol_intake_frequency.1558.0.0",
         "estimated_fat_yesterday.100004.0.0",
         "estimated_total_sugars_yesterday.100008.0.0",
+        "vascular_heart_problems_diagnosed_by_doctor.6150.0.0",
+        "vascular_heart_problems_diagnosed_by_doctor.6150.0.1",
+        "vascular_heart_problems_diagnosed_by_doctor.6150.0.2",
+        "vascular_heart_problems_diagnosed_by_doctor.6150.0.3",
         disease_name
     )
 )
@@ -111,9 +119,30 @@ pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0')
 pheno <- pheno %>% mutate_at(c('ever_used_hormone_replacement_therapy.2814.0.0'), na_if, -3)
 pheno <- pheno %>% mutate_at(c('smoking_status.20116.0.0'), na_if, -3)
 pheno <- pheno %>% mutate_at(c('alcohol_intake_frequency.1558.0.0'), na_if, -3)
+pheno <- pheno %>% mutate_at(c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0'), na_if, -3)
+pheno <- pheno %>% mutate_at(c('vascular_heart_problems_diagnosed_by_doctor.6150.0.1'), na_if, -3)
+pheno <- pheno %>% mutate_at(c('vascular_heart_problems_diagnosed_by_doctor.6150.0.2'), na_if, -3)
+pheno <- pheno %>% mutate_at(c('vascular_heart_problems_diagnosed_by_doctor.6150.0.3'), na_if, -3)
+
+# 6150
+pheno$heart_attack.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==1, na.rm=T)>0})
+
+pheno$angina.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==2, na.rm=T)>0})
+
+pheno$stroke.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==3, na.rm=T)>0})
+
+pheno$hypertension.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==4, na.rm=T)>0})
+
+pheno[is.na(pheno$vascular_heart_problems_diagnosed_by_doctor.6150.0.0)]$heart_attack.6150 <- NA
+pheno[is.na(pheno$vascular_heart_problems_diagnosed_by_doctor.6150.0.0)]$angina.6150 <- NA
+pheno[is.na(pheno$vascular_heart_problems_diagnosed_by_doctor.6150.0.0)]$stroke.6150 <- NA
+pheno[is.na(pheno$vascular_heart_problems_diagnosed_by_doctor.6150.0.0)]$hypertension.6150 <- NA
 
 # derive binary disease
 pheno$liver_disease <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "K7"), na.rm=T)>0})
+pheno$alcoholic_liver_disease <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "K70"), na.rm=T)>0})
+pheno$fibrosis_liver_disease <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "K74"), na.rm=T)>0})
+pheno$fatty_liver_disease <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "K76.0"), na.rm=T)>0})
 pheno$CKD <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "N18"), na.rm=T)>0})
 pheno$gout <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "M10"), na.rm=T)>0})
 pheno$T2DM <- apply(pheno[,disease_name,with=F], 1, function(x) {sum(startsWith(x, "E11"), na.rm=T)>0})
