@@ -92,3 +92,5 @@ for (i in 1:nrow(usnps)){
 
   }
 }
+
+write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxg-coloc-gtex.txt"))
