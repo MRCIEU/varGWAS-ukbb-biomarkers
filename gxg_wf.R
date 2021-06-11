@@ -8,8 +8,15 @@ library("plm")
 library('sandwich')
 library('lmtest')
 library("stringr")
+library('forestplot')
 source("funs.R")
 set.seed(1234)
+
+option_list = list(
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")
+);
+opt_parser = OptionParser(option_list=option_list);
+opt = parse_args(opt_parser);
 
 # Adapted from: https://github.com/nmdavies/within_family_mr/blob/master/HUNT/reg_2_option_c_individual_snps-v5.R
 related_plm <- function(df, out, snp1, snp2){   
@@ -33,12 +40,6 @@ get_siblings <- function(){
     names(dat)[2]<-'appieu'
     return(dat[,1:2])
 }
-
-option_list = list(
-  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")
-);
-opt_parser = OptionParser(option_list=option_list);
-opt = parse_args(opt_parser);
 
 message(paste0("trait ", opt$trait))
 
@@ -72,8 +73,8 @@ pheno$famid <- as.factor(pheno$famid)
 # read in GxG associations
 snps <- fread(paste0("data/", opt$trait, ".gxg.txt"))
 
-# filter on P value
-snps <- snps %>% filter(p.value < 0.05 / (1e+6 + 250000) / 30)
+# take top n=10 GxG hits for replication
+snps <- snps[order(snps$p.value)] %>% head(n=20)
 
 # split term
 snps <- cbind(snps, str_split(snps$term, ":", simplify=T), stringsAsFactors=F)
