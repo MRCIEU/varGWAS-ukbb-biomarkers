@@ -46,7 +46,7 @@ gtex$V2 <- as.numeric(gtex$V2)
 # find genes assocaited with gxg snps
 results <- data.frame()
 for (i in 1:nrow(usnps)){
-  message(paste0("Working on", usnps[i]))
+  message(paste0("Working on: ", paste0(usnps$V1[i], "-", usnps$V2[i], "-", usnps$V3[i],"-", usnps$V4[i])))
   gtex_snps <- gtex %>% filter(V1 == usnps$V1[i] & V2 >= (usnps$V2[i] - 250000) & V2 <= (usnps$V2[i] + 250000))
   gtex_snps <- gtex_snps[complete.cases(gtex_snps)]
   if (gtex_snps %>% filter(pval_nominal < 5e-5) %>% nrow > 0){
@@ -60,7 +60,7 @@ for (i in 1:nrow(usnps)){
     trait$key <- paste0(trait$chr, "_", trait$position, "_", trait$nea, "_", trait$ea, "_b37")
 
     for (gene in unique(gtex_snps$gene_id)){
-      message(paste0("Working on", gene))
+      message(paste0("Working on: ", gene))
       gtex_snps_tmp <- gtex_snps %>% filter(gene_id == !!gene)
 
       #format data for coloc
