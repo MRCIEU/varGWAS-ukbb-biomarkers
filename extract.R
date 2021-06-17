@@ -37,6 +37,7 @@ dat <- dat[complete.cases(dat), ]
 # log scale
 if (opt$log){
   dat[[paste0(opt$trait, "_log")]] <- log(dat[[opt$trait]])
+  dat <- dat %>% select(-!!opt$trait)
   opt$trait <- paste0(opt$trait, "_log")
 }
 
