@@ -6,7 +6,7 @@ source("funs.R")
 set.seed(1234)
 
 # Taken from https://danielroelfs.com/blog/how-i-create-manhattan-plots-using-ggplot/
-man_plot <- function(gwas_data, pval_col, sig=5e-8/30, ylim=30){
+man_plot <- function(gwas_data, sig=5e-8/30, ylim=30){
     data_cum <- gwas_data %>% 
         group_by(chr) %>% 
         summarise(max_bp = max(pos)) %>% 
@@ -21,9 +21,9 @@ man_plot <- function(gwas_data, pval_col, sig=5e-8/30, ylim=30){
         group_by(chr) %>% 
         summarize(center = mean(bp_cum))
 
-    gwas_data$lp <- -log10(gwas_data[[pval_col]])
+    gwas_data$p <- -log10(gwas_data$p)
 
-    manhplot <- ggplot(gwas_data, aes(x = bp_cum, y = lp, color = as_factor(chr), size = lp)) +
+    manhplot <- ggplot(gwas_data, aes(x = bp_cum, y = p, color = as.factor(chr), size = p)) +
         geom_point(alpha = 0.75) +
         geom_hline(yintercept = -log10(sig), color = "grey40", linetype = "dashed") + 
         scale_x_continuous(label = axis_set$chr, breaks = axis_set$center) +
@@ -34,16 +34,19 @@ man_plot <- function(gwas_data, pval_col, sig=5e-8/30, ylim=30){
         theme_minimal() +
         theme( 
             legend.position = "none",
+            strip.text.x = element_text(size = 40),
+            strip.text = element_text(size = 40),
             panel.border = element_blank(),
             panel.grid.major.x = element_blank(),
             panel.grid.minor.x = element_blank(),
+            axis.text = element_text(size = 40),
             axis.title.x=element_blank(),
             axis.text.x=element_blank(),
             axis.ticks.x=element_blank(),
-            axis.title.y=element_blank(),
-            axis.text.y=element_blank(),
-            axis.ticks.y=element_blank()
-        )
+            axis.text.y = element_text(size = 40),
+            axis.title = element_text(size = 40)
+        ) +
+        facet_wrap(~trait)
 
     return(manhplot)
 }
@@ -90,14 +93,16 @@ qq_plot <- function(plotdata, ldsc=NULL){
 # load LDSC results
 ldsc <- fread("data/ldsc.txt")
 names(ldsc) <- c("trait", "intercept", "se")
-ldsc$lci <- ldsc$intercept - (1.96 * d$se)
-ldsc$uci <- ldsc$intercept + (1.96 * d$se)
+ldsc$lci <- ldsc$intercept - (1.96 * ldsc$se)
+ldsc$uci <- ldsc$intercept + (1.96 * ldsc$se)
 ldsc$lab <- paste0("lambda == ", sprintf('%.2f',ldsc$intercept), "  (", sprintf('%.2f',ldsc$lci), "-", sprintf('%.2f',ldsc$uci), ")")
 ldsc <- ldsc[ldsc$trait %in% biomarkers]
 ldsc$outcome <- sapply(ldsc$trait, function(x) biomarkers_abr[x == biomarkers])
 
 qq_var <- data.frame()
 qq_mu <- data.frame()
+man_var <- data.frame()
+man_mu <- data.frame()
 for (i in 1:length(biomarkers)){
     trait_name <- get_trait_name(biomarkers[i])
 
@@ -107,6 +112,8 @@ for (i in 1:length(biomarkers)){
     # calculate params for QQ plot
     qq_var <- rbind(qq_var, qq_plot_dat(data, "phi_p", biomarkers_abr[i]))
     qq_mu <- rbind(qq_mu, qq_plot_dat(data, "p", biomarkers_abr[i]))
+    man_var <- rbind(man_var, data %>% select(chr, pos, phi_p) %>% rename(p=phi_p) %>% mutate(trait = biomarkers_abr[i]))
+    man_mu <- rbind(man_var, data %>% select(chr, pos, p) %>% mutate(trait = biomarkers_abr[i]))
 }
 
 # qqplot
@@ -116,4 +123,12 @@ dev.off()
 
 png("data/gwas_qq_mu.png", width = 480 * 6, height = 480 * 5)
 qq_plot(qq_mu, ldsc)
+dev.off()
+
+png("data/gwas_man_var.png", width = 480 * 6, height = 480 * 5)
+man_plot(man_var)
+dev.off()
+
+png("data/gwas_man_mu.png", width = 480 * 6, height = 480 * 5)
+man_plot(man_mu)
 dev.off()
