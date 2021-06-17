@@ -2,6 +2,7 @@ library('data.table')
 library('dplyr')
 library('purrr')
 library('rbgen')
+library('stringr')
 
 get_filtered_linker <- function(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="16729") {
     message("Preparing IEU linker")
@@ -172,6 +173,16 @@ get_variants <- function(trait){
     }
 
     return(data)
+}
+
+get_trait_name <- function(s){
+    trait_name <- str_split(s, "\\.", simplify = TRUE)[,1]
+    trait_name <- gsub("_", " ", trait_name)
+    trait_name <- str_to_title(trait_name)
+    if (endsWith(s, "log")){
+        trait_name <- paste0("Log ", trait_name)
+    }
+    return(trait_name)
 }
 
 biomarkers <- c(
