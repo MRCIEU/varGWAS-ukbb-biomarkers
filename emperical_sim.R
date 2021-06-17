@@ -27,19 +27,24 @@ dat <- fread("data/aspartate_aminotransferase.30650.0.0.txt")
 
 # calculate main effect size for categorical exposure to detect at specified power
 b <- get_cat_delta(n_obs, 2, 0.5, 1, 0.05, 0.8)
+b <- 0
 
 # simulate SNP effect
-p <- rep(NA, n_sim)
+p_var <- rep(NA, n_sim)
+p_int <- rep(NA, n_sim)
 for (i in 1:n_sim){
     x <- rbinom(n=n_obs, size=2, prob=.5)
+    u <- rbinom(n=n_obs, size=2, prob=.5)
     y <- x*b + sample(dat$aspartate_aminotransferase.30650.0.0, n_obs)
-    t <- vartest(exp(y), x, type = 1, x.sq = T)
-    p[i] <- t$test$P
-    #p[i] <- (tidy(lm(y~x)) %>% pull(p.value))[2]
+    t <- vartest(y, x, type = 1, x.sq = T)
+    p_var[i] <- t$test$P
+    p_int[i] <- (tidy(lm(y~x*u)) %>% pull(p.value))[4]
 }
 
 # estimate power
-tidy(binom.test(sum(p < 0.05), n_sim))
+tidy(binom.test(sum(p_var < 0.05), n_sim))
+tidy(binom.test(sum(p_int < 0.05), n_sim))
 
 # plot qq
-qq(p)
+qq(p_var)
+qq(p_int)
