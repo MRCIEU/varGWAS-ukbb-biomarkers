@@ -1,5 +1,7 @@
 # GWAS of trait variance
 
+TODO - check manhatten plots for log scaling
+
 ## Phenotypes
 
 Copy pheno file to ramdisk
