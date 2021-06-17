@@ -5,12 +5,6 @@ library('ggpubr')
 source("funs.R")
 set.seed(1234)
 
-mean_man <- list()
-mean_qq <- list()
-var_man <- list()
-var_qq <- list()
-labs <- rep(NA, length(biomarkers))
-
 # Taken from https://danielroelfs.com/blog/how-i-create-manhattan-plots-using-ggplot/
 man_plot <- function(gwas_data, pval_col, sig=5e-8/30, ylim=30){
     data_cum <- gwas_data %>% 
@@ -55,82 +49,71 @@ man_plot <- function(gwas_data, pval_col, sig=5e-8/30, ylim=30){
 }
 
 # Taken from https://danielroelfs.com/blog/how-i-make-qq-plots-using-ggplot/
-qq_plot <- function(sumstats.data, pval_col, ci=0.95){
+qq_plot_dat <- function(sumstats.data, pval_col, outcome, ci=0.95){
     nSNPs <- nrow(sumstats.data)
     plotdata <- data.frame(
         observed = -log10(sort(sumstats.data[[pval_col]])),
         expected = -log10(ppoints(nSNPs)),
         clower   = -log10(qbeta(p = (1 - ci) / 2, shape1 = seq(nSNPs), shape2 = rev(seq(nSNPs)))),
-        cupper   = -log10(qbeta(p = (1 + ci) / 2, shape1 = seq(nSNPs), shape2 = rev(seq(nSNPs))))
+        cupper   = -log10(qbeta(p = (1 + ci) / 2, shape1 = seq(nSNPs), shape2 = rev(seq(nSNPs)))),
+        outcome
     )
+    return(plotdata)
+}
+
+# Taken from https://danielroelfs.com/blog/how-i-make-qq-plots-using-ggplot/
+qq_plot <- function(plotdata, ldsc=NULL){
     qqplot <- ggplot(plotdata, aes(x = expected, y = observed)) +
-        geom_ribbon(aes(ymax = cupper, ymin = clower), fill = "grey30", alpha = 0.5) +
-        geom_step(color = "#183059", size = 1.1, direction = "vh") +
-        geom_segment(data = . %>% filter(expected == max(expected)), 
-                    aes(x = 0, xend = expected, y = 0, yend = expected),
-                    size = 1.25, alpha = 0.5, color = "grey30", lineend = "round") +
+        geom_ribbon(aes(ymax = cupper, ymin = clower), fill = "red", alpha = 0.5) +
+        geom_point() +
         labs(x = expression(paste("Expected -log"[10],"(", plain(P),")")),
             y = expression(paste("Observed -log"[10],"(", plain(P),")"))) +
         theme_minimal() +
+        scale_x_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
+        scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 2)) +
+        facet_wrap(~outcome, scales="free_y") +
         theme(
-            axis.title.x=element_blank(),
-            axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),
-            axis.title.y=element_blank(),
-            axis.text.y=element_blank(),
-            axis.ticks.y=element_blank()
+            strip.text.x = element_text(size = 40),
+            strip.text = element_text(size = 40),
+            axis.text = element_text(size = 40),
+            axis.text.x = element_text(size = 40),
+            axis.text.y = element_text(size = 40),
+            axis.title = element_text(size = 40)
         )
+    if(!is.null(ldsc)){
+        qqplot <- qqplot +
+          geom_text(data = ldsc, aes(label = lab, x = -Inf, y = Inf), hjust = 0, vjust = 1, size=10, parse=T)
+    }
     return(qqplot)
 }
 
-for (i in 1:length(biomarkers)){
-    trait_name <- biomarkers[i]
-    trait_name <- str_split(trait_name, "\\.", simplify = TRUE)[,1]
-    trait_name <- gsub("_", " ", trait_name)
-    trait_name <- str_to_title(trait_name)
-    labs[i] <- trait_name
-    message(paste0("trait ", biomarkers[i]))
-    message(paste0("trait name ", trait_name))
+# load LDSC results
+ldsc <- fread("data/ldsc.txt")
+names(ldsc) <- c("trait", "intercept", "se")
+ldsc$lci <- ldsc$intercept - (1.96 * d$se)
+ldsc$uci <- ldsc$intercept + (1.96 * d$se)
+ldsc$lab <- paste0("lambda == ", sprintf('%.2f',ldsc$intercept), "  (", sprintf('%.2f',ldsc$lci), "-", sprintf('%.2f',ldsc$uci), ")")
+ldsc <- ldsc[ldsc$trait %in% biomarkers]
+ldsc$outcome <- sapply(ldsc$trait, function(x) biomarkers_abr[x == biomarkers])
 
-    # load vGWAS and QC
+qq_var <- data.frame()
+qq_mu <- data.frame()
+for (i in 1:length(biomarkers)){
+    trait_name <- get_trait_name(biomarkers[i])
+
+    # load vGWAS
     data <- get_variants(biomarkers[i])
 
-    # manhattan
-    mean_man[[i]] <- man_plot(data, "p")
-    var_man[[i]] <- man_plot(data, "phi_p")
-
-    # qq plot
-    mean_qq[[i]] <- qq_plot(data, "p")
-    var_qq[[i]] <- qq_plot(data, "phi_p")
+    # calculate params for QQ plot
+    qq_var <- rbind(qq_var, qq_plot_dat(data, "phi_p", biomarkers_abr[i]))
+    qq_mu <- rbind(qq_mu, qq_plot_dat(data, "p", biomarkers_abr[i]))
 }
 
-# load LDSC results
-# TODO add to plot
-d <- fread("data/ldsc.txt")
-names(d) <- c("trait", "intercept", "se")
-d$lci <- d$intercept - (1.96 * d$se)
-d$uci <- d$intercept + (1.96 * d$se)
-
-png("var_qq.png", width = 480 * 2.5, height = 480 * 3)
-p <- ggarrange(plotlist=var_qq, labels = biomarkers_abr, ncol = 5, nrow = 6, align = "hv", font.label=list(size = 18))
-annotate_figure(p, left = grid::textGrob("Observed -log10(P)", rot = 90, vjust = 1, gp = grid::gpar(cex = 1.5)),
-                    bottom = grid::textGrob("Expected -log10(P)", gp = grid::gpar(cex = 1.5)))
+# qqplot
+png("data/gwas_qq_var.png", width = 480 * 6, height = 480 * 5)
+qq_plot(qq_var)
 dev.off()
 
-png("mean_qq.png", width = 480 * 2.5, height = 480 * 3)
-p <- ggarrange(plotlist=mean_qq, labels = biomarkers_abr, ncol = 5, nrow = 6, align = "hv", font.label=list(size = 18))
-annotate_figure(p, left = grid::textGrob("Observed -log10(P)", rot = 90, vjust = 1, gp = grid::gpar(cex = 1.5)),
-                    bottom = grid::textGrob("Expected -log10(P)", gp = grid::gpar(cex = 1.5)))
-dev.off()
-
-png("mean_man.png", width = 480 * 2.5, height = 480 * 3)
-p <- ggarrange(plotlist=mean_man, labels = biomarkers_abr, ncol = 5, nrow = 6, align = "hv", font.label=list(size = 18))
-annotate_figure(p, left = grid::textGrob("-log10(P)", rot = 90, vjust = 1, gp = grid::gpar(cex = 1.5)),
-                    bottom = grid::textGrob("Chromosome", gp = grid::gpar(cex = 1.5)))
-dev.off()
-
-png("var_man.png", width = 480 * 2.5, height = 480 * 3)
-p <- ggarrange(plotlist=var_man, labels = biomarkers_abr, ncol = 5, nrow = 6, align = "hv", font.label=list(size = 18))
-annotate_figure(p, left = grid::textGrob("-log10(P)", rot = 90, vjust = 1, gp = grid::gpar(cex = 1.5)),
-                    bottom = grid::textGrob("Chromosome", gp = grid::gpar(cex = 1.5)))
+png("data/gwas_qq_mu.png", width = 480 * 6, height = 480 * 5)
+qq_plot(qq_mu, ldsc)
 dev.off()
