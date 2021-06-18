@@ -117,7 +117,6 @@ grep Intercept data/*ldsc.log | sed 's/.ldsc.log:/\t/g' | sed 's/data\///g' | se
 Plot QQ & Manhattan
 
 ```sh
-# TODO add LDSC intercept to plots
 sbatch runR.sh qc-fig.R
 ```
 
