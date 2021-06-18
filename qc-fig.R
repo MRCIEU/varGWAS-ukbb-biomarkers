@@ -117,18 +117,18 @@ for (i in 1:length(biomarkers)){
 }
 
 # qqplot
-png("data/gwas_qq_var.log.png", width = 480 * 6, height = 480 * 5)
+png("data/gwas_qq_var.png", width = 480 * 6, height = 480 * 5)
 qq_plot(qq_var)
 dev.off()
 
-png("data/gwas_qq_mu.log.png", width = 480 * 6, height = 480 * 5)
+png("data/gwas_qq_mu.png", width = 480 * 6, height = 480 * 5)
 qq_plot(qq_mu, ldsc)
 dev.off()
 
-png("data/gwas_man_var.log.png", width = 480 * 6, height = 480 * 5)
+png("data/gwas_man_var.png", width = 480 * 6, height = 480 * 5)
 man_plot(man_var)
 dev.off()
 
-png("data/gwas_man_mu.log.png", width = 480 * 6, height = 480 * 5)
+png("data/gwas_man_mu.png", width = 480 * 6, height = 480 * 5)
 man_plot(man_mu)
 dev.off()
