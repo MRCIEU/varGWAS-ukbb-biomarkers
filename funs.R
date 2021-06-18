@@ -202,7 +202,7 @@ biomarkers <- c(
     "glucose.30740.0.0",
     "glycated_haemoglobin.30750.0.0_log",
     "hdl_cholesterol.30760.0.0",
-    "igf_1.30770.0.0",
+    "igf_1.30770.0.0_log",
     "ldl_direct.30780.0.0",
     "lipoprotein_a.30790.0.0",
     "oestradiol.30800.0.0_log",
@@ -214,7 +214,7 @@ biomarkers <- c(
     "total_protein.30860.0.0",
     "triglycerides.30870.0.0_log",
     "urate.30880.0.0",
-    "urea.30670.0.0",
+    "urea.30670.0.0_log",
     "vitamin_d.30890.0.0"
 )
 
@@ -235,7 +235,7 @@ biomarkers_abr <- c(
     "Glucose",
     "HbA1C (Log)",
     "HDL",
-    "IGF-1",
+    "IGF-1 (Log)",
     "LDL",
     "LipoA",
     "Oestradiol (Log)",
@@ -247,6 +247,6 @@ biomarkers_abr <- c(
     "Protein",
     "TG (Log)",
     "Urate",
-    "Urea",
+    "Urea (Log)",
     "Vitamin D"
 )
