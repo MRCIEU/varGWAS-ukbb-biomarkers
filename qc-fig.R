@@ -10,7 +10,7 @@ man_plot <- function(gwas_data, sig=5e-8/30, ylim=30){
     data_cum <- gwas_data %>% 
         group_by(chr) %>% 
         summarise(max_bp = max(pos)) %>% 
-        mutate(bp_add = lag(cumsum(max_bp), default = 0)) %>% 
+        mutate(bp_add = lag(cumsum(as.numeric(max_bp)), default = 0)) %>% 
         select(chr, bp_add)
 
     gwas_data <- gwas_data %>% 
@@ -34,19 +34,10 @@ man_plot <- function(gwas_data, sig=5e-8/30, ylim=30){
         theme_minimal() +
         theme( 
             legend.position = "none",
-            strip.text.x = element_text(size = 40),
-            strip.text = element_text(size = 40),
-            panel.border = element_blank(),
-            panel.grid.major.x = element_blank(),
-            panel.grid.minor.x = element_blank(),
-            axis.text = element_text(size = 40),
             axis.title.x=element_blank(),
             axis.text.x=element_blank(),
-            axis.ticks.x=element_blank(),
-            axis.text.y = element_text(size = 40),
-            axis.title = element_text(size = 40)
-        ) +
-        facet_wrap(~trait)
+            axis.ticks.x=element_blank()
+        )
 
     return(manhplot)
 }
@@ -73,19 +64,10 @@ qq_plot <- function(plotdata, ldsc=NULL){
             y = expression(paste("Observed -log"[10],"(", plain(P),")"))) +
         theme_minimal() +
         scale_x_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
-        scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 2)) +
-        facet_wrap(~outcome, scales="free_y") +
-        theme(
-            strip.text.x = element_text(size = 40),
-            strip.text = element_text(size = 40),
-            axis.text = element_text(size = 40),
-            axis.text.x = element_text(size = 40),
-            axis.text.y = element_text(size = 40),
-            axis.title = element_text(size = 40)
-        )
+        scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 2))
     if(!is.null(ldsc)){
         qqplot <- qqplot +
-          geom_text(data = ldsc, aes(label = lab, x = -Inf, y = Inf), hjust = 0, vjust = 1, size=10, parse=T)
+          geom_text(data = ldsc, aes(label = lab, x = -Inf, y = Inf), hjust = 0, vjust = 1, parse=T)
     }
     return(qqplot)
 }
@@ -99,10 +81,6 @@ ldsc$lab <- paste0("lambda == ", sprintf('%.2f',ldsc$intercept), "  (", sprintf(
 ldsc <- ldsc[ldsc$trait %in% biomarkers]
 ldsc$outcome <- sapply(ldsc$trait, function(x) biomarkers_abr[x == biomarkers])
 
-qq_var <- data.frame()
-qq_mu <- data.frame()
-man_var <- data.frame()
-man_mu <- data.frame()
 for (i in 1:length(biomarkers)){
     trait_name <- get_trait_name(biomarkers[i])
 
@@ -110,25 +88,24 @@ for (i in 1:length(biomarkers)){
     data <- get_variants(biomarkers[i])
 
     # calculate params for QQ plot
-    qq_var <- rbind(qq_var, qq_plot_dat(data, "phi_p", biomarkers_abr[i]))
-    qq_mu <- rbind(qq_mu, qq_plot_dat(data, "p", biomarkers_abr[i]))
-    man_var <- rbind(man_var, data %>% select(chr, pos, phi_p) %>% rename(p=phi_p) %>% mutate(trait = biomarkers_abr[i]))
-    man_mu <- rbind(man_var, data %>% select(chr, pos, p) %>% mutate(trait = biomarkers_abr[i]))
+    qq_var <- qq_plot_dat(data, "phi_p", biomarkers_abr[i])
+    qq_mu <- qq_plot_dat(data, "p", biomarkers_abr[i])
+    man_var <- data %>% select(chr, pos, phi_p) %>% rename(p=phi_p) %>% mutate(trait = biomarkers_abr[i])
+    man_mu <- data %>% select(chr, pos, p) %>% mutate(trait = biomarkers_abr[i])
+
+    pdf(paste0("data/", biomarkers[i], "_gwas_qq_var.pdf"))
+    qq_plot(qq_var)
+    dev.off()
+
+    pdf(paste0("data/", biomarkers[i], "_gwas_qq_mu.pdf"))
+    qq_plot(qq_mu, ldsc[ldsc$trait == biomarkers[i]])
+    dev.off()
+
+    pdf(paste0("data/", biomarkers[i], "_gwas_man_var.pdf"))
+    man_plot(man_var)
+    dev.off()
+
+    pdf(paste0("data/", biomarkers[i], "_gwas_man_mu.pdf"))
+    man_plot(man_mu)
+    dev.off()
 }
-
-# qqplot
-png("data/gwas_qq_var.png", width = 480 * 6, height = 480 * 5)
-qq_plot(qq_var)
-dev.off()
-
-png("data/gwas_qq_mu.png", width = 480 * 6, height = 480 * 5)
-qq_plot(qq_mu, ldsc)
-dev.off()
-
-png("data/gwas_man_var.png", width = 480 * 6, height = 480 * 5)
-man_plot(man_var)
-dev.off()
-
-png("data/gwas_man_mu.png", width = 480 * 6, height = 480 * 5)
-man_plot(man_mu)
-dev.off()

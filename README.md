@@ -38,12 +38,6 @@ The following have low sample size ~ 50k
 sbatch runR.sh dist.R
 ```
 
-## T1E simulation using emperical distribution
-
-```sh
-
-```
-
 ## vGWAS
 
 TODO - if re-running add 20 genetic PCs
