@@ -38,6 +38,12 @@ The following have low sample size ~ 50k
 sbatch runR.sh dist.R
 ```
 
+## T1E simulation using emperical distribution
+
+```sh
+
+```
+
 ## vGWAS
 
 TODO - if re-running add 20 genetic PCs
@@ -296,6 +302,10 @@ closest \
 -b data/Homo_sapiens.GRCh37.82.sorted.bed \
 > data/aspartate_aminotransferase.30650.0.0.gxg-usnps-closest.txt
 ```
+
+Forest plot of GxG effect on additive and multiplicative scales
+
+
 
 ## GxE interaction analysis
 

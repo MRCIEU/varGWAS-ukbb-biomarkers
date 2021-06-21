@@ -19,26 +19,26 @@ get_cat_delta <- function(n_obs, size, treatment1_p, sd, alpha, power){
     return(p$delta)
 }
 
-n_sim <- 1000
+n_sim <- 10000
 n_obs <- 10000
 
 # read in outcome
 dat <- fread("data/aspartate_aminotransferase.30650.0.0.txt")
 
 # calculate main effect size for categorical exposure to detect at specified power
-b <- get_cat_delta(n_obs, 2, 0.5, 1, 0.05, 0.8)
+b <- get_cat_delta(n_obs, 2, 0.05, 1, 0.05, 0.8)
 b <- 0
 
 # simulate SNP effect
 p_var <- rep(NA, n_sim)
 p_int <- rep(NA, n_sim)
 for (i in 1:n_sim){
-    x <- rbinom(n=n_obs, size=2, prob=.5)
-    u <- rbinom(n=n_obs, size=2, prob=.5)
+    x <- rbinom(n=n_obs, size=2, prob=.05)
+    #u <- rbinom(n=n_obs, size=2, prob=.5)
     y <- x*b + sample(dat$aspartate_aminotransferase.30650.0.0, n_obs)
     t <- vartest(y, x, type = 1, x.sq = T)
     p_var[i] <- t$test$P
-    p_int[i] <- (tidy(lm(y~x*u)) %>% pull(p.value))[4]
+    #p_int[i] <- (tidy(lm(y~x*u)) %>% pull(p.value))[4]
 }
 
 # estimate power

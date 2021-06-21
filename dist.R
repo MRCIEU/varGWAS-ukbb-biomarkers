@@ -19,20 +19,24 @@ for (i in 1:length(biomarkers)){
 }
 
 # histogram
-png("data/hist.png", width = 480 * 1.5, height = 480 * 1.25)
+png("data/hist.png", width = 480 * 6, height = 480 * 5)
 ggplot(data, aes(x=y)) +
   geom_histogram() +
   theme_minimal() +
   scale_x_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
   scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
   facet_wrap(~trait, scales="free") +
-  theme(
+  theme( 
+    strip.text.x = element_text(size = 40),
+    strip.text = element_text(size = 40),
+    axis.text = element_text(size = 40),
+    axis.text.y = element_text(size = 40),
     axis.title=element_blank()
-)
+  )
 dev.off()
 
 # qqplot
-png("data/qq.png", width = 480 * 1.5, height = 480 * 1.25)
+png("data/qq.png", width = 480 * 6, height = 480 * 5)
 ggplot(data, aes(sample=y)) +
   stat_qq() +
   stat_qq_line() +
@@ -40,7 +44,11 @@ ggplot(data, aes(sample=y)) +
   scale_x_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
   scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
   facet_wrap(~trait, scales="free") +
-  theme(
+  theme( 
+    strip.text.x = element_text(size = 40),
+    strip.text = element_text(size = 40),
+    axis.text = element_text(size = 40),
+    axis.text.y = element_text(size = 40),
     axis.title=element_blank()
-)
+  )
 dev.off()
