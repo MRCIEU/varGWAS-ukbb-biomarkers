@@ -27,10 +27,10 @@ ggplot(data, aes(x=y)) +
   scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
   facet_wrap(~trait, scales="free") +
   theme( 
-    strip.text.x = element_text(size = 40),
-    strip.text = element_text(size = 40),
-    axis.text = element_text(size = 40),
-    axis.text.y = element_text(size = 40),
+    strip.text.x = element_text(size = 30),
+    strip.text = element_text(size = 30),
+    axis.text = element_text(size = 30),
+    axis.text.y = element_text(size = 30),
     axis.title=element_blank()
   )
 dev.off()
@@ -45,10 +45,10 @@ ggplot(data, aes(sample=y)) +
   scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
   facet_wrap(~trait, scales="free") +
   theme( 
-    strip.text.x = element_text(size = 40),
-    strip.text = element_text(size = 40),
-    axis.text = element_text(size = 40),
-    axis.text.y = element_text(size = 40),
+    strip.text.x = element_text(size = 30),
+    strip.text = element_text(size = 30),
+    axis.text = element_text(size = 30),
+    axis.text.y = element_text(size = 30),
     axis.title=element_blank()
   )
 dev.off()
