@@ -93,19 +93,19 @@ for (i in 1:length(biomarkers)){
     man_var <- data %>% select(chr, pos, phi_p) %>% rename(p=phi_p) %>% mutate(trait = biomarkers_abr[i])
     man_mu <- data %>% select(chr, pos, p) %>% mutate(trait = biomarkers_abr[i])
 
-    pdf(paste0("data/", biomarkers[i], "_gwas_qq_var.pdf"))
+    png(paste0("data/", biomarkers[i], "_gwas_qq_var.png"))
     qq_plot(qq_var)
     dev.off()
 
-    pdf(paste0("data/", biomarkers[i], "_gwas_qq_mu.pdf"))
+    png(paste0("data/", biomarkers[i], "_gwas_qq_mu.png"))
     qq_plot(qq_mu, ldsc[ldsc$trait == biomarkers[i]])
     dev.off()
 
-    pdf(paste0("data/", biomarkers[i], "_gwas_man_var.pdf"))
+    png(paste0("data/", biomarkers[i], "_gwas_man_var.png"))
     man_plot(man_var)
     dev.off()
 
-    pdf(paste0("data/", biomarkers[i], "_gwas_man_mu.pdf"))
+    png(paste0("data/", biomarkers[i], "_gwas_man_mu.png"))
     man_plot(man_mu)
     dev.off()
 }
