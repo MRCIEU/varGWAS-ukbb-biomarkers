@@ -45,12 +45,12 @@ man_plot <- function(gwas_data, title, sig=5e-8/30, ylim=30){
             axis.title.x=element_blank(),
             axis.text.x=element_blank(),
             axis.ticks.x=element_blank(),
-            strip.text.x = element_text(size = 14),
-            strip.text = element_text(size = 14),
-            axis.text = element_text(size = 14),
-            axis.text.y = element_text(size = 14),
-            axis.title = element_text(size = 14),
-            plot.title = element_text(size = 14)
+            strip.text.x = element_text(size = 22),
+            strip.text = element_text(size = 22),
+            axis.text = element_text(size = 22),
+            axis.text.y = element_text(size = 22),
+            axis.title = element_text(size = 22),
+            plot.title = element_text(size = 22)
         )
 
     return(manhplot)
@@ -80,12 +80,12 @@ qq_plot <- function(plotdata, title, ldsc=NULL){
         ggtitle(title) +
         theme( 
             legend.position = "none",
-            strip.text.x = element_text(size = 14),
-            strip.text = element_text(size = 14),
-            axis.text = element_text(size = 14),
-            axis.text.y = element_text(size = 14),
-            axis.title = element_text(size = 14),
-            plot.title = element_text(size = 14)
+            strip.text.x = element_text(size = 22),
+            strip.text = element_text(size = 22),
+            axis.text = element_text(size = 22),
+            axis.text.y = element_text(size = 22),
+            axis.title = element_text(size = 22),
+            plot.title = element_text(size = 22)
         ) +
         scale_x_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
         scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 2))
