@@ -13,7 +13,7 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 # Taken from https://danielroelfs.com/blog/how-i-create-manhattan-plots-using-ggplot/
-man_plot <- function(gwas_data, sig=5e-8/30, ylim=30){
+man_plot <- function(gwas_data, title, sig=5e-8/30, ylim=30){
     data_cum <- gwas_data %>% 
         group_by(chr) %>% 
         summarise(max_bp = max(pos)) %>% 
@@ -39,11 +39,18 @@ man_plot <- function(gwas_data, sig=5e-8/30, ylim=30){
         scale_size_continuous(range = c(0.5,3)) +
         labs(x = NULL, y = expression(paste("-log"[10],"(", plain(P),")"))) + 
         theme_minimal() +
+        ggtitle(title) +
         theme( 
             legend.position = "none",
             axis.title.x=element_blank(),
             axis.text.x=element_blank(),
-            axis.ticks.x=element_blank()
+            axis.ticks.x=element_blank(),
+            strip.text.x = element_text(size = 14),
+            strip.text = element_text(size = 14),
+            axis.text = element_text(size = 14),
+            axis.text.y = element_text(size = 14),
+            axis.title = element_text(size = 14),
+            plot.title = element_text(size = 14)
         )
 
     return(manhplot)
@@ -63,13 +70,23 @@ qq_plot_dat <- function(sumstats.data, pval_col, outcome, ci=0.95){
 }
 
 # Taken from https://danielroelfs.com/blog/how-i-make-qq-plots-using-ggplot/
-qq_plot <- function(plotdata, ldsc=NULL){
+qq_plot <- function(plotdata, title, ldsc=NULL){
     qqplot <- ggplot(plotdata, aes(x = expected, y = observed)) +
         geom_ribbon(aes(ymax = cupper, ymin = clower), fill = "red", alpha = 0.5) +
         geom_point() +
         labs(x = expression(paste("Expected -log"[10],"(", plain(P),")")),
             y = expression(paste("Observed -log"[10],"(", plain(P),")"))) +
         theme_minimal() +
+        ggtitle(title) +
+        theme( 
+            legend.position = "none",
+            strip.text.x = element_text(size = 14),
+            strip.text = element_text(size = 14),
+            axis.text = element_text(size = 14),
+            axis.text.y = element_text(size = 14),
+            axis.title = element_text(size = 14),
+            plot.title = element_text(size = 14)
+        ) +
         scale_x_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
         scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 2))
     if(!is.null(ldsc)){
@@ -101,17 +118,17 @@ man_var <- data %>% select(chr, pos, phi_p) %>% rename(p=phi_p) %>% mutate(trait
 man_mu <- data %>% select(chr, pos, p) %>% mutate(trait = abr)
 
 png(paste0("data/", opt$trait, "_gwas_qq_var.png"))
-qq_plot(qq_var)
+qq_plot(qq_var, abr)
 dev.off()
 
 png(paste0("data/", opt$trait, "_gwas_qq_mu.png"))
-qq_plot(qq_mu, ldsc[ldsc$trait == opt$trait])
+qq_plot(qq_mu, abr, ldsc[ldsc$trait == opt$trait])
 dev.off()
 
 png(paste0("data/", opt$trait, "_gwas_man_var.png"))
-man_plot(man_var)
+man_plot(man_var, abr)
 dev.off()
 
 png(paste0("data/", opt$trait, "_gwas_man_mu.png"))
-man_plot(man_mu)
+man_plot(man_mu, abr)
 dev.off()
