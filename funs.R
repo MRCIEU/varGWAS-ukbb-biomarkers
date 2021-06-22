@@ -121,6 +121,10 @@ extract_variant_from_bgen <- function(chrom, pos, ref, alt){
 }
 
 get_variants <- function(trait){
+    # load null models
+    null <- fread(paste0("data/", trait, ".null.txt"))
+    q <- null %>% filter(conf.low <= 0.05 & conf.high >= 0.05) %>% head(n=1) %>% pull(q)
+
     # load vGWAS & SNP stats; QC loci
     data <- data.frame()
 
@@ -144,8 +148,8 @@ get_variants <- function(trait){
         ma <- as.data.frame(counts[which(counts>1)])
         snp_stats <- snp_stats[!snp_stats$position %in% ma$Var1]
         
-        # exclude MAF < 0.15
-        snp_stats <- snp_stats[which(snp_stats$minor_allele_frequency > 0.15)]
+        # exclude MAF < q
+        snp_stats <- snp_stats[which(snp_stats$minor_allele_frequency > q)]
         
         # exclude HWE violations
         snp_stats <- snp_stats[which(snp_stats$HW_exact_p_value > 1e-5)]
