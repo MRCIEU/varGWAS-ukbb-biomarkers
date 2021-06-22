@@ -120,7 +120,7 @@ extract_variant_from_bgen <- function(chrom, pos, ref, alt){
     return(dosage)
 }
 
-get_q_null(trait){
+get_q_null <- function(trait){
     # load null model
     null <- fread(paste0("data/", trait, ".null.txt"))
     q <- null %>% filter(conf.low <= 0.05 & conf.high >= 0.05) %>% head(n=1) %>% pull(q)
