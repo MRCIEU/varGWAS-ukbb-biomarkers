@@ -66,7 +66,7 @@ sig$key <- paste0("chr", sig$key)
 sig <- merge(sig, results, "key")
 
 # filter out vQTLs that do not have a mean effect
-sig <- sig %>% filter(P.jlssc < 5e-5 & p.robust < 5e-5)
+# sig <- sig %>% filter(P.jlssc < 5e-5 & p.robust < 5e-5)
 
 # save assoc
 sig$key <- NULL
