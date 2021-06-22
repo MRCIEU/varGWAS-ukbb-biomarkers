@@ -1,9 +1,7 @@
 library("jlst")
 library("data.table")
-library("pwr")
 library("broom")
 library('optparse')
-library("qqman")
 source("funs.R")
 set.seed(123)
 
