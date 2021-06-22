@@ -120,10 +120,16 @@ extract_variant_from_bgen <- function(chrom, pos, ref, alt){
     return(dosage)
 }
 
-get_variants <- function(trait){
-    # load null models
+get_q_null(trait){
+    # load null model
     null <- fread(paste0("data/", trait, ".null.txt"))
     q <- null %>% filter(conf.low <= 0.05 & conf.high >= 0.05) %>% head(n=1) %>% pull(q)
+    return(q)
+}
+
+get_variants <- function(trait){
+    # get lowest MAF with correct T1E
+    q <- get_q_null(trait)
 
     # load vGWAS & SNP stats; QC loci
     data <- data.frame()
