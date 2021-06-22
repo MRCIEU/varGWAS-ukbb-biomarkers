@@ -130,6 +130,12 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
 done
 ```
 
+Combine plots
+
+```sh
+Rscript qc-fig.R
+```
+
 ## Clump mvQTL
 
 Clump tophits & filter out vQTLs without mean effect
