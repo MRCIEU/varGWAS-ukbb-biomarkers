@@ -156,7 +156,7 @@ get_variants <- function(trait){
         snp_stats <- snp_stats[!snp_stats$position %in% ma$Var1]
         
         # exclude MAF < q
-        snp_stats <- snp_stats[which(snp_stats$minor_allele_frequency > 0.15)]
+        snp_stats <- snp_stats[which(snp_stats$minor_allele_frequency > 0.2)]
         
         # exclude HWE violations
         snp_stats <- snp_stats[which(snp_stats$HW_exact_p_value > 1e-5)]
