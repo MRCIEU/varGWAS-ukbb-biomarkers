@@ -4,6 +4,9 @@ library("dplyr")
 library("stringr")
 library("ggpubr")
 library("viridis")
+library('forestplot')
+library("RColorBrewer")
+source("funs.R")
 set.seed(123)
 
 #read in gxg results
@@ -11,17 +14,35 @@ d <- fread("data/gxg.txt")
 d$lci <- d$estimate - (d$std.error * 1.96)
 d$uci <- d$estimate + (d$std.error * 1.96)
 
-p <- ggplot(d, aes(x=x, y=estimate, ymin=lci, ymax=uci, group=trait, color=trait)) +
-    geom_point(position=position_dodge(width=0.75)) +
-    geom_errorbar(width=.05, position=position_dodge(width=0.75)) +
-    theme_classic() + 
-    ggtitle("GxG effects") +
-    xlab("Gene") + 
-    ylab(paste0("Interaction effect (SD, 95% CI)")) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
-    labs(col="Trait") +
-    theme(axis.text.x = element_text(angle = 90, hjust = 1))
+# read in WF
+wf <- fread("data/gxg-wf.txt")
+wf$lci <- wf$beta - (wf$se * 1.96)
+wf$uci <- wf$beta + (wf$se * 1.96)
 
-pdf("gxg.pdf")
-print(p)
+# filter genome-wide sig hits
+d <- d %>% filter(p.value < 5e-8)
+
+# merge
+d <- merge(d, wf, "term")
+d$t <- get_trait_name(d$trait.x)
+
+# initialize plot
+png("gxg-forest.png", width=480, height=480)
+
+# make plot
+forestplot(
+    d$t,
+    boxsize = 0.05,
+    xticks = c(-.25, -.1, 0, .1, .25),
+    legend = c("Main", "Within-family"),
+    mean = d[,c("estimate", "beta")],
+    lower = d[,c("lci.x","lci.y")],
+    upper = d[,c("uci.x", "uci.y")],
+    xlab=paste0("GxG effect (SD [95% CI])"),
+    col=fpColors(lines=c("darkred", "royalblue"), box=c("darkred", "royalblue")),
+    txt_gp = fpTxtGp(ticks=gpar(cex=1), xlab=gpar(cex=1))
+)
+
+# save plot
+dev.copy(png, "gxg-forest.png")
 dev.off()
