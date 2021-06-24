@@ -90,6 +90,8 @@ for (i in 1:nrow(all)){
     all$coloc[i] <- f
 }
 
+# combine gene col and only use nearest gene when no coloc evidence is available
+
 # drop BMI
 all <- all %>% filter(trait != "body_mass_index.21001.0.0")
 
@@ -100,4 +102,7 @@ for (i in 1:nrow(all)){
 }
 all <- all %>% select(Trait, rsid, ea, gene, coloc, phi_p)
 names(all) <- c("Trait", "RSID", "EA", "Nearest Gene", "Colocalized Gene", "P")
+
+# order by trait and then by P
+
 write.table(all, sep="\t", row.names=F, quote=F, file="data/all.vqtls.txt")
