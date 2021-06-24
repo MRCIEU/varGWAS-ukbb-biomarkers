@@ -43,33 +43,31 @@ option_list = list(
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
-#opt <- data.frame(trait="aspartate_aminotransferase.30650.0.0", out="data/aspartate_aminotransferase.30650.0.0.gxg-coloc.txt", snps="data/aspartate_aminotransferase.30650.0.0.gxg-usnps.txt", lz=FALSE, stringsAsFactors=F)
-
 message(paste0("working on ", opt$trait))
 
 # load snps
-mvqtl <- fread(opt$snps)
-stopifnot(nrow(mvqtl)>0)
+qtl <- fread(opt$snps)
+stopifnot(nrow(qtl)>0)
 
 # load all vGWAS for trait
 vgwas <- get_variants(opt$trait)
 
 # find gene expression changes in blood associated with mvQTLs
-genes <- phewas(mvqtl$rsid, pval = 5e-8, batch = c("eqtl-a", "prot-a", "prot-b", "prot-c"))
+genes <- phewas(qtl$rsid, pval = 5e-8, batch = c("eqtl-a", "prot-a", "prot-b", "prot-c"))
 stopifnot(nrow(genes)>0)
 ugenes <- unique(genes$id)
 
-# drop mvQTLs that are not eQTLs
-mvqtl <- mvqtl[mvqtl$rsid %in% genes$rsid]
+# drop QTLs that are not e/pQTLs
+qtl <- qtl[qtl$rsid %in% genes$rsid]
 
 # loop over mvQTLs for coloc
 results <- data.frame()
-for (i in 1:nrow(mvqtl)){
-  message(paste0("Working on SNP: ", mvqtl$rsid[i]))
+for (i in 1:nrow(qtl)){
+  message(paste0("Working on SNP: ", qtl$rsid[i]))
 
   # region to colocalise
-  chr <- mvqtl$chr[i]
-  pos <- mvqtl$pos[i]
+  chr <- qtl$chr[i]
+  pos <- qtl$pos[i]
   start <- pos - 500000
   end <- pos + 500000
   region <- paste0(chr, ":", start, "-", end)
