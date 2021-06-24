@@ -22,7 +22,7 @@ pheno <- fread(paste0("data/", opt$trait, ".txt"))
 snps <- get_variants(opt$trait)
 
 # filter on P value
-vqtls <- snps %>% filter(phi_p < 5e-5) %>% select("rsid", "phi_p") %>% rename(pval = phi_p)
+vqtls <- snps %>% filter(phi_p < (5e-8/30)) %>% select("rsid", "phi_p") %>% rename(pval = phi_p)
 
 # clump records
 vqtls <- ld_clump(vqtls)
