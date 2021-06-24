@@ -8,6 +8,7 @@ library("stringr")
 library("GenomicRanges")
 source("funs.R")
 set.seed(123)
+options(ieugwasr_api="http://64.227.44.193:8006/")
 
 #H0: neither trait has a genetic association in the region
 #H1: only trait 1 has a genetic association in the region.
