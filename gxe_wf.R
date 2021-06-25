@@ -114,4 +114,4 @@ for (i in 1:length(snps$term)){
 }
 
 # save
-write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxg-wf.txt"))
+write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxe-wf.txt"))
