@@ -104,5 +104,6 @@ all <- all %>% select(Trait, rsid, ea, gene, coloc, phi_p)
 names(all) <- c("Trait", "RSID", "EA", "Nearest Gene", "Colocalized Gene", "P")
 
 # order by trait and then by P
+all <- all %>% arrange(Trait, P)
 
-write.table(all, sep="\t", row.names=F, quote=F, file="data/all.vqtls.txt")
+write.table(all, sep="\t", row.names=F, quote=F, file="all.vqtls.txt")
