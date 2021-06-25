@@ -6,6 +6,7 @@ library("stringr")
 library('coloc')
 source("funs.R")
 set.seed(123)
+options(ieugwasr_api="http://64.227.44.193:8006/")
 
 option_list = list(
   make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
@@ -18,7 +19,7 @@ opt = parse_args(opt_parser);
 snps <- fread(paste0("data/", opt$trait, ".gxg.txt"))
 
 # take top GxG hits for coloc
-snps <- snps %>% filter(p.value < 0.05 / (1e+6 * 30 + 250000 * 30))
+snps <- snps %>% filter(p.value < 5e-8)
 snps <- cbind(snps, str_split(snps$term, ":", simplify=T), stringsAsFactors=F)
 v1 <- as.data.frame(str_split(snps$V1, "_", simplify=T), stringsAsFactors=F)
 names(v1) <- c("chr.1", "pos.1", "oa.1", "ea.1")

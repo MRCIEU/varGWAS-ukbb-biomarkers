@@ -88,16 +88,6 @@ validate_app.R \
 -m GxS
 ```
 
-## Emperical T1E
-
-Estimate the emperical T1E using increasing MAF
-
-```sh
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh emperical_sim.R -t "$trait"
-done
-```
-
 ## vGWAS QC
 
 Map data to LDSC format (mean effect only)
@@ -136,7 +126,7 @@ Combine plots
 Rscript qc-fig.R
 ```
 
-## Clump vQTL
+## Clump vQTLs
 
 Clump tophits & test for mean effect using heteroscedaticity robust model
 
@@ -146,15 +136,34 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
 done
 ```
 
-Not vQTLs detected:
+## Annotate vQTLs with nearest gene
 
-- albumin.30600.0.0
+bedtools closest
 
-## Perform colocalization with eQTLs and pQTLs
+```sh
+module load apps/bedtools/2.3.0
+
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
+    bedtools \
+    closest \
+    -g /mnt/storage/home/ml18692/db/reference_genomes/released/2019-08-30/data/2.8/b37/human_g1k_v37.fasta.fai \
+    -a <(awk -F"," 'NR>1 {print $1"\t"$2-1"\t"$2}' "data/""$trait"".clump.txt" | sort -k1,1n -k2,2n) \
+    -b data/Homo_sapiens.GRCh37.82.sorted.bed \
+    > "data/""$trait"".nearest-gene.txt"
+done
+```
+
+Combine nearest gene
+
+```sh
+awk '{print $1"\t"$3"\t"$8}' data/*nearest* | uniq > data/nearest.txt
+```
+
+## Colocalize vQTLs with eQTLs and pQTLs
 
 ```sh
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh run_coloc.R -t "$trait" -o 
+    sbatch runR.sh run_coloc.R -t "$trait" -o "data/""$trait""_coloc.txt" -s "data/""$trait"".clump.txt"
 done
 ```
 
@@ -162,7 +171,17 @@ Combine coloc analyses
 
 ```sh
 echo -e "nsnps\tPP.H0.abf\tPP.H1.abf\tPP.H2.abf\tPP.H3.abf\tPP.H4.abf\tgene\tregion\ttrait" > data/coloc.txt
-grep -hv nsnps data/*.0.0.coloc.txt >> data/coloc.txt
+grep -hv nsnps data/*.0.0_coloc.txt >> data/coloc.txt
+```
+
+## Produce vQTL table
+
+Combine all vQTLs
+
+```sh
+echo -n "trait," > data/vqtls.txt
+head -n1 data/body_mass_index.21001.0.0.clump.txt >> data/vqtls.txt
+grep -v chr data/*clump* | sed 's/data\///g' | sed 's/.clump.txt:/,/g' >> data/vqtls.txt
 ```
 
 ## Filter colocalization results to encoding gene cis region
@@ -278,7 +297,7 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
     sbatch runR.sh gxg.R -t "$trait"
 done
 
-# sensitivity analysis
+# WF analysis
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh gxg_wf.R -t "$trait"
 done
@@ -289,12 +308,14 @@ Combine GxG analyses
 ```sh
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg.txt
 grep -v term data/*.0.0.gxg.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg.txt:/\t/g' >> data/gxg.txt
+echo -e "trait\tbeta\tse\tpvalue\tsample_size\tterm" > data/gxg-wf.txt
+grep -v term data/*.0.0.gxg-wf.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg-wf.txt:/\t/g' >> data/gxg-wf.txt
 ```
 
 Print out top GxG hits as independent variants for coloc/nearest gene analysis
 
 ```sh
-Rscript gxg_usnps.R -t "aspartate_aminotransferase.30650.0.0"
+Rscript gxg_usnps.R
 ```
 
 Perform coloc
@@ -306,23 +327,6 @@ Rscript run_coloc.R \
 -snps "data/aspartate_aminotransferase.30650.0.0.gxg-usnps.txt" \
 -lz FALSE
 ```
-
-Find closest gene
-
-bedtools closest 
-
-```sh
-module load apps/bedtools/2.3.0
-bedtools \
-closest \
--a <(awk 'NR>1 {print $2"\t"$3-1"\t"$3}' data/aspartate_aminotransferase.30650.0.0.gxg-usnps.txt | sort -n -k1,1 -k2,2) \
--b data/Homo_sapiens.GRCh37.82.sorted.bed \
-> data/aspartate_aminotransferase.30650.0.0.gxg-usnps-closest.txt
-```
-
-Forest plot of GxG effect on additive and multiplicative scales
-
-
 
 ## GxE interaction analysis
 
