@@ -30,15 +30,8 @@ dat <- merge(linker, covariates, "appieu")
 dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
 dat <- merge(dat, pc, "appieu")
 
-# read in vGWAS
-snps <- get_variants(opt$trait)
-
-# filter on P value
-vqtls <- snps %>% filter(phi_p < (5e-8/30)) %>% select("rsid", "phi_p") %>% rename(pval = phi_p)
-
-# clump records
-vqtls <- ld_clump(vqtls)
-snps <- snps[snps$rsid %in% vqtls$rsid]
+# read in clumped vQTLs
+snps <- fread(paste0("data/", opt$trait, ".clump.txt"))
 
 # add key
 snps$key <- paste0("chr", snps$chr, "_", snps$pos, "_", snps$oa, "_", snps$ea)

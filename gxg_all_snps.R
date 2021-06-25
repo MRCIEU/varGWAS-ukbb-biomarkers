@@ -12,6 +12,7 @@ get_gxg <- function(id, chra, starta, enda, chrb, startb, endb, trait){
   hits <- tophits(id=id, pval = 5e-05)
   gene1 <- hits %>% filter(chr == chra & position >= starta-500000 & position <= enda+500000)
   gene2 <- hits %>% filter(chr == chrb & position >= startb-500000 & position <= endb+500000)
+  print(gene2$rsid)
 
   # read in extracted phenotypes
   opt <- data.frame(trait=trait, stringsAsFactors=F)
