@@ -312,22 +312,6 @@ echo -e "trait\tbeta\tse\tpvalue\tsample_size\tterm" > data/gxg-wf.txt
 grep -v term data/*.0.0.gxg-wf.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg-wf.txt:/\t/g' >> data/gxg-wf.txt
 ```
 
-Print out top GxG hits as independent variants for coloc/nearest gene analysis
-
-```sh
-Rscript gxg_usnps.R
-```
-
-Perform coloc
-
-```sh
-Rscript run_coloc.R \
--t "aspartate_aminotransferase.30650.0.0" \
--o "data/aspartate_aminotransferase.30650.0.0.gxg-coloc.txt" \
--snps "data/aspartate_aminotransferase.30650.0.0.gxg-usnps.txt" \
--lz FALSE
-```
-
 ## GxE interaction analysis
 
 ```sh

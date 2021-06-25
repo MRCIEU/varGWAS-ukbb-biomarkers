@@ -30,7 +30,7 @@ dat <- merge(dat, pc, "appieu")
 snps <- fread(paste0("data/", opt$trait, ".gxg.txt"))
 
 # filter on P value
-snps <- snps %>% filter(p.value < 0.05 / (1e+6 + 250000) / 30)
+snps <- snps %>% filter(p.value < 5e-8)
 
 # split term
 snps <- cbind(snps, str_split(snps$term, ":", simplify=T), stringsAsFactors=F)
@@ -60,4 +60,4 @@ for (i in 1:nrow(snps)){
   }
 }
 
-write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxg-",opt$out,".txt"))
+write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxg-disease.txt"))
