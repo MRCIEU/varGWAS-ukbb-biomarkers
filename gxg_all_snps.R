@@ -64,5 +64,5 @@ get_gxg <- function(id, chra, starta, enda, chrb, startb, endb, trait){
 
 # test for gxg
 tg <- get_gxg("ukb-d-30870_irnt", 11, 116660083, 116663136, 8, 19759228, 19824769, "triglycerides.30870.0.0")
-crp <- get_gxg("ukb-d-30710_irnt", 1, 159682079, 159684379, 19, 45409011, 45412650, "c_reactive_protein.30710.0.0")
+crp <- get_gxg("ukb-d-30710_irnt", 12, 121416346, 121440315, 19, 45409011, 45412650, "c_reactive_protein.30710.0.0")
 alt <- get_gxg("ukb-d-30620_irnt", 22, 44319619, 44360368, 4, 88224941, 88244058, "alanine_aminotransferase.30620.0.0")

@@ -40,7 +40,7 @@ lookup <- data.frame(
     ),
     gene=c(
         "APOA5 x LPL",
-        "CRP x APOE",
+        "HNF1A x APOE",
         "PNPLA3 x HSD17B13"
     )
 )
