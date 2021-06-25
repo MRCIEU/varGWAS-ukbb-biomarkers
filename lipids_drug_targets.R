@@ -3,6 +3,7 @@ library("dplyr")
 library("metafor")
 source("funs.R")
 set.seed(1234)
+options(ieugwasr_api="http://64.227.44.193:8006/")
 
 get_rct_est <- function(placebo_mean, placebo_n, placebo_sd, treatment_mean, treatment_n, treatment_sd){
     # Taken from https://github.com/harrietlmills/DetectingDifferencesInVariance/blob/master/AnalyseIndividualTrials.R
@@ -35,16 +36,32 @@ vgwas <- get_variants("ldl_direct.30780.0.0")
 # filter drug target loci
 hmgcr <- ldl %>% filter(chr == "5" & position > 74632154-500000 & position < 74657929+500000)
 hmgcr <- vgwas %>% filter(rsid %in% hmgcr$rsid)
+hmgcr$ gene <- "HMGCR"
 ### PCSK9 effect on LDL-c ###
 # https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4845239/
 # RCT - PCSK9 inhibitors lower LDL-c mean and variance (p=0.005; n=29)
 # MR - rs191448950:A at PCSK9 lowers LDL-c mean and variance (p=3.15 x 10-8)
 pcsk9 <- ldl %>% filter(chr == "1" & position > 55505221-500000 & position < 55530525+500000)
 pcsk9 <- vgwas %>% filter(rsid %in% pcsk9$rsid)
+pcsk9$ gene <- "PCSK9"
 npc1l1 <- ldl %>% filter(chr == "7" & position > 44552134-500000 & position < 44580914+500000)
 npc1l1 <- vgwas %>% filter(rsid %in% npc1l1$rsid)
+npc1l1$ gene <- "NPC1L1"
 cetp <- ldl %>% filter(chr == "16" & position > 56995762-500000 & position < 57017757+500000)
 cetp <- vgwas %>% filter(rsid %in% cetp$rsid)
+cetp$ gene <- "CETP"
+
+# orient effects to be lipid lowering
+ldl <- rbind(hmgcr, pcsk9, npc1l1, cetp)
+ldl$flip <- ldl$beta > 0
+ldl$allele <- ""
+ldl[which(ldl$flip)]$beta <- ldl[which(ldl$flip)]$beta *-1
+ldl[which(ldl$flip)]$phi_x <- ldl[which(ldl$flip)]$phi_x *-1
+ldl[which(ldl$flip)]$phi_xsq <- ldl[which(ldl$flip)]$phi_xsq *-1
+ldl[which(ldl$flip)]$allele <- ldl[which(ldl$flip)]$oa
+ldl[which(ldl$flip)]$oa <- ldl[which(ldl$flip)]$ea
+ldl[which(ldl$flip)]$ea <- ldl[which(ldl$flip)]$allele
+ldl <- ldl %>% select(gene, beta, se, p, phi_x, se_x, phi_xsq, se_xsq, phi_p) %>% mutate_at(vars(beta, se, phi_x, se_x, phi_xsq, se_xsq), funs(round(., 3))) %>% mutate_at(vars(p,phi_p), funs(signif(., 3)))
 
 # HDL-c
 
@@ -57,6 +74,21 @@ vgwas <- get_variants("hdl_cholesterol.30760.0.0")
 # filter drug target loci
 cetp <- hdl %>% filter(chr == "16" & position > 56995762-500000 & position < 57017757+500000)
 cetp <- vgwas %>% filter(rsid %in% cetp$rsid)
+cetp$gene <- "CETP"
+hdl <- cetp
+hdl$flip <- hdl$beta > 0
+hdl$allele <- ""
+hdl[which(hdl$flip)]$beta <- hdl[which(hdl$flip)]$beta *-1
+hdl[which(hdl$flip)]$phi_x <- hdl[which(hdl$flip)]$phi_x *-1
+hdl[which(hdl$flip)]$phi_xsq <- hdl[which(hdl$flip)]$phi_xsq *-1
+hdl[which(hdl$flip)]$allele <- hdl[which(hdl$flip)]$oa
+hdl[which(hdl$flip)]$oa <- hdl[which(hdl$flip)]$ea
+hdl[which(hdl$flip)]$ea <- hdl[which(hdl$flip)]$allele
+hdl <- hdl %>% select(gene, beta, se, p, phi_x, se_x, phi_xsq, se_xsq, phi_p) %>% mutate_at(vars(beta, se, phi_x, se_x, phi_xsq, se_xsq), funs(round(., 3))) %>% mutate_at(vars(p,phi_p), funs(signif(., 3)))
+ldl$trait <- "LDL"
+hdl$trait <- "HDL"
+all <- rbind(ldl, hdl)
+write.table(all, file="statin.vqtl.txt", sep="\t", quote=F, row.names=F)
 
 ### vGWAS shows reduction in variance at drug target loci, does RCT show same?
 

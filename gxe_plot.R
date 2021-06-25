@@ -15,41 +15,24 @@ d$lci <- d$estimate - (d$std.error * 1.96)
 d$uci <- d$estimate + (d$std.error * 1.96)
 
 # read in WF
-wf <- fread("data/gxg-wf.txt")
+wf <- fread("data/gxe-wf.txt")
 wf$lci <- wf$beta - (wf$se * 1.96)
 wf$uci <- wf$beta + (wf$se * 1.96)
+wf$term_trait <- paste0(wf$term, "-", wf$trait)
 
 # filter genome-wide sig hits
+d <- d %>% filter(trait != "body_mass_index.21001.0.0")
 d <- d %>% filter(p.value < 5e-8)
+d$term_trait <- paste0(d$term, "-", d$trait)
 
 # merge
-d <- merge(d, wf, "term")
+d <- merge(d, wf, "term_trait")
 d$t <- get_trait_name(d$trait.x)
 
-# add rsid
-lookup <- data.frame(
-    snp=c(
-        "chr11_116648917_C_G:chr8_19912370_A_G", 
-        "chr12_121420260_G_A:chr19_45411941_C_T", 
-        "chr22_44324730_T_C:chr4_88212722_A_G"
-    ), 
-    rsid=c(
-        "rs964184-G x rs115849089-G",
-        "rs7979473-A x rs429358-T",
-        "rs738408-C x rs13141441-G"
-    ),
-    gene=c(
-        "APOA5 x LPL",
-        "HNF1A x APOE",
-        "PNPLA3 x HSD17B13"
-    )
-)
-d <- merge(d, lookup, by.x="term", by.y="snp")
-
 # plot
-pdf("gxg-forest.pdf")
+pdf("gxe-forest.pdf")
 forestplot(
-    paste0(d$t, "\n", d$gene, "\n", d$rsid),
+    d$term_trait,
     boxsize = 0.05,
     xticks = c(-.25, -.1, 0, .1, .25),
     legend = c("Main", "Within-family"),
