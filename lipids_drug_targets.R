@@ -20,7 +20,7 @@ get_rct_est <- function(placebo_mean, placebo_n, placebo_sd, treatment_mean, tre
     test <- srdat_logVR$zi
     p <- logVR_pvalue
 
-    return(est, se, test, p)
+    return(data.frame(est, se, test, p))
 }
 
 # load instruments for lipids at drug target loci & cross ref with vGWAS
@@ -37,10 +37,6 @@ vgwas <- get_variants("ldl_direct.30780.0.0")
 hmgcr <- ldl %>% filter(chr == "5" & position > 74632154-500000 & position < 74657929+500000)
 hmgcr <- vgwas %>% filter(rsid %in% hmgcr$rsid)
 hmgcr$ gene <- "HMGCR"
-### PCSK9 effect on LDL-c ###
-# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4845239/
-# RCT - PCSK9 inhibitors lower LDL-c mean and variance (p=0.005; n=29)
-# MR - rs191448950:A at PCSK9 lowers LDL-c mean and variance (p=3.15 x 10-8)
 pcsk9 <- ldl %>% filter(chr == "1" & position > 55505221-500000 & position < 55530525+500000)
 pcsk9 <- vgwas %>% filter(rsid %in% pcsk9$rsid)
 pcsk9$ gene <- "PCSK9"
@@ -62,6 +58,12 @@ ldl[which(ldl$flip)]$allele <- ldl[which(ldl$flip)]$oa
 ldl[which(ldl$flip)]$oa <- ldl[which(ldl$flip)]$ea
 ldl[which(ldl$flip)]$ea <- ldl[which(ldl$flip)]$allele
 ldl <- ldl %>% select(gene, beta, se, p, phi_x, se_x, phi_xsq, se_xsq, phi_p) %>% mutate_at(vars(beta, se, phi_x, se_x, phi_xsq, se_xsq), funs(round(., 3))) %>% mutate_at(vars(p,phi_p), funs(signif(., 3)))
+
+# RCT 
+
+### PCSK9 effect on LDL-c ###
+# https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4845239/
+rct <- get_rct_est(120.5, 31, 27.0, 34.2, 29, 15.6)
 
 # HDL-c
 
