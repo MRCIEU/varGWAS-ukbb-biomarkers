@@ -42,35 +42,41 @@ d$key <- paste0(d$V2, "-", d$y)
 d <- merge(d, lookup, "key")
 d$key <- NULL
 d$f <- as.factor(d$RSID)
-
-# plot
 d$u <- factor(d$u)
 levels(d$u) <- list(Age="Age At Recruitment", Smoking="Smoking Status", Sex="Sex", BMI="Body Mass Index", Alcohol="Alcohol Intake Frequency")
-ggplot(data=d, aes(x=f, y=estimate, ymin=lci.x, ymax=uci.x, group=Trait, color=Trait)) +
-    coord_flip() +
-    facet_grid(u~., scales = "free_y", space="free_y")+
-    geom_point() +
-    geom_errorbar(width=.05) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
-    theme_classic() +
-    xlab("SNP") + 
-    ylab("Estimate, SD (95% CI)") +
-    theme(
-        strip.background = element_blank(),
-        strip.text.y = element_text(angle=0),
-        panel.spacing = unit(2, "lines")
-    )
 
-ggplot(data=d, aes(x=f, y=estimate, ymin=lci.x, ymax=uci.x, group=u, color=u)) +
-    coord_flip() +
-    facet_grid(Trait~., scales = "free_y", space="free_y")+
-    geom_point() +
-    geom_errorbar(width=.05) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
-    theme_classic() +
-    xlab("SNP") + 
-    ylab("Estimate, SD (95% CI)") +
-    theme(
-        strip.text.y = element_text(angle=0),
-        strip.background = element_blank()
-    )
+# select fields
+main <- d %>% select(Trait, f, estimate, lci.x, uci.x, u) %>% rename(lci="lci.x", uci="uci.x")
+main$analysis <- "Main"
+wf <- d %>% select(Trait, f, u, beta, lci.y, uci.y) %>% rename(estimate="beta", lci="lci.y", uci="uci.y")
+wf$analysis <- "WF"
+d <- rbind(main, wf)
+
+# plot
+get_plot <- function(data){
+    p <- ggplot(data=data, aes(x=f, y=estimate, ymin=lci, ymax=uci, group=u, color=u)) +
+        coord_flip() +
+        facet_wrap(Trait~., scales = "free")+
+        geom_point(position=position_dodge(width=1)) +
+        geom_errorbar(width=.05, position=position_dodge(width=1)) +
+        geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
+        theme_classic() +
+        xlab("SNP") + 
+        ylab("Genotype (dosage) * modifier (SD) interaction effect estimate, SD (95% CI)") +
+        scale_y_continuous(breaks = scales::breaks_pretty(n=4)) +
+        theme(
+            strip.text.y = element_text(angle=0),
+            strip.background = element_blank(),
+            axis.title.y = element_blank()
+        ) +
+        labs(color = "Modifier")
+        return(p)
+}
+
+pdf("gxe-main.pdf", width=12, height=10)
+print(get_plot(main))
+dev.off()
+
+pdf("gxe-wf.pdf", width=12, height=10)
+print(get_plot(wf))
+dev.off()
