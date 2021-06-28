@@ -100,8 +100,9 @@ all$Trait <- NA
 for (i in 1:nrow(all)){
     all$Trait[i] <- biomarkers_abr[biomarkers==all$trait[i]]
 }
-all <- all %>% select(Trait, rsid, ea, gene, coloc, phi_p)
-names(all) <- c("Trait", "RSID", "EA", "Nearest Gene", "Colocalized Gene", "P")
+all$key <- paste0("chr", all$chr, "_", all$pos, "_", all$oa, "_", all$ea)
+all <- all %>% select(key, Trait, rsid, ea, gene, coloc, phi_p)
+names(all) <- c("key", "Trait", "RSID", "EA", "Nearest Gene", "Colocalized Gene", "P")
 
 # order by trait and then by P
 all <- all %>% arrange(Trait, P)

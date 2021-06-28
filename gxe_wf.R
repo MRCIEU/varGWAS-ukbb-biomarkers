@@ -68,7 +68,7 @@ dat <- dat[complete.cases(dat), ]
 # SD scale
 dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]])
 # SD scale env
-for (e in c("summed_minutes_activity.22034.0.0","alcohol_intake_frequency.1558.0.0","estimated_fat_yesterday.100004.0.0","estimated_total_sugars_yesterday.100008.0.0","age_at_recruitment.21022.0.0","body_mass_index.21001.0.0")){
+for (e in env_exp){
   dat[[e]] <- dat[[e]] / sd(dat[[e]], na.rm=T)
 }
 pheno <- dat
@@ -104,7 +104,7 @@ pheno <- pheno %>%
 # test for interaction between each snp
 results <- data.frame()
 for (i in 1:length(snps$term)){
-  # test GxG
+  # test GxE
   pair <- str_split(snps$term[i], ":", simplify=T)
   message("Testing GxE for: ", pair[1], " ", pair[2])
   fit <- related_plm(pheno, opt$trait, pair[1], pair[2])
