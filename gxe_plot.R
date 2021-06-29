@@ -41,18 +41,20 @@ main <- d %>% select(Trait, f, estimate, lci, uci, u, p.value)
 main$analysis <- "Main"
 main$logP <- -log10(main$p.value)
 
-ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci)) +
+pdf("gxe.pdf", height=10, width=12)
+ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=Trait)) +
     coord_flip() +
     facet_grid(Trait~u, scales="free", space="free_y") +
     geom_point() +
     geom_errorbar(width=.05) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
     theme_classic() +
-    scale_y_continuous(breaks = scales::breaks_pretty(n=3)) +
-    labs(color = expression(paste("-log"[10],"(", plain(P),")"))) +
+    scale_y_continuous(limits = c(-.1, .1), breaks=c(-.1, 0, .1)) +
+    labs(color = "Outcome") +
     theme(
-        strip.text.y = element_text(angle=0),
         axis.title.y = element_blank(),
-        strip.background.y = element_blank()
+        strip.background = element_blank(),
+        strip.text.y = element_blank()
     ) +
     ylab("Genotype (dosage) * modifier (SD) interaction effect estimate, SD (95% CI)")
+dev.off()
