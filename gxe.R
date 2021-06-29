@@ -34,6 +34,7 @@ dat <- merge(dat, pc, "appieu")
 for (e in env_exp){
   dat[[e]] <- dat[[e]] / sd(dat[[e]], na.rm=T)
 }
+dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]], na.rm=T)
 
 # read in clumped vQTLs
 snps <- fread(paste0("data/", opt$trait, ".clump.txt"))

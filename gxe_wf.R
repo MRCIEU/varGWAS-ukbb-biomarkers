@@ -71,6 +71,7 @@ dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]])
 for (e in env_exp){
   dat[[e]] <- dat[[e]] / sd(dat[[e]], na.rm=T)
 }
+dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]], na.rm=T)
 pheno <- dat
 pheno$famid <- as.factor(pheno$famid)
 
