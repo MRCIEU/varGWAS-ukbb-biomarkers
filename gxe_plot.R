@@ -32,7 +32,8 @@ lookup$key <- paste0(lookup$key, "-", lookup$Trait)
 d$key <- paste0(d$V2, "-", d$y)
 d <- merge(d, lookup, "key")
 d$key <- NULL
-d$f <- as.factor(d$RSID)
+d$gene <- str_split(d[["Nearest Gene"]], ",", simplify=T)[,1]
+d$f <- as.factor(paste0(d$gene, " (", d$RSID, d$EA, ")"))
 d$u <- factor(d$u)
 levels(d$u) <- list(Age="Age At Recruitment", Alcohol="Alcohol Intake Frequency", BMI="Body Mass Index", Sex="Sex", Smoking="Smoking Status", PA="Summed Minutes Activity")
 
@@ -41,8 +42,14 @@ main <- d %>% select(Trait, f, estimate, lci, uci, u, p.value)
 main$analysis <- "Main"
 main$logP <- -log10(main$p.value)
 
+# create row key
+key <- data.frame(Trait=sort(unique(d$Trait)), stringsAsFactors=F)
+key$key <- row(key) %% 2
+d <- merge(d, key, "Trait")
+d$key <- factor(d$key)
+
 pdf("gxe.pdf", height=10, width=12)
-ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=Trait)) +
+ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=key)) +
     coord_flip() +
     facet_grid(Trait~u, scales="free", space="free_y") +
     geom_point() +
@@ -51,10 +58,12 @@ ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=Trait)) +
     theme_classic() +
     scale_y_continuous(limits = c(-.1, .1), breaks=c(-.1, 0, .1)) +
     labs(color = "Outcome") +
+    scale_colour_manual(values = c("#1F78B4", "#A6CEE3")) +
     theme(
         axis.title.y = element_blank(),
         strip.background = element_blank(),
-        strip.text.y = element_blank()
+        strip.text.y = element_text(angle=0),
+        legend.position = "none"
     ) +
     ylab("Genotype (dosage) * modifier (SD) interaction effect estimate, SD (95% CI)")
 dev.off()

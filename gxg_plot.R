@@ -24,7 +24,7 @@ d <- d %>% filter(p.value < 5e-8)
 
 # merge
 d <- merge(d, wf, "term")
-d$t <- get_trait_name(d$trait.x)
+d$t <- sapply(d$trait.x, function(x) biomarkers_abr[biomarkers==x]) %>% as.vector
 
 # add rsid
 lookup <- data.frame(
@@ -33,32 +33,38 @@ lookup <- data.frame(
         "chr12_121420260_G_A:chr19_45411941_C_T", 
         "chr22_44324730_T_C:chr4_88212722_A_G"
     ), 
-    rsid=c(
-        "rs964184-G x rs115849089-G",
-        "rs7979473-A x rs429358-T",
-        "rs738408-C x rs13141441-G"
-    ),
-    gene=c(
-        "APOA5 x LPL",
-        "HNF1A x APOE",
-        "PNPLA3 x HSD17B13"
+    key=c(
+        "APOA5 (rs964184G) x\nLPL (rs115849089G)",
+        "HNF1A (rs7979473A) x\nAPOE (rs429358T)",
+        "PNPLA3 (rs738408C) x\nHSD17B13 (rs13141441G)"
     )
 )
 d <- merge(d, lookup, by.x="term", by.y="snp")
 
-# plot
-pdf("gxg-forest.pdf")
-forestplot(
-    paste0(d$t, "\n", d$gene, "\n", d$rsid),
-    boxsize = 0.05,
-    xticks = c(-.25, -.1, 0, .1, .25),
-    legend = c("Main", "Within-family"),
-    mean = d[,c("estimate", "beta")],
-    lower = d[,c("lci.x","lci.y")],
-    upper = d[,c("uci.x", "uci.y")],
-    new_page=F,
-    xlab=paste0("GxG effect (SD [95% CI])"),
-    col=fpColors(lines=c("darkred", "royalblue"), box=c("darkred", "royalblue")),
-    txt_gp = fpTxtGp(ticks=gpar(cex=1), xlab=gpar(cex=1))
-)
+# split out main & WF
+main <- d %>% select(key, estimate, lci.x, uci.x, t) %>% rename(lci="lci.x", uci="uci.x")
+main$analysis <- "Main"
+wf <- d %>% select(key, beta, lci.y, uci.y, t) %>% rename(lci="lci.y", uci="uci.y", estimate="beta")
+wf$analysis <- "Within-family"
+d <- rbind(wf, main)
+d$analysis <- factor(d$analysis, levels=c("Main", "Within-family"))
+
+pdf("gxg.pdf", height=4)
+ggplot(d, aes(x=key, y=estimate, ymin=lci, ymax=uci, color=analysis)) +
+    coord_flip() +
+    facet_grid(t~., scales="free", space="free_y") +
+    geom_point(position = position_dodge(width = -0.25)) +
+    geom_errorbar(width=.05, position = position_dodge(width = -0.25)) +
+    geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
+    scale_y_continuous(limits = c(-.2, .2), breaks=c(-.2, 0, .2)) +
+    theme_classic() +
+    labs(color = "Outcome") +
+    scale_colour_manual(values = c("#1F78B4", "#A6CEE3")) +
+    theme(
+        axis.title.y = element_blank(),
+        strip.background = element_blank(),
+        strip.text.y = element_text(angle=0),
+        legend.title = element_blank()
+    ) +
+    ylab("Genotype * genotype (dosage) interaction effect estimate, SD (95% CI)")
 dev.off()
