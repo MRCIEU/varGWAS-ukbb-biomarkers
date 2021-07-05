@@ -49,7 +49,8 @@ d <- merge(d, key, "Trait")
 d$key <- factor(d$key)
 
 pdf("gxe.pdf", height=10, width=12)
-ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=key)) +
+n_traits <- length(unique(d$Trait))
+ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=Trait, shape=Trait)) +
     coord_flip() +
     facet_grid(Trait~u, scales="free", space="free_y") +
     geom_point() +
@@ -58,12 +59,12 @@ ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=key)) +
     theme_classic() +
     scale_y_continuous(limits = c(-.1, .1), breaks=c(-.1, 0, .1)) +
     labs(color = "Outcome") +
-    scale_colour_manual(values = c("#1F78B4", "#A6CEE3")) +
+    scale_colour_manual(name = "Trait", labels = sort(unique(d$Trait)), values = rep(brewer.pal(5, "Set1"), n_traits) %>% head(n=n_traits)) +
+    scale_shape_manual(name = "Trait", labels = sort(unique(d$Trait)), values = rep(c(15,16,17), n_traits) %>% head(n=n_traits)) +
     theme(
         axis.title.y = element_blank(),
         strip.background = element_blank(),
-        strip.text.y = element_text(angle=0),
-        legend.position = "none"
+        strip.text.y = element_blank()
     ) +
     ylab("Genotype (dosage) * modifier (SD) interaction effect estimate, SD (95% CI)")
 dev.off()
