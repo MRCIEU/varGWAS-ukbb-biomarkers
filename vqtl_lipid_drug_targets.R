@@ -8,8 +8,8 @@ options(ieugwasr_api="http://64.227.44.193:8006/")
 
 # LDL-c
 
-# get instruments
-ldl <- tophits("ieu-b-110", clump=0)
+# get instruments from non-UKBB
+ldl <- tophits("ieu-a-300", clump=0)
 
 # load vGWAS for LDL-c
 vgwas <- get_variants("ldl_direct.30780.0.0")
@@ -53,7 +53,7 @@ ldl <- ldl %>% select(gene, beta, se, p, phi_x, se_x, phi_xsq, se_xsq, phi_p) %>
 # HDL-c
 
 # get instruments
-hdl <- tophits("ieu-b-109", clump=0)
+hdl <- tophits("ieu-a-299", clump=0)
 
 # load vGWAS for HDL-c
 vgwas <- get_variants("hdl_cholesterol.30760.0.0")
