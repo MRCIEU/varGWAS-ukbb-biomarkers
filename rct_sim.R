@@ -1,9 +1,11 @@
 library("broom")
 library("metafor")
 library("dplyr")
+library("multcomp")
 set.seed(123)
 
-# LogCVR = t_cv / c_cv
+# CV = SD / mean often expressed as percentage
+# LogCVR = log(t_cv / c_cv)
 # CVR < 1 = SD smaller in treatment arm
 # CVR > 1 = SD larger in treatment arm
 
@@ -18,7 +20,7 @@ get_logcvr <- function(y0, y1){
     srdat_logCVR <- summary(rdat_logCVR, digits = 4) 
 
     # calculate test statistic and pvalue
-    logCVR_pvalue <- 2*(1-pnorm(abs(srdat_logCVR$zi))) 
+    logCVR_pvalue <- 2*(1-pnorm(abs(srdat_logCVR$zi)))
 
     return(data.frame(
         estimate=srdat_logCVR$yi,
@@ -62,6 +64,34 @@ MA_analysis_logCVR <- function(MA_dataset){
   return(data.frame(MA_table))
 }
 
+bp <- function(x, y){
+    xsq <- x^2
+    fit1 <- lm(y ~ x)
+    dsq <- resid(fit1)^2
+    fit2 <- lm(dsq ~ x + xsq)
+    beta0 <- glht(model=fit1, linfct=paste("Intercept == 0"))
+    beta1 <- glht(model=fit1, linfct=paste("Intercept + x*1 == 0"))
+    beta2 <- glht(model=fit1, linfct=paste("Intercept + x*2 == 0"))
+    varbeta0 <- glht(model=fit2, linfct=paste("Intercept == 0"))
+    varbeta1 <- glht(model=fit2, linfct=paste("Intercept + x*1 + xsq*1 == 0"))
+    varbeta2 <- glht(model=fit2, linfct=paste("Intercept + x*2 + xsq*4 == 0"))
+    res <- cbind(
+        tidy(beta0) %>% dplyr::select("estimate", "std.error") %>% rename(estimate.0="estimate", std.error.0="std.error"),
+        tidy(beta1) %>% dplyr::select("estimate", "std.error") %>% rename(estimate.1="estimate", std.error.1="std.error"),
+        tidy(beta2) %>% dplyr::select("estimate", "std.error") %>% rename(estimate.2="estimate", std.error.2="std.error"),
+        tidy(varbeta0) %>% dplyr::select("estimate", "std.error") %>% rename(var.estimate.0="estimate", var.std.error.0="std.error"),
+        tidy(varbeta1) %>% dplyr::select("estimate", "std.error") %>% rename(var.estimate.1="estimate", var.std.error.1="std.error"),
+        tidy(varbeta2) %>% dplyr::select("estimate", "std.error") %>% rename(var.estimate.2="estimate", var.std.error.2="std.error"),
+        n0=table(x)[1],
+        n1=table(x)[2],
+        n2=table(x)[3]
+    )
+    res$sd.estimate.0 <- sqrt(res$var.estimate.0)
+    res$sd.estimate.1 <- sqrt(res$var.estimate.1)
+    res$sd.estimate.2 <- sqrt(res$var.estimate.2)
+    return(res)
+}
+
 n_obs <- 1000
 n_sim <- 1000
 m <- 1.44801 # mean of HDL-c in UKBB
@@ -71,17 +101,15 @@ s <- 0.382304 # sd of HDL-c in UKBB
 p_xmain <- rep(NA, n_sim)
 p_umain <- rep(NA, n_sim)
 p_int <- rep(NA, n_sim)
-results <- data.frame()
 ma <- data.frame()
 for (i in 1:n_sim){
     x <- rbinom(n_obs, 1, 0.5)
     u <- rnorm(n_obs)
-    y <- x*.175 + x*u*.175+ rlnorm(n=n_obs, meanlog=log(m^2 / sqrt(s^2 + m^2)), sdlog=sqrt(log(1 + (s^2 / m^2)))) # effects set to have 80% pwr
+    y <- x*.0875 + x*u*.088 + rlnorm(n=n_obs, meanlog=log(m^2 / sqrt(s^2 + m^2)), sdlog=sqrt(log(1 + (s^2 / m^2)))) # effects set to have 95% pwr
     fit <- lm(y ~ x*u)
     p_xmain[i] <- tidy(fit)$p.value[2]
     p_umain[i] <- tidy(fit)$p.value[3]
     p_int[i] <- tidy(fit)$p.value[4]
-    results <- rbind(results, get_logcvr(y[x==0], y[x==1]))
     ma <- rbind(ma, data.frame(Study=i, Int_Mean=mean(y[x==1]), Int_SD=sd(y[x==1]), Int_N=length(y[x==1]), Con_Mean=mean(y[x==0]), Con_SD=sd(y[x==0]), Con_N=length(y[x==0])))
 }
 
@@ -90,22 +118,27 @@ binom.test(sum(p_umain < 0.05), n_sim)
 binom.test(sum(p_int < 0.05), n_sim)
 MA_analysis_logCVR(ma)
 
-# GxE effect
-q <- 1 / 3
+# GxE effect on cholesterol conc
 p_xmain <- rep(NA, n_sim)
 p_umain <- rep(NA, n_sim)
 p_int <- rep(NA, n_sim)
+ma <- data.frame()
 for (i in 1:n_sim){
-    x <- rbinom(n_obs, 2, q)
+    x <- rbinom(n_obs, 2, 0.4)
     u <- rnorm(n_obs)
-    y <- x*.1298 + x*u*.1345 + rnorm(n_obs)
+    y <- x*.0649 + x*u*.0649 + rlnorm(n=n_obs, meanlog=log(m^2 / sqrt(s^2 + m^2)), sdlog=sqrt(log(1 + (s^2 / m^2)))) # effects set to have 95% pwr
     fit <- lm(y ~ x*u)
     p_xmain[i] <- tidy(fit)$p.value[2]
     p_umain[i] <- tidy(fit)$p.value[3]
     p_int[i] <- tidy(fit)$p.value[4]
-} 
+    ma <- rbind(ma, bp(x, y))
+}
 
-# power
 binom.test(sum(p_xmain < 0.05), n_sim)
 binom.test(sum(p_umain < 0.05), n_sim)
 binom.test(sum(p_int < 0.05), n_sim)
+
+# convert variance to SD
+ma$Study <- rownames(ma)
+MA_analysis_logCVR(ma %>% dplyr::select(Study, estimate.1, sd.estimate.1, n1, estimate.0, sd.estimate.0, n0) %>% rename(Int_Mean=estimate.1, Int_SD=sd.estimate.1, Int_N=n1, Con_Mean=estimate.0, Con_SD=sd.estimate.0, Con_N=n0))
+MA_analysis_logCVR(ma %>% dplyr::select(Study, estimate.2, sd.estimate.2, n2, estimate.0, sd.estimate.0, n0) %>% rename(Int_Mean=estimate.2, Int_SD=sd.estimate.2, Int_N=n2, Con_Mean=estimate.0, Con_SD=sd.estimate.0, Con_N=n0))
