@@ -50,7 +50,7 @@ ldl.pheno <- na.omit(ldl.pheno)
 hdl.pheno <- dat %>% dplyr::select(appieu, age_at_recruitment.21022.0.0, sex.31.0.0, PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8, PC9, PC10, hdl_cholesterol.30760.0.0)
 hdl.pheno <- na.omit(hdl.pheno)
 
-# load instruments for lipids at drug target loci & cross ref with vGWAS
+# load instruments for lipids at drug target loci & test for variance effect
 
 # LDL-c
 
@@ -122,4 +122,4 @@ for (i in 1:nrow(hdl)){
 }
 
 # write results
-write.table(file="vqtl_logcvr.txt", rbind(ldl.results, hdl.results), sep="\t", row.names=F, quote=F)
+write.table(file="iv_snp_lipid_variance.txt", rbind(ldl.results, hdl.results), sep="\t", row.names=F, quote=F)
