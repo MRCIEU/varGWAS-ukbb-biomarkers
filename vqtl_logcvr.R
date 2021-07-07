@@ -37,6 +37,19 @@ bp <- function(dat, snp, outcome){
     return(res)
 }
 
+# load phenotypes
+load("data/pheno.RData")
+linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
+covariates <- get_covariates()
+pc <- get_genetic_principal_components()
+dat <- merge(linker, covariates, "appieu")
+dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
+dat <- merge(dat, pc, "appieu")
+ldl.pheno <- dat %>% dplyr::select(appieu, age_at_recruitment.21022.0.0, sex.31.0.0, PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8, PC9, PC10, ldl_direct.30780.0.0)
+ldl.pheno <- na.omit(ldl.pheno)
+hdl.pheno <- dat %>% dplyr::select(appieu, age_at_recruitment.21022.0.0, sex.31.0.0, PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8, PC9, PC10, hdl_cholesterol.30760.0.0)
+hdl.pheno <- na.omit(hdl.pheno)
+
 # load instruments for lipids at drug target loci & cross ref with vGWAS
 
 # LDL-c
@@ -65,16 +78,15 @@ ldl[which(ldl$flip),]$nea <- ldl[which(ldl$flip),]$ea
 ldl[which(ldl$flip),]$ea <- ldl[which(ldl$flip),]$allele
 
 # test for SNP effect on LDL-c variance
-pheno <- fread("data/ldl_direct.30780.0.0.txt")
 for (i in 1:nrow(ldl)){
     dosage <- extract_variant_from_bgen(as.character(ldl$chr[i]), as.double(ldl$position[i]), ldl$nea[i], ldl$ea[i])
     names(dosage)[1] <- ldl$rsid[i]
-    pheno <- merge(pheno, dosage, "appieu")
+    ldl.pheno <- merge(ldl.pheno, dosage, "appieu")
 }
 
 ldl.results <- data.frame()
 for (i in 1:nrow(ldl)){
-    ldl.results <- rbind(ldl.results, bp(pheno, ldl$rsid[i], "ldl_direct.30780.0.0"))
+    ldl.results <- rbind(ldl.results, bp(ldl.pheno, ldl$rsid[i], "ldl_direct.30780.0.0"))
 }
 
 # HDL-c
