@@ -4,24 +4,6 @@ library('meta')
 library("dplyr")
 set.seed(1234)
 
-get_rct_est <- function(placebo_mean, placebo_n, placebo_sd, treatment_mean, treatment_n, treatment_sd){
-    # Taken from https://github.com/harrietlmills/DetectingDifferencesInVariance/blob/master/AnalyseIndividualTrials.R
-    rdat_logVR <- escalc(measure = "VR", m1i = treatment_mean, n1i = treatment_n, sd1i = treatment_sd,  m2i = placebo_mean, n2i = placebo_n, sd2i = placebo_sd)
-
-    # calculate confidence intervals, etc
-    srdat_logVR <- summary(rdat_logVR, digits = 2)
-
-    # calculate test statistic and pvalue
-    logVR_pvalue <-  2*(1-pnorm(abs(srdat_logVR$zi)))
-
-    est <- rdat_logVR$yi 
-    se <-  srdat_logVR$sei 
-    test <- srdat_logVR$zi
-    p <- logVR_pvalue
-
-    return(data.frame(est, se, test, p))
-}
-
 # RCT 
 dat <- read_excel("RCT.xlsx")
 dat$mu_placebo <- as.numeric(dat$mu_placebo)
