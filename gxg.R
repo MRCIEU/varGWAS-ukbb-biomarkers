@@ -3,6 +3,7 @@ library('data.table')
 library('dplyr')
 library('broom')
 library('ieugwasr')
+library('robustbase')
 source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
@@ -59,8 +60,7 @@ for (i in 1:length(vqtls)){
     # test GxG
     message("Testing GxG for: ", vqtls[i], " ", vqtls[j])
     f <- as.formula(paste0(opt$trait, " ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(vqtls[i], " * " ,vqtls[j], collapse=" + ")))
-    fit <- lm(f, pheno)
-    t <- tidy(fit)
+    t <- tidy(lmrob(f, data=pheno))
 
     # store results
     results <- rbind(results, t[grep(":", t$term),])
