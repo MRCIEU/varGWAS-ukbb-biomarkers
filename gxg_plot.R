@@ -50,9 +50,9 @@ d <- rbind(wf, main)
 d$analysis <- factor(d$analysis, levels=c("Main", "Within-family"))
 
 pdf("gxg.pdf", height=2)
-ggplot(d, aes(x=key, y=estimate, ymin=lci, ymax=uci, group=analysis, color=t, shape=analysis)) +
+ggplot(d, aes(x=key, y=estimate, ymin=lci, ymax=uci, group=analysis, color=analysis)) +
     coord_flip() +
-    scale_colour_brewer(palette = "Set1") +
+    scale_colour_brewer(palette = "Paired", direction = -1) +
     facet_grid(t~., scales="free", space="free_y") +
     geom_point(position = position_dodge(width = -0.25)) +
     geom_errorbar(width=.05, position = position_dodge(width = -0.25)) +
@@ -63,7 +63,7 @@ ggplot(d, aes(x=key, y=estimate, ymin=lci, ymax=uci, group=analysis, color=t, sh
     theme(
         axis.title.y = element_blank(),
         strip.background = element_blank(),
-        strip.text.y = element_blank()
+        strip.text.y = element_text(angle = 0)
     ) +
     ylab("Genotype * genotype (dosage) interaction effect estimate, SD (95% CI)")
 dev.off()

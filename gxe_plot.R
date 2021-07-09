@@ -48,23 +48,38 @@ key$key <- row(key) %% 2
 d <- merge(d, key, "Trait")
 d$key <- factor(d$key)
 
-pdf("gxe.pdf", height=13, width=13)
+# count number of traits
 n_traits <- length(unique(d$Trait))
-ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=Trait, shape=Trait)) +
+
+# Create a data frame with the faceting variables
+# and some dummy data (that will be overwritten)
+tp <- data.frame()
+for (tr in unique(d$Trait)){
+    tp <- rbind(tp, data.frame(
+        Trait=rep(tr, length(unique(d$u))),
+        fill=which(tr == unique(d$Trait)) %% 2,
+        u=unique(d$u)
+    ))
+}
+tp$fill <- as.factor(tp$fill)
+
+pdf("gxe.pdf", height=11, width=11)
+ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci)) +
     coord_flip() +
     facet_grid(Trait~u, scales="free", space="free_y") +
-    geom_point(size = 2) +
+    geom_point(size = 1.5) +
     geom_errorbar(width=.05) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
     theme_classic() +
     scale_y_continuous(limits = c(-.1, .1), breaks=c(-.1, 0, .1)) +
-    labs(color = "Outcome") +
-    scale_colour_manual(name = "Trait", labels = sort(unique(d$Trait)), values = rep(brewer.pal(5, "Set1"), n_traits) %>% head(n=n_traits)) +
-    scale_shape_manual(name = "Trait", labels = sort(unique(d$Trait)), values = rep(c(15,16,17), n_traits) %>% head(n=n_traits)) +
+    geom_rect(inherit.aes = F, data = tp, aes(fill = fill), xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = 0.15) +
+    scale_fill_manual(values=brewer.pal(2,"Paired")) +
     theme(
         axis.title.y = element_blank(),
         strip.background = element_blank(),
-        strip.text.y = element_blank()
+        strip.text.y = element_text(angle = 0),
+        legend.position = "none",
+        panel.spacing.y = unit(0, "lines")
     ) +
     ylab("Genotype (dosage) * modifier (SD) interaction effect estimate, SD (95% CI)")
 dev.off()
