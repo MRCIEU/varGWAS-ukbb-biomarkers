@@ -39,6 +39,7 @@ dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]], na.rm=T)
 
 # read in clumped vQTLs
 snps <- fread(paste0("data/", opt$trait, ".clump.txt"))
+stopifnot(nrow(snps)>0)
 
 # add key
 snps$key <- paste0("chr", snps$chr, "_", snps$pos, "_", snps$oa, "_", snps$ea)
