@@ -49,7 +49,7 @@ wf$analysis <- "Within-family"
 d <- rbind(wf, main)
 d$analysis <- factor(d$analysis, levels=c("Main", "Within-family"))
 
-pdf("gxg.pdf", height=4)
+pdf("gxg.pdf", height=2)
 ggplot(d, aes(x=key, y=estimate, ymin=lci, ymax=uci, group=analysis, color=t, shape=analysis)) +
     coord_flip() +
     scale_colour_brewer(palette = "Set1") +
@@ -57,7 +57,7 @@ ggplot(d, aes(x=key, y=estimate, ymin=lci, ymax=uci, group=analysis, color=t, sh
     geom_point(position = position_dodge(width = -0.25)) +
     geom_errorbar(width=.05, position = position_dodge(width = -0.25)) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
-    scale_y_continuous(limits = c(-.2, .2), breaks=c(-.2, 0, .2)) +
+    scale_y_continuous(limits = c(-.1, .1), breaks=c(-.1, 0, .1)) +
     theme_classic() +
     labs(color = "Outcome", shape = "Model") +
     theme(

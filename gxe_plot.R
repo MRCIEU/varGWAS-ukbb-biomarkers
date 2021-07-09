@@ -24,6 +24,7 @@ d <- d %>% filter(p.value < 5e-8)
 d <- cbind(d, as.data.frame(str_split(d$term, ":", simplify=T), stringsAsFactors=F))
 d$y <- sapply(d$trait, function(x) return(biomarkers_abr[biomarkers==x]))
 d$u <- sapply(d$V1, get_trait_name)
+d <- d %>% filter(u != "Estimated Fat Yesterday") %>% filter(u != "Estimated Total Sugars Yesterday")
 
 # map SNP to rsid & gene
 lookup <- fread("all.vqtls.txt")
@@ -34,7 +35,7 @@ d$key <- NULL
 d$gene <- str_split(d[["Nearest Gene"]], ",", simplify=T)[,1]
 d$f <- as.factor(paste0(d$gene, " (", d$RSID, d$EA, ")"))
 d$u <- factor(d$u)
-levels(d$u) <- list(Age="Age At Recruitment", Alcohol="Alcohol Intake Frequency", BMI="Body Mass Index", Fat="Estimated Fat Yesterday", Sex="Sex", Smoking="Smoking Status", Sugar="Estimated Total Sugars Yesterday", PA="Summed Minutes Activity")
+levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status")
 
 # select fields
 main <- d %>% select(Trait, f, estimate, lci, uci, u, p.value)
@@ -47,12 +48,12 @@ key$key <- row(key) %% 2
 d <- merge(d, key, "Trait")
 d$key <- factor(d$key)
 
-pdf("gxe.pdf", height=10, width=12)
+pdf("gxe.pdf", height=13, width=13)
 n_traits <- length(unique(d$Trait))
 ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=Trait, shape=Trait)) +
     coord_flip() +
     facet_grid(Trait~u, scales="free", space="free_y") +
-    geom_point() +
+    geom_point(size = 2) +
     geom_errorbar(width=.05) +
     geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
     theme_classic() +
