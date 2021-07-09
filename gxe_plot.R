@@ -24,7 +24,6 @@ d <- d %>% filter(p.value < 5e-8)
 d <- cbind(d, as.data.frame(str_split(d$term, ":", simplify=T), stringsAsFactors=F))
 d$y <- sapply(d$trait, function(x) return(biomarkers_abr[biomarkers==x]))
 d$u <- sapply(d$V1, get_trait_name)
-d <- d %>% filter(u != "Estimated Fat Yesterday") %>% filter(u != "Estimated Total Sugars Yesterday") %>% filter(u != "Summed Minutes Activity")
 
 # map SNP to rsid & gene
 lookup <- fread("all.vqtls.txt")
@@ -35,7 +34,7 @@ d$key <- NULL
 d$gene <- str_split(d[["Nearest Gene"]], ",", simplify=T)[,1]
 d$f <- as.factor(paste0(d$gene, " (", d$RSID, d$EA, ")"))
 d$u <- factor(d$u)
-levels(d$u) <- list(Age="Age At Recruitment", Alcohol="Alcohol Intake Frequency", BMI="Body Mass Index", Sex="Sex", Smoking="Smoking Status", PA="Summed Minutes Activity")
+levels(d$u) <- list(Age="Age At Recruitment", Alcohol="Alcohol Intake Frequency", BMI="Body Mass Index", Fat="Estimated Fat Yesterday", Sex="Sex", Smoking="Smoking Status", Sugar="Estimated Total Sugars Yesterday", PA="Summed Minutes Activity")
 
 # select fields
 main <- d %>% select(Trait, f, estimate, lci, uci, u, p.value)
