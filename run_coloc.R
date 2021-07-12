@@ -61,7 +61,7 @@ ugenes <- unique(genes$id)
 # drop QTLs that are not e/pQTLs
 qtl <- qtl[qtl$rsid %in% genes$rsid]
 
-# loop over mvQTLs for coloc
+# loop over QTLs for coloc
 results <- data.frame()
 for (i in 1:nrow(qtl)){
   message(paste0("Working on SNP: ", qtl$rsid[i]))
@@ -74,7 +74,12 @@ for (i in 1:nrow(qtl)){
   region <- paste0(chr, ":", start, "-", end)
 
   # subset vQTL data for interval
-  vqtl <- vgwas[(vgwas$chr == chr & vgwas$pos >= start & vgwas$pos <= end)]
+  vqtl <- vgwas %>% filter(chr == !!chr) %>% filter(pos >= !!start) %>% filter(pos <= !!end)
+
+  if (nrow(vqtl) == 0){
+    message(paste0("Skipping, not enough SNPs in interval"))
+    next
+  }
 
   for (j in 1:length(ugenes)){
     message(paste0("Working on expression of: ", ugenes[j]))
