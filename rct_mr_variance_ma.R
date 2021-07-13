@@ -65,7 +65,7 @@ rct <- dat %>% select(Outcome, Study, mu_treatment, sigma_treatment, n_treatment
         Con_Mean=mu_placebo, Con_SD=sigma_placebo, Con_N=n_placebo)
 
 # MR
-dat <- fread("vqtl_logcvr.txt")
+dat <- fread("iv_snp_lipid_variance.txt")
 dat$outcome <- gsub("ldl_direct.30780.0.0", "LDL", dat$outcome)
 dat$outcome <- gsub("hdl_cholesterol.30760.0.0", "HDL", dat$outcome)
 mr <- dat %>% select(outcome, snp, estimate.2, sd.estimate.2, n2, estimate.0, sd.estimate.0, n0) %>% 

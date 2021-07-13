@@ -171,7 +171,7 @@ Combine coloc analyses
 
 ```sh
 echo -e "nsnps\tPP.H0.abf\tPP.H1.abf\tPP.H2.abf\tPP.H3.abf\tPP.H4.abf\tgene\tregion\ttrait" > data/coloc.txt
-grep -hv nsnps data/*.0.0_coloc.txt >> data/coloc.txt
+grep -hv nsnps data/*.0.0_coloc.txt | grep -v ^$ >> data/coloc.txt
 ```
 
 ## Produce vQTL table

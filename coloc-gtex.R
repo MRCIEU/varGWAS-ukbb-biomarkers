@@ -5,6 +5,7 @@ library('ieugwasr')
 library("stringr")
 library('coloc')
 source("funs.R")
+options(ieugwasr_api="http://64.227.44.193:8006/")
 set.seed(123)
 
 option_list = list(
