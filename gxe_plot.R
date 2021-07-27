@@ -69,7 +69,7 @@ ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci)) +
     facet_grid(Trait~u, scales="free", space="free_y") +
     geom_point(size = 1.5) +
     geom_errorbar(width=.05) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = "grey") +
+    geom_hline(yintercept = c(-0.05, 0, 0.05), linetype = "dashed", color = "grey") +
     theme_classic() +
     scale_y_continuous(limits = c(-.1, .1), breaks=c(-.1, 0, .1)) +
     geom_rect(inherit.aes = F, data = tp, aes(fill = fill), xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = 0.15) +
