@@ -341,6 +341,8 @@ Combine GxE analyses
 ```sh
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe.txt
 grep -v term data/*.0.0.gxe.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe.txt:/\t/g' >> data/gxe.txt
+echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe-log.txt
+grep -v term data/*.0.0.gxe-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-log.txt:/\t/g' >> data/gxe-log.txt
 echo -e "trait\tbeta\tse\tpvalue\tsample_size\tterm" > data/gxe-wf.txt
 grep -v term data/*.0.0.gxe-wf.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-wf.txt:/\t/g' >> data/gxe-wf.txt
 ```
