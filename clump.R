@@ -7,6 +7,7 @@ library('robustbase')
 library('broom')
 source("funs.R")
 set.seed(124)
+options(ieugwasr_api="http://64.227.44.193:8006/")
 
 option_list = list(
   make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait"),
