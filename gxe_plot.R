@@ -45,7 +45,7 @@ get_dat <- function(file){
     return(d)
 }
 
-get_plot <- function(d, leg_name, title_name){
+get_plot <- function(d, leg_name){
     # create row key
     key <- data.frame(Trait=sort(unique(d$Trait)), stringsAsFactors=F)
     key$key <- row(key) %% 2
@@ -84,9 +84,8 @@ get_plot <- function(d, leg_name, title_name){
         theme_classic() +
         scale_y_continuous(limits = c(-.1, .1), breaks=c(-.1, 0, .1)) +
         geom_rect(inherit.aes = F, show.legend = FALSE, data = tp, aes(fill = fill), xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = 0.15) +
-        scale_color_grey(name = paste0(leg_name, " P < 5 x 10-5")) +
+        scale_color_grey(name = eval(parse(text=paste0(leg_name, " P < 5e-5")))) +
         scale_fill_manual(values=brewer.pal(2,"Paired")) +
-        ggtitle(title_name) +
         theme(
             axis.title.y = element_blank(),
             strip.background = element_blank(),
@@ -108,9 +107,9 @@ multiplicative <- merge(multiplicative, fread("data/gxe.txt") %>% mutate(tt=past
 
 # save plot
 pdf("gxe-additive.pdf", height=12, width=11)
-print(get_plot(additive, "Multiplicative scale", "Gene-environment interaction P < 5e-8 (additive scale)"))
+print(get_plot(additive, "Multiplicative scale"))
 dev.off()
 
 pdf("gxe-multiplicative.pdf", height=12, width=11)
-print(get_plot(multiplicative, "Additive scale", "Gene-environment interaction P < 5e-8 (multiplicative scale)"))
+print(get_plot(multiplicative, "Additive scale"))
 dev.off()
