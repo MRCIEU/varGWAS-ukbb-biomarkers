@@ -84,7 +84,7 @@ get_plot <- function(d, leg_name){
         theme_classic() +
         scale_y_continuous(limits = c(-.1, .1), breaks=c(-.1, 0, .1)) +
         geom_rect(inherit.aes = F, show.legend = FALSE, data = tp, aes(fill = fill), xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = 0.15) +
-        scale_color_grey(name = eval(parse(text=paste0(leg_name, " P < 5e-5")))) +
+        scale_color_grey(name = leg_name) +
         scale_fill_manual(values=brewer.pal(2,"Paired")) +
         theme(
             axis.title.y = element_blank(),
@@ -107,9 +107,9 @@ multiplicative <- merge(multiplicative, fread("data/gxe.txt") %>% mutate(tt=past
 
 # save plot
 pdf("gxe-additive.pdf", height=12, width=11)
-print(get_plot(additive, "Multiplicative scale"))
+print(get_plot(additive, expression("Multiplicative scale P < " 5e-5)))
 dev.off()
 
 pdf("gxe-multiplicative.pdf", height=12, width=11)
-print(get_plot(multiplicative, "Additive scale"))
+print(get_plot(multiplicative, expression("Additive scale P < " 5e-5)))
 dev.off()
