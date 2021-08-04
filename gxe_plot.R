@@ -107,9 +107,9 @@ multiplicative <- merge(multiplicative, fread("data/gxe.txt") %>% mutate(tt=past
 
 # save plot
 pdf("gxe-additive.pdf", height=12, width=11)
-print(get_plot(additive, expression("Multiplicative scale P < " 5e-5)))
+print(get_plot(additive, expression("Biomass (g per" ~ m^3 *")")))
 dev.off()
 
 pdf("gxe-multiplicative.pdf", height=12, width=11)
-print(get_plot(multiplicative, expression("Additive scale P < " 5e-5)))
+print(get_plot(multiplicative, expression("Biomass (g per" ~ m^3 *")")))
 dev.off()
