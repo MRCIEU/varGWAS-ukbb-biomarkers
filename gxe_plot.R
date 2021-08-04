@@ -108,9 +108,9 @@ multiplicative <- merge(multiplicative, fread("data/gxe.txt") %>% mutate(tt=past
 
 # save plot
 pdf("gxe-additive.pdf", height=12, width=11)
-print(get_plot(additive, "Multiplicative scale", "Gene-environment interaction effect (additive scale)"))
+print(get_plot(additive, "Multiplicative scale", "Gene-environment interaction P < 5e-8 (additive scale)"))
 dev.off()
 
 pdf("gxe-multiplicative.pdf", height=12, width=11)
-print(get_plot(multiplicative, "Additive scale", "Gene-environment interaction effect (multiplicative scale)"))
+print(get_plot(multiplicative, "Additive scale", "Gene-environment interaction P < 5e-8 (multiplicative scale)"))
 dev.off()
