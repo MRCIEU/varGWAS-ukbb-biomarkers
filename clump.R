@@ -9,7 +9,8 @@ source("funs.R")
 set.seed(124)
 
 option_list = list(
-  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait"),
+  make_option(c("-p", "--pval"), type="numeric", default=5e-8/30, help="P value threshold")
 );
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -40,7 +41,7 @@ message(paste0("trait ", opt$trait))
 gwas <- get_variants(opt$trait)
 
 # select tophits
-sig <- gwas[gwas$phi_p < (5e-8/30)]
+sig <- gwas[gwas$phi_p < opt$p]
 
 # clump
 stopifnot(nrow(sig)>0)
@@ -65,9 +66,10 @@ results <- rbindlist(results[!is.na(results)], fill=T)
 sig$key <- paste0("chr", sig$key)
 sig <- merge(sig, results, "key")
 
-# filter out vQTLs that do not have a mean effect
-# sig <- sig %>% filter(P.jlssc < 5e-5 & p.robust < 5e-5)
-
 # save assoc
 sig$key <- NULL
-write.csv(sig, file=paste0("data/", opt$trait, ".clump.txt"), row.names=F)
+if (opt$p == 5e-8/30){
+  write.csv(sig, file=paste0("data/", opt$trait, ".clump.txt"), row.names=F)
+} else {
+  write.csv(sig, file=paste0("data/", opt$trait, ".clump_", opt$p,".txt"), row.names=F)
+}
