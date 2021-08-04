@@ -36,6 +36,7 @@ model <- function(data, out, chr, pos, oa, ea) {
 }
 
 message(paste0("trait ", opt$trait))
+message(paste0("pval ", opt$p))
 
 # load vGWAS and QC
 gwas <- get_variants(opt$trait)
