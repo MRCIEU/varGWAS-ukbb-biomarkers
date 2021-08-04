@@ -107,9 +107,9 @@ multiplicative <- merge(multiplicative, fread("data/gxe.txt") %>% mutate(tt=past
 
 # save plot
 pdf("gxe-additive.pdf", height=12, width=11)
-print(get_plot(additive, expression("Multiplicative (P < 5 x " ~ ^10-5 *")")))
+print(get_plot(additive, expression("Multiplicative (P < " ~ 5*^10-5 *")")))
 dev.off()
 
 pdf("gxe-multiplicative.pdf", height=12, width=11)
-print(get_plot(multiplicative, expression("Additive (P < 5 x " ~ ^10-5 *")")))
+print(get_plot(multiplicative, expression("Additive (P < " ~ 5*^10-5 *")")))
 dev.off()
