@@ -121,6 +121,6 @@ pdf("gxg-additive.pdf", height=6, width=8)
 print(get_plot(additive, "Multiplicative (P < 5e-5"))
 dev.off()
 
-pdf("gxg-multiplicative.pdf", height=6, width=8)
+pdf("gxg-multiplicative.pdf", height=5, width=8)
 print(get_plot(multiplicative, "Additive (P < 5e-5"))
 dev.off()
