@@ -117,10 +117,10 @@ additive <- merge(additive, fread("data/gxg-log.txt") %>% mutate(tt=paste0(trait
 multiplicative <- merge(multiplicative, fread("data/gxg.txt") %>% mutate(tt=paste0(trait, ":", term)) %>% select(tt, p.value) %>% rename(p_sens="p.value"), "tt")
 
 # save plot
-pdf("gxg-additive.pdf")
+pdf("gxg-additive.pdf", height=6, width=8)
 print(get_plot(additive, "Multiplicative (P < 5e-5"))
 dev.off()
 
-pdf("gxg-multiplicative.pdf")
+pdf("gxg-multiplicative.pdf", height=6, width=8)
 print(get_plot(multiplicative, "Additive (P < 5e-5"))
 dev.off()
