@@ -7,6 +7,7 @@ library("IRanges")
 library("stringr")
 library("TwoSampleMR")
 library("ieugwasr")
+library("stringr")
 source("funs.R")
 set.seed(124)
 options(ieugwasr_api="http://64.227.44.193:8006/")
@@ -109,6 +110,29 @@ results.coloc <- results.coloc %>% filter(ensembl.coloc == id.ensembl)
 ### MR ###
 results <- rbind(results.interval %>% select(trait.vqtl, id.ensembl) %>% rename(trait.vqtl="trait"), results.coloc %>% select(trait.coloc, id.ensembl) %>% rename(trait.coloc="trait"))
 results <- unique(results)
-results$id <- gsub(results$trait, )
+results$id.outcome <- str_split(results$trait, "\\.", simplify=T)[,2] %>% paste0("ukb-d-", ., "_irnt")
+results$id.exposure <- paste0("eqtl-a-", results$id.ensembl)
+
+# drop BMI
+results <- results %>% filter(id.outcome != "ukb-d-21001_irnt")
 
 # test for MR evidence of gene expression on biomarker
+results.mr <- data.frame()
+for (i in 1:nrow(results)){
+    exposure_dat <- extract_instruments(results$id.exposure[i])
+
+    if (is.null(exposure_dat)){
+        next
+    }
+
+    # Get effects of instruments on outcome
+    outcome_dat <- extract_outcome_data(snps=exposure_dat$SNP, outcomes=results$id.outcome[i])
+
+    # Harmonise the exposure and outcome data
+    dat <- harmonise_data(exposure_dat, outcome_dat)
+
+    # Perform MR
+    res <- mr(dat)
+
+    results.mr <- rbind(results.mr, res)
+}
