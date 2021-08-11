@@ -48,7 +48,6 @@ chembl_intervals <- GRanges(anno$interval.ensembl)
 stopifnot(length(chembl_intervals)==length(anno$interval.ensembl))
 
 ### intersect vQTL with drug target loci ###
-
 vqtls <- fread("data/vqtls.txt") %>% select(trait, chr, pos, rsid, oa, ea, phi_p)
 names(vqtls) <- paste0(names(vqtls), ".vqtl")
 vqtls$interval.vqtl <- paste0(vqtls$chr.vqtl, ":", vqtls$pos.vqtl, "-", vqtls$pos.vqtl)
@@ -69,68 +68,9 @@ for (i in 1:nrow(vqtls)){
     }
 }
 
-### intersect colocalized regions drug target loci ###
+### MR of gene expression on biomarker ###
 
-# read coloc data
-coloc <- fread("data/coloc.txt")
-coloc <- coloc %>% filter(trait != "body_mass_index.21001.0.0")
-
-# select high prob of shared causal variant
-coloc <- coloc[coloc$PP.H4.abf > .8]
-
-# keep only eQTLgen data
-coloc <- coloc %>% filter(grepl("^eqtl-a-", coloc$gene))
-
-# split out gene from opengwas ID
-coloc$ensembl <- str_split(coloc$gene, "-", simplify=T)[,3]
-coloc$gene <- NULL
-
-# append coloc suffix
-names(coloc) <- paste0(names(coloc), ".coloc")
-
-# loop over coloc results and intersect with drug targets
-results.coloc <- data.frame()
-for (i in 1:nrow(coloc)){
-    coloc_interval <- GRanges(coloc$region.coloc[i])
-    
-    # count overlaps between mvQTL and drug target
-    counts <- suppressWarnings(countOverlaps(chembl_intervals, coloc_interval, type="any"))
-
-    # save res
-    if (sum(counts) > 0){
-        res <- anno[counts>0,]
-        res <- cbind(res, coloc[i,], stringsAsFactors=F)
-        results.coloc <- rbind(results.coloc, res)
-    }
-}
-
-# keep overlap of gene between coloc and ensembl
-results.coloc <- results.coloc %>% filter(ensembl.coloc == id.ensembl)
-results.coloc$molecule_name.chembl <- NULL
-results.coloc <- unique(results.coloc)
-
-# append vQTLs to coloc interval
-results.coloc.vqtl <- data.frame()
-interval.vqtl <- GRanges(vqtls$interval.vqtl)
-for (i in 1:nrow(results.coloc)){
-    coloc_interval <- GRanges(results.coloc$region.coloc[i])
-    
-    # count overlaps between mvQTL and drug target
-    counts <- suppressWarnings(countOverlaps(interval.vqtl, coloc_interval, type="any"))
-
-    # save res
-    if (sum(counts) > 0){
-        res <- vqtls[counts>0,]
-        res <- cbind(res, results.coloc[i,], stringsAsFactors=F)
-        results.coloc.vqtl <- rbind(results.coloc.vqtl, res)
-    }
-}
-
-# select top vQTL per colocalised interval
-results.coloc.vqtl %>% group_by()
-
-### MR ###
-results <- rbind(results.interval %>% select(trait.vqtl, id.ensembl) %>% rename(trait.vqtl="trait"), results.coloc %>% select(trait.coloc, id.ensembl) %>% rename(trait.coloc="trait"))
+results <- results.interval %>% select(trait.vqtl, id.ensembl) %>% rename(trait.vqtl="trait")
 results <- unique(results)
 results$id.outcome <- str_split(results$trait, "\\.", simplify=T)[,2] %>% paste0("ukb-d-", ., "_irnt")
 results$id.exposure <- paste0("eqtl-a-", results$id.ensembl)
@@ -175,5 +115,9 @@ results.mr$pair <- paste0(results.mr$ensembl, "-", results.mr$trait)
 results.interval$pair <- paste0(results.interval$id.ensembl, "-", results.interval$trait.vqtl)
 results.interval.mr <- results.interval %>% filter(pair %in% results.mr$pair)
 
-# combine interval.mr and coloc data
-tbl <- results.interval.mr %>% select(trait.vqtl, component_synonym.chembl, mechanism_of_action.chembl, rsid.vqtl, phi_p.vqtl) %>% unique
+# unique
+results.interval.mr$molecule_name.chembl <- NULL
+results.interval.mr <- unique(results.interval.mr)
+
+# write to table
+results.interval.mr %>% select(rsid.vqtl, phi_p.vqtl, component_synonym.chembl, trait.vqtl) %>% unique
