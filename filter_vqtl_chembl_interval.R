@@ -113,11 +113,12 @@ results.mr$pair <- paste0(results.mr$ensembl, "-", results.mr$trait)
 
 # subset interval data with MR evidence
 results.interval$pair <- paste0(results.interval$id.ensembl, "-", results.interval$trait.vqtl)
-results.interval.mr <- results.interval %>% filter(pair %in% results.mr$pair)
+results.interval.mr <- merge(results.interval, results.mr, "pair")
 
 # unique
 results.interval.mr$molecule_name.chembl <- NULL
 results.interval.mr <- unique(results.interval.mr)
 
 # write to table
-results.interval.mr %>% select(rsid.vqtl, phi_p.vqtl, component_synonym.chembl, trait.vqtl) %>% unique
+results.interval.mr$effect <- paste0(round(results.interval.mr$b, 2), " (CI ", round(results.interval.mr$b - (1.96 * results.interval.mr$se), 2), ", ", round(results.interval.mr$b + (1.96 * results.interval.mr$se), 2), ")")
+results.interval.mr %>% select(component_synonym.chembl, trait.vqtl, effect, rsid.vqtl, phi_p.vqtl) %>% unique
