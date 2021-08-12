@@ -12,6 +12,7 @@ bp <- function(dat, snp, outcome){
     fit1 <- lm(paste0(outcome, " ~ x + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse= " + ")), data=dat)
     dat$dsq <- resid(fit1)^2
     fit2 <- lm(dsq ~ x + xsq, data=dat)
+    fitnull <- lm(dsq ~ 1, data=dat)
     beta0 <- glht(model=fit1, linfct=paste("Intercept == 0"))
     beta1 <- glht(model=fit1, linfct=paste("Intercept + x*1 == 0"))
     beta2 <- glht(model=fit1, linfct=paste("Intercept + x*2 == 0"))
@@ -27,7 +28,8 @@ bp <- function(dat, snp, outcome){
         tidy(varbeta2) %>% dplyr::select("estimate", "std.error") %>% rename(var.estimate.2="estimate", var.std.error.2="std.error"),
         n0=table(round(dat$x))[1],
         n1=table(round(dat$x))[2],
-        n2=table(round(dat$x))[3]
+        n2=table(round(dat$x))[3],
+        p=tidy(anova(fitnull, fit2))$p.value[2]
     )
     res$sd.estimate.0 <- sqrt(res$var.estimate.0)
     res$sd.estimate.1 <- sqrt(res$var.estimate.1)
@@ -87,6 +89,12 @@ for (i in 1:nrow(ldl)){
 ldl.results <- data.frame()
 for (i in 1:nrow(ldl)){
     ldl.results <- rbind(ldl.results, bp(ldl.pheno, ldl$rsid[i], "ldl_direct.30780.0.0"))
+}
+
+ldl.results.log <- data.frame()
+ldl.pheno$ldl_direct.30780.0.0_log <- log(ldl.pheno$ldl_direct.30780.0.0)
+for (i in 1:nrow(ldl)){
+    ldl.results.log <- rbind(ldl.results.log, bp(ldl.pheno, ldl$rsid[i], "ldl_direct.30780.0.0_log"))
 }
 
 # HDL-c
