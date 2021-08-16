@@ -137,6 +137,12 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
 done
 ```
 
+## Validate vQTLs
+
+```sh
+Rscript validate.vqtl.R
+```
+
 ## Annotate vQTLs with nearest gene
 
 bedtools closest
@@ -175,7 +181,7 @@ echo -e "nsnps\tPP.H0.abf\tPP.H1.abf\tPP.H2.abf\tPP.H3.abf\tPP.H4.abf\tgene\treg
 grep -hv nsnps data/*.0.0_coloc.txt | grep -v ^$ >> data/coloc.txt
 ```
 
-## Produce vQTL table
+## Produce vQTL table & validate effects on log scale
 
 Combine all vQTLs
 
@@ -183,6 +189,7 @@ Combine all vQTLs
 echo -n "trait," > data/vqtls.txt
 head -n1 data/body_mass_index.21001.0.0.clump.txt >> data/vqtls.txt
 grep -v chr data/*clump* | sed 's/data\///g' | sed 's/.clump.txt:/,/g' >> data/vqtls.txt
+Rscript validate.vqtl.R
 ```
 
 ## Filter colocalization results to encoding gene cis region

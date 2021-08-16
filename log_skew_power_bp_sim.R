@@ -27,7 +27,7 @@ p_bpl <- rep(NA, n_sim)
 for (i in 1:n_sim){
     x <- rbinom(n_obs, 1, 0.5)
     u <- rnorm(n_obs)
-    y <- x*u*.12 + rlnorm(n=n_obs, meanlog=log(m^2 / sqrt(s^2 + m^2)), sdlog=sqrt(log(1 + (s^2 / m^2)))) # 80% pwr using B-P
+    y <- x*.12 + x*u*0 + rlnorm(n=n_obs, meanlog=log(m^2 / sqrt(s^2 + m^2)), sdlog=sqrt(log(1 + (s^2 / m^2)))) # 80% pwr using B-P
     fit <- lm(y ~ x*u)
     p_xmain[i] <- tidy(fit)$p.value[2]
     p_umain[i] <- tidy(fit)$p.value[3]
