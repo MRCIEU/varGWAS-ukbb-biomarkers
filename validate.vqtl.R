@@ -76,7 +76,19 @@ d$key <- paste0("chr", d$chr, "_", d$pos, "_", d$ea, "_", d$oa)
 # load dosage
 snps <- d %>% dplyr::select(chr, pos, oa, ea) %>% unique
 for (i in 1:nrow(snps)){
-    dosage <- extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$ea[i], snps$oa[i])
+    dosage <- tryCatch(
+        expr = {
+            extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$ea[i], snps$oa[i])
+        },
+        error = function(e){ 
+            NULL
+        }
+    )
+
+    if (is.null(dosage)){
+        warning(paste0("skipping variant: ", snps$chr[i], ":", snps$pos[i]))
+        next
+    }
     dat <- merge(dat, dosage, "appieu")
 }
 
@@ -149,6 +161,10 @@ coloc[which(coloc$trait.y=="follistatin"),]$Target <- "FST"
 coloc[which(coloc$trait.y=="galectin 3"),]$Target <- "LGALS3"
 coloc[which(coloc$trait.y=="platelet and endothelial cell adhesion molecule 1"),]$Target <- "PECAM1"
 coloc[which(coloc$trait.y=="selectin E"),]$Target <- "SELE"
+
+# remove commas from gene name
+coloc$Target <- gsub(",", "", coloc$Target)
+coloc$Target <- gsub("  ", " ", coloc$Target)
 
 # add neartest gene
 ng <- fread("data/nearest.txt")
