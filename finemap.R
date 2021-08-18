@@ -41,7 +41,6 @@ for (i in 1:nrow(d)){
         L=10,
         estimate_prior_variance=TRUE
     )
-    stopifnot(fitted_rss$converged)
 
     # collect fine mapped snps
     snps <- character()
