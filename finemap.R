@@ -14,12 +14,12 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 # load clumped vQTLs
-d <- fread("data/vqtls.txt")
-d <- d %>% dplyr::filter(trait != "body_mass_index.21001.0.0")
+d <- fread(paste0("data/", opt$trait, ".clump.txt"))
 d$key <- paste0("chr", d$chr, "_", d$pos, "_", d$oa, "_", d$ea)
-d$id <- paste0("ukb-d-", str_split(d$trait, "\\.", simplify=T)[,2], "_irnt")
+d$id <- paste0("ukb-d-", str_split(opt$trait, "\\.", simplify=T)[,2], "_irnt")
 d$chr_pos <- paste0(d$chr, ":", d$pos)
 
+results <- data.frame()
 for (i in 1:nrow(d)){
     # select natural interval around lead SNP
     region <- map_variants_to_regions(chrpos=d$chr_pos[i], pop="EUR")
@@ -39,6 +39,7 @@ for (i in 1:nrow(d)){
         L=10,
         estimate_prior_variance=TRUE
     )
+    stopifnot(fitted_rss$converged)
 
     # collect fine mapped snps
     snps <- character()
@@ -48,5 +49,8 @@ for (i in 1:nrow(d)){
         }
     }
 
-    return(associations(snps, id))
+    # store results
+    results <- rbind(results, data.frame(vqtl=d$key[i], finemap=snps, id=d$id[i]))
 }
+
+write.table(results, file=paste0(opt$trait, "_finemap.txt"), sep="\t", quote=F, row.names=F)
