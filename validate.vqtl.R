@@ -8,18 +8,48 @@ library("IRanges")
 library("stringr")
 library("GenomicRanges")
 library("TwoSampleMR")
+library("susieR")
+library("gwasglue")
 source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
 
-bp <- function(dat, snp, outcome){
-    dat <- dat %>% dplyr::select(!!snp, !!outcome, age_at_recruitment.21022.0.0, sex.31.0.0, PC1, PC2, PC3, PC4, PC5, PC6, PC7, PC8, PC9, PC10) %>% tidyr::drop_na()
+get_fine_mapped_variants <- function(lead, id){
+    # trait
+    #id <- "ukb-d-30780_irnt"
+
+    # lead SNP to fine map
+    #lead <- "1:234850420"
+
+    # select natural interval around lead SNP
+    region <- map_variants_to_regions(chrpos=lead, pop="EUR")
+
+    # select variants and LD matrix for region
+    dat <- ieugwasr_to_finemapr(region$region, id, bfile = "/mnt/storage/home/ml18692/projects/jlst-cpp-vgwas/data/EUR", plink_bin = "/mnt/storage/home/ml18692/projects/jlst-cpp-vgwas/data/plink_Linux")
+
+    # perform finemapping using SuSie
+    fitted_rss <- susieR::susie_rss(
+        dat[[1]]$z$zscore,
+        dat[[1]]$ld,
+        L=10,
+        estimate_prior_variance=TRUE
+    )
+
+    # collect fine mapped snps
+    snps <- character()
+    for (i in fitted_rss$sets$cs) { for (j in i) {snps <- c(snps, dat[[1]]$z$snp[j])} }
+
+    return(associations(snps, id))
+}
+
+bp <- function(dat, snp, outcome, covar){
+    dat <- dat %>% dplyr::select(!!snp, !!outcome, !!covar) %>% tidyr::drop_na()
     dat$x <- dat[[snp]]
     dat$xsq <- dat$x^2
-    fit1 <- lm(paste0(outcome, " ~ x + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse= " + ")), data=dat)
+    fit1 <- lm(paste0(outcome, " ~ x + ", paste0(covar, collapse= " + ")), data=dat)
     dat$dsq <- resid(fit1)^2
-    fit2 <- lm(paste0("dsq ~ x + xsq + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse= " + ")), data=dat)
-    fitnull <- lm(paste0("dsq ~ 1 + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse= " + ")), data=dat)
+    fit2 <- lm(paste0("dsq ~ x + xsq + ", paste0(covar, collapse= " + ")), data=dat)
+    fitnull <- lm(paste0("dsq ~ 1 + ", paste0(covar, collapse= " + ")), data=dat)
     beta0 <- glht(model=fit1, linfct=paste("Intercept == 0"))
     beta1 <- glht(model=fit1, linfct=paste("Intercept + x*1 == 0"))
     beta2 <- glht(model=fit1, linfct=paste("Intercept + x*2 == 0"))
@@ -71,10 +101,25 @@ dat <- merge(dat, pc, "appieu")
 
 # load clumped vQTLs
 d <- fread("data/vqtls.txt")
-d$key <- paste0("chr", d$chr, "_", d$pos, "_", d$ea, "_", d$oa)
+d <- d %>% dplyr::filter(trait != "body_mass_index.21001.0.0")
+d$key <- paste0("chr", d$chr, "_", d$pos, "_", d$oa, "_", d$ea)
+d$id <- paste0("ukb-d-", str_split(d$trait, "\\.", simplify=T)[,2], "_irnt")
+d$chr_pos <- paste0(d$chr, ":", d$pos)
+
+# finemap main effects around vQTLs
+finemap <- data.frame()
+for (i in nrow(d)){
+    res <- get_fine_mapped_variants(d$chr_pos[i], d$id[i])
+    res$trait <- d$trait[i]
+    res$i <- i
+    finemap <- rbind(finemap, res)
+}
+finemap$key <- paste0("chr", finemap$chr, "_", finemap$position, "_", finemap$nea, "_", finemap$ea)
 
 # load dosage
-snps <- d %>% dplyr::select(chr, pos, oa, ea) %>% unique
+snps <- d %>% dplyr::select(chr, pos, oa, ea)
+snps <- rbind(snps, finemap %>% dplyr::select(chr, position, nea, ea) %>% dplyr::rename(pos=position, oa=nea))
+snps <- unique(snps)
 for (i in 1:nrow(snps)){
     dosage <- tryCatch(
         expr = {
@@ -94,18 +139,25 @@ for (i in 1:nrow(snps)){
 
 results <- data.frame()
 for (i in 1:nrow(d)){
-    res <- bp(dat, d$key[i], d$trait[i])
+    # main analysis
+    res <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
     dat[[paste0(d$trait[i], "_log")]] <- log(dat[[d$trait[i]]])
-    res_log <- bp(dat, d$key[i], paste0(d$trait[i], "_log"))
+
+    # log-scale analysis
+    res_log <- bp(dat, d$key[i], paste0(d$trait[i], "_log"), c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
     names(res_log) <- paste0(names(res_log), ".log")
-    results <- rbind(results, cbind(res, res_log))
+    
+    # finemap variant analysis
+    res_finemap <- bp(dat, d$key[i], paste0(d$trait[i], "_finemap"), c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", ))
+    names(res_finemap) <- paste0(names(res_finemap), ".finemap")
+
+    results <- rbind(results, cbind(res, res_log, res_finemap))
 }
 
 # write to table
 write.table(results, file="data/vqtls.validate.txt", sep="\t", quote=F, row.names=F)
 
 # write paper table
-results <- results %>% filter(outcome != "body_mass_index.21001.0.0")
 results$Trait <- NA
 for (i in 1:nrow(results)){
     results$Trait[i] <- biomarkers_abr[biomarkers==results$outcome[i]]
