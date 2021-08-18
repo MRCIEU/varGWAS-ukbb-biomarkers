@@ -45,8 +45,8 @@ for (i in 1:nrow(d)){
 
     # collect fine mapped snps
     snps <- character()
-    for (i in fitted_rss$sets$cs) { 
-        for (j in i) {
+    for (k in fitted_rss$sets$cs) { 
+        for (j in k) {
             snps <- c(snps, dat[[1]]$z$snp[j])
         }
     }
