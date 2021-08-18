@@ -35,12 +35,23 @@ for (i in 1:nrow(d)){
     )
 
     # perform finemapping using SuSie
-    fitted_rss <- susieR::susie_rss(
-        dat[[1]]$z$zscore,
-        dat[[1]]$ld,
-        L=10,
-        estimate_prior_variance=TRUE
+    fitted_rss <- tryCatch(
+        expr = {
+            susieR::susie_rss(
+                dat[[1]]$z$zscore,
+                dat[[1]]$ld,
+                L=10,
+                estimate_prior_variance=TRUE
+            )
+        },
+        error = function(e){ 
+            NULL
+        }
     )
+
+    if (is.null(fitted_rss)){
+        next
+    }
 
     # collect fine mapped snps
     snps <- character()
