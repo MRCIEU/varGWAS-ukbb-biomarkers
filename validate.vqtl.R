@@ -59,14 +59,14 @@ bp <- function(dat, snp, outcome, covar){
     varbeta1_est <- glht(model=fit2, linfct=paste("x*1 + xsq*1 == 0"))
     varbeta2_est <- glht(model=fit2, linfct=paste("x*2 + xsq*4 == 0"))
     res <- cbind(
-        tidy(beta0) %>% dplyr::select("estimate", "std.error") %>% rename(estimate.0="estimate", std.error.0="std.error"),
-        tidy(beta1) %>% dplyr::select("estimate", "std.error") %>% rename(estimate.1="estimate", std.error.1="std.error"),
-        tidy(beta2) %>% dplyr::select("estimate", "std.error") %>% rename(estimate.2="estimate", std.error.2="std.error"),
-        tidy(varbeta0) %>% dplyr::select("estimate", "std.error") %>% rename(var.estimate.0="estimate", var.std.error.0="std.error"),
-        tidy(varbeta1) %>% dplyr::select("estimate", "std.error") %>% rename(var.estimate.1="estimate", var.std.error.1="std.error"),
-        tidy(varbeta2) %>% dplyr::select("estimate", "std.error") %>% rename(var.estimate.2="estimate", var.std.error.2="std.error"),
-        tidy(varbeta1_est) %>% dplyr::select("estimate", "std.error") %>% rename(var_effect.estimate.1="estimate", var_effect.std.error.1="std.error"),
-        tidy(varbeta2_est) %>% dplyr::select("estimate", "std.error") %>% rename(var_effect.estimate.2="estimate", var_effect.std.error.2="std.error"),
+        tidy(beta0) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(estimate.0="estimate", std.error.0="std.error"),
+        tidy(beta1) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(estimate.1="estimate", std.error.1="std.error"),
+        tidy(beta2) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(estimate.2="estimate", std.error.2="std.error"),
+        tidy(varbeta0) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(var.estimate.0="estimate", var.std.error.0="std.error"),
+        tidy(varbeta1) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(var.estimate.1="estimate", var.std.error.1="std.error"),
+        tidy(varbeta2) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(var.estimate.2="estimate", var.std.error.2="std.error"),
+        tidy(varbeta1_est) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(var_effect.estimate.1="estimate", var_effect.std.error.1="std.error"),
+        tidy(varbeta2_est) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(var_effect.estimate.2="estimate", var_effect.std.error.2="std.error"),
         n0=table(round(dat$x))[1],
         n1=table(round(dat$x))[2],
         n2=table(round(dat$x))[3],
@@ -123,7 +123,7 @@ snps <- unique(snps)
 for (i in 1:nrow(snps)){
     dosage <- tryCatch(
         expr = {
-            extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$ea[i], snps$oa[i])
+            extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$oa[i], snps$ea[i])
         },
         error = function(e){ 
             NULL
@@ -141,14 +141,14 @@ results <- data.frame()
 for (i in 1:nrow(d)){
     # main analysis
     res <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
-    dat[[paste0(d$trait[i], "_log")]] <- log(dat[[d$trait[i]]])
 
     # log-scale analysis
+    dat[[paste0(d$trait[i], "_log")]] <- log(dat[[d$trait[i]]])
     res_log <- bp(dat, d$key[i], paste0(d$trait[i], "_log"), c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
     names(res_log) <- paste0(names(res_log), ".log")
     
     # finemap variant analysis
-    res_finemap <- bp(dat, d$key[i], paste0(d$trait[i], "_finemap"), c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", ))
+    res_finemap <- bp(dat, d$key[i], paste0(d$trait[i]), c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", finemap %>% dplyr::filter(i==i) %>% dplyr::pull("key")))
     names(res_finemap) <- paste0(names(res_finemap), ".finemap")
 
     results <- rbind(results, cbind(res, res_log, res_finemap))
@@ -169,15 +169,21 @@ results$var_effect.uci.1 <- get_uci(results$var_effect.estimate.1, results$var_e
 results$var_effect.lci.1.log <- get_lci(results$var_effect.estimate.1.log, results$var_effect.std.error.1.log)
 results$var_effect.uci.1.log <- get_uci(results$var_effect.estimate.1.log, results$var_effect.std.error.1.log)
 
+results$var_effect.lci.1.finemap <- get_lci(results$var_effect.estimate.1.finemap, results$var_effect.std.error.1.finemap)
+results$var_effect.uci.1.finemap <- get_uci(results$var_effect.estimate.1.finemap, results$var_effect.std.error.1.finemap)
+
 results$var_effect.lci.2 <- get_lci(results$var_effect.estimate.2, results$var_effect.std.error.2)
 results$var_effect.uci.2 <- get_uci(results$var_effect.estimate.2, results$var_effect.std.error.2)
 
 results$var_effect.lci.2.log <- get_lci(results$var_effect.estimate.2.log, results$var_effect.std.error.2.log)
 results$var_effect.uci.2.log <- get_uci(results$var_effect.estimate.2.log, results$var_effect.std.error.2.log)
 
+results$var_effect.lci.2.finemap <- get_lci(results$var_effect.estimate.2.finemap, results$var_effect.std.error.2.finemap)
+results$var_effect.uci.2.finemap <- get_uci(results$var_effect.estimate.2.finemap, results$var_effect.std.error.2.finemap)
+
 tbl <- results %>% 
-    dplyr::select(Trait, snp, var_effect.estimate.1, var_effect.lci.1, var_effect.uci.1, var_effect.estimate.2, var_effect.lci.2, var_effect.uci.2, p, var_effect.estimate.1.log, var_effect.lci.1.log, var_effect.uci.1.log, var_effect.estimate.2.log, var_effect.lci.2.log, var_effect.uci.2.log, p.log) %>% 
-    dplyr::rename(beta.1="var_effect.estimate.1", lci.1="var_effect.lci.1", uci.1="var_effect.uci.1", beta.2="var_effect.estimate.2", lci.2="var_effect.lci.2", uci.2="var_effect.uci.2", beta.1.log="var_effect.estimate.1.log", lci.1.log="var_effect.lci.1.log", uci.1.log="var_effect.uci.1.log", beta.2.log="var_effect.estimate.2.log", lci.2.log="var_effect.lci.2.log", uci.2.log="var_effect.uci.2.log")
+    dplyr::select(Trait, snp, var_effect.estimate.1, var_effect.lci.1, var_effect.uci.1, var_effect.estimate.2, var_effect.lci.2, var_effect.uci.2, p, var_effect.estimate.1.log, var_effect.lci.1.log, var_effect.uci.1.log, var_effect.estimate.2.log, var_effect.lci.2.log, var_effect.uci.2.log, p.log, var_effect.estimate.1.finemap, var_effect.lci.1.finemap, var_effect.uci.1.finemap, var_effect.estimate.2.finemap, var_effect.lci.2.finemap, var_effect.uci.2.finemap, p.finemap) %>% 
+    dplyr::rename(beta.1="var_effect.estimate.1", lci.1="var_effect.lci.1", uci.1="var_effect.uci.1", beta.2="var_effect.estimate.2", lci.2="var_effect.lci.2", uci.2="var_effect.uci.2", beta.1.log="var_effect.estimate.1.log", lci.1.log="var_effect.lci.1.log", uci.1.log="var_effect.uci.1.log", beta.2.log="var_effect.estimate.2.log", lci.2.log="var_effect.lci.2.log", uci.2.log="var_effect.uci.2.log", beta.1.finemap="var_effect.estimate.1.finemap", lci.1.finemap="var_effect.lci.1.finemap", uci.1.finemap="var_effect.uci.1.finemap", beta.2.finemap="var_effect.estimate.2.finemap", lci.2.finemap="var_effect.lci.2.finemap", uci.2.finemap="var_effect.uci.2.finemap")
 
 ### add gene info ###
 
@@ -245,7 +251,6 @@ all$coloc <- NA
 
 # add trait col
 coloc$Trait <- NA
-coloc <- coloc %>% dplyr::filter(trait.x != "body_mass_index.21001.0.0")
 for (i in 1:nrow(coloc)){
     coloc$Trait[i] <- biomarkers_abr[biomarkers==coloc$trait.x[i]]
 }
