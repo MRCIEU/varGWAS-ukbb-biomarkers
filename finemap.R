@@ -65,4 +65,4 @@ for (i in 1:nrow(d)){
     results <- rbind(results, data.frame(vqtl=d$key[i], finemap=snps, id=d$id[i]))
 }
 
-write.table(results, file=paste0(opt$trait, "_finemap.txt"), sep="\t", quote=F, row.names=F)
+write.table(results, file=paste0("data/", opt$trait, "_finemap.txt"), sep="\t", quote=F, row.names=F)
