@@ -21,6 +21,8 @@ d$chr_pos <- paste0(d$chr, ":", d$pos)
 
 results <- data.frame()
 for (i in 1:nrow(d)){
+    message(paste0("Working on variant: ", d$chr_pos[i]))
+
     # select natural interval around lead SNP
     region <- map_variants_to_regions(chrpos=d$chr_pos[i], pop="EUR")
 
