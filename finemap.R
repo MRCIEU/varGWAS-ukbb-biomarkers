@@ -54,10 +54,16 @@ for (i in 1:nrow(d)){
     }
 
     # collect fine mapped snps
-    snps <- character()
-    for (k in fitted_rss$sets$cs) { 
-        for (j in k) {
-            snps <- c(snps, dat[[1]]$z$snp[j])
+    cs <- summary(fitted_rss)$cs
+    snps <- data.frame()
+    for (j in 1:nrow(cs)){
+        for (k in stringr::str_split(cs$variable[j], ",", simplify=T) %>% as.numeric){
+            res <- cs[j,]
+            res <- cbind(res, data.frame(
+                snp=dat[[1]]$z$snp[k],
+                pip=fitted_rss$pip[k]
+            ))
+            snps <- rbind(snps, res)
         }
     }
 
