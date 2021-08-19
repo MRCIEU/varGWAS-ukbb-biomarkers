@@ -55,6 +55,11 @@ for (i in 1:nrow(d)){
 
     # collect fine mapped snps
     cs <- summary(fitted_rss)$cs
+
+    if (is.null(cs)){
+        next
+    }
+
     snps <- data.frame()
     for (j in 1:nrow(cs)){
         for (k in stringr::str_split(cs$variable[j], ",", simplify=T) %>% as.numeric){
