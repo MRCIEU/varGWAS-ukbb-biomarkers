@@ -14,34 +14,6 @@ source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
 
-get_fine_mapped_variants <- function(lead, id){
-    # trait
-    #id <- "ukb-d-30780_irnt"
-
-    # lead SNP to fine map
-    #lead <- "1:234850420"
-
-    # select natural interval around lead SNP
-    region <- map_variants_to_regions(chrpos=lead, pop="EUR")
-
-    # select variants and LD matrix for region
-    dat <- ieugwasr_to_finemapr(region$region, id, bfile = "/mnt/storage/home/ml18692/projects/jlst-cpp-vgwas/data/EUR", plink_bin = "/mnt/storage/home/ml18692/projects/jlst-cpp-vgwas/data/plink_Linux")
-
-    # perform finemapping using SuSie
-    fitted_rss <- susieR::susie_rss(
-        dat[[1]]$z$zscore,
-        dat[[1]]$ld,
-        L=10,
-        estimate_prior_variance=TRUE
-    )
-
-    # collect fine mapped snps
-    snps <- character()
-    for (i in fitted_rss$sets$cs) { for (j in i) {snps <- c(snps, dat[[1]]$z$snp[j])} }
-
-    return(associations(snps, id))
-}
-
 bp <- function(dat, snp, outcome, covar){
     dat <- dat %>% dplyr::select(!!snp, !!outcome, !!covar) %>% tidyr::drop_na()
     dat$x <- dat[[snp]]
@@ -106,19 +78,25 @@ d$key <- paste0("chr", d$chr, "_", d$pos, "_", d$oa, "_", d$ea)
 d$id <- paste0("ukb-d-", str_split(d$trait, "\\.", simplify=T)[,2], "_irnt")
 d$chr_pos <- paste0(d$chr, ":", d$pos)
 
-# finemap main effects around vQTLs
-finemap <- data.frame()
-for (i in nrow(d)){
-    res <- get_fine_mapped_variants(d$chr_pos[i], d$id[i])
-    res$trait <- d$trait[i]
-    res$i <- i
-    finemap <- rbind(finemap, res)
+# load finemapped snps
+finemap <- fread("data/finemap.txt")
+finemap.loci <- data.frame()
+for (i in 1:nrow(finemap)){
+    assoc <- ieugwasr::associations(variants=finemap$finemap.snp[i], id=finemap$id[i])
+    finemap.loci <- rbind(finemap.loci, data.frame(
+        finemap[i],
+        chr=assoc$chr,
+        pos=assoc$position,
+        oa=assoc$ea,
+        ea=assoc$nea,
+        stringsAsFactors=F
+    ), stringsAsFactors=F)
 }
-finemap$key <- paste0("chr", finemap$chr, "_", finemap$position, "_", finemap$nea, "_", finemap$ea)
+finemap.loci$key <- paste0("chr", finemap.loci$chr, "_", finemap.loci$pos, "_", finemap.loci$oa, "_", finemap.loci$ea)
 
 # load dosage
 snps <- d %>% dplyr::select(chr, pos, oa, ea)
-snps <- rbind(snps, finemap %>% dplyr::select(chr, position, nea, ea) %>% dplyr::rename(pos=position, oa=nea))
+snps <- rbind(snps, finemap.loci %>% dplyr::select(chr, pos, oa, ea), stringsAsFactors=F)
 snps <- unique(snps)
 for (i in 1:nrow(snps)){
     dosage <- tryCatch(
@@ -148,7 +126,7 @@ for (i in 1:nrow(d)){
     names(res_log) <- paste0(names(res_log), ".log")
     
     # finemap variant analysis
-    res_finemap <- bp(dat, d$key[i], paste0(d$trait[i]), c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", finemap %>% dplyr::filter(i==i) %>% dplyr::pull("key")))
+    res_finemap <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", finemap.loci %>% dplyr::filter(trait==d$trait[i]) %>% dplyr::pull("key")))
     names(res_finemap) <- paste0(names(res_finemap), ".finemap")
 
     results <- rbind(results, cbind(res, res_log, res_finemap))
