@@ -73,6 +73,8 @@ for (i in env_exp){
     names(res1) <- paste0(names(res1), ".T")
     names(res2) <- paste0(names(res2), ".F")
     res <- cbind(res1, res2)
+    res$u <- i
+    res$y <- opt$trait
     results <- rbind(results, res)
   }
 }
