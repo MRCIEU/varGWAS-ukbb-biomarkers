@@ -196,7 +196,7 @@ Combine all vQTLs
 echo -n "trait," > data/vqtls.txt
 head -n1 data/body_mass_index.21001.0.0.clump.txt >> data/vqtls.txt
 grep -v chr data/*clump* | sed 's/data\///g' | sed 's/.clump.txt:/,/g' >> data/vqtls.txt
-Rscript validate.vqtl.R
+sbatch runR.sh validate.vqtl.R
 ```
 
 ## Filter colocalization results to encoding gene cis region
