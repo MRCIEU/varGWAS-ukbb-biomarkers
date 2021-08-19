@@ -216,8 +216,7 @@ ng <- ng %>%
 ng$gene <- gsub(", ", "|", ng$gene)
 
 s <- str_split(tbl$snp, "_", simplify=T)[,1:2]
-s <- data.frame(s)
-names(s) <- c("chr", "pos")
+s <- data.frame(chr=s[1], pos=s[2])
 tbl <- cbind(tbl, s)
 tbl$chr <- gsub("chr", "", tbl$chr)
 tbl$key <- paste0(tbl$chr, ":", tbl$pos)
@@ -228,6 +227,7 @@ all$key <- paste0(all$chr, ":", all$pos, "-", all$pos)
 all$coloc <- NA
 
 # add trait col
+coloc <- coloc %>% filter(trait.x != "body_mass_index.21001.0.0")
 coloc$Trait <- NA
 for (i in 1:nrow(coloc)){
     coloc$Trait[i] <- biomarkers_abr[biomarkers==coloc$trait.x[i]]
@@ -263,6 +263,6 @@ for (i in 1:nrow(all)){
 all$key <- NULL
 all$chr <- NULL
 all$pos <- NULL
-names(all)[17] <- "Nearest gene"
-names(all)[18] <- "Colocalised gene"
+names(all)[names(all)=="gene"] <- "Nearest gene"
+names(all)[names(all)=="coloc"] <- "Colocalised gene"
 write.csv(all, file="data/supplementary_data_file_1.csv", row.names=F, quote=F)
