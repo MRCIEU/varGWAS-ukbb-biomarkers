@@ -19,7 +19,7 @@ message(paste0("trait ", opt$trait))
 # read in extracted phenotypes
 pheno <- fread(paste0("data/", opt$trait, ".txt"))
 
-# read top gxg effects
+# read top gxg effects on additive scale and filter out effects without support on multiplicative scale
 d <- fread("data/gxg.txt")
 d <- d %>% filter(trait != "body_mass_index.21001.0.0")
 d <- d %>% filter(p.value < 5e-8)
@@ -56,8 +56,17 @@ results <- data.frame()
 for (i in 1:nrow(d)){
   # test SNP effect by stratified modifier
   f <- as.formula(paste0(opt$trait, " ~ ", d$V1[i], " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
-  t <- tidy(lmrob(f, data=pheno))
-  results <- rbind(results, t[grep(":", t$term),])
+  k <- paste0(d$V2[i], "_bin")
+  t <- tidy(lmrob(f, data=pheno %>% dplyr::filter(!!sym(k) == T)))
+  res1 <- t[2,]
+  t <- tidy(lmrob(f, data=pheno %>% dplyr::filter(!!sym(k) == F)))
+  res2 <- t[2,]
+  names(res1) <- paste0(names(res1), ".T")
+  names(res2) <- paste0(names(res2), ".F")
+  res <- cbind(res1, res2)
+  res$u <- k
+  res$y <- opt$trait
+  results <- rbind(results, res)
 }
 
 # save
