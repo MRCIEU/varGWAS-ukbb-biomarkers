@@ -88,16 +88,17 @@ get_plot <- function(d){
     f <- f %>% dplyr::rename(estimate="estimate.F", std.error="std.error.F", statistic="statistic.F", p.value="p.value.F", lci="lci.F", uci="uci.F")
 
     d <- rbind(e, f)
+    d$u <- gsub(d$u, "_bin", "")
 
     # create plot
     d$subgroup <- as.character(d$subgroup)
-    d[which(d$subgroup == "FALSE")]$subgroup <- "Q1"
-    d[which(d$subgroup == "TRUE")]$subgroup <- "Q2"
-    p <- ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci, color=subgroup)) +
+    d[which(d$subgroup == "FALSE")]$subgroup <- "A1"
+    d[which(d$subgroup == "TRUE")]$subgroup <- "A2"
+    p <- ggplot(d, aes(x=term, y=estimate, ymin=lci, ymax=uci, color=subgroup)) +
         coord_flip() +
         facet_grid(Trait~u, scales="free", space="free_y") +
-        geom_point(size = 1.5) +
-        geom_errorbar(width=.05) +
+        geom_point(size = 1.5, position = position_dodge(width = 0.9)) +
+        geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
         theme_classic() +
         geom_rect(inherit.aes = F, show.legend = FALSE, data = tp, aes(fill = fill), xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = 0.15) +
         scale_y_continuous(breaks = scales::pretty_breaks(3)) +
@@ -112,10 +113,10 @@ get_plot <- function(d){
             panel.spacing.y = unit(0, "lines"),
             legend.box.background = element_rect(colour = "black")
         ) +
-        ylab("Per allele effect estimate stratified by modifier, SD (95% CI)")
+        ylab("Per allele effect estimate stratified by modifier SNP, (95% CI)")
     return(p)
 }
 
-pdf("gxe-qual.pdf", width=8.5, height=8)
-print(get_plot(get_dat("data/gxe-qual.txt")))
+pdf("gxg-qual.pdf")
+print(get_plot(get_dat("data/gxg-qual.txt")))
 dev.off()
