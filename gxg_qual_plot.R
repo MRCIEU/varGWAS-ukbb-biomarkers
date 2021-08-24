@@ -88,7 +88,7 @@ get_plot <- function(d){
     f <- f %>% dplyr::rename(estimate="estimate.F", std.error="std.error.F", statistic="statistic.F", p.value="p.value.F", lci="lci.F", uci="uci.F")
 
     d <- rbind(e, f)
-    d$u <- gsub(d$u, "_bin", "")
+    d$u <- gsub("_bin", "", d$u)
 
     # create plot
     d$subgroup <- as.character(d$subgroup)
