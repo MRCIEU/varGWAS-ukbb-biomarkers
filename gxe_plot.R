@@ -18,10 +18,10 @@ get_dat <- function(file){
     d$uci <- d$estimate + (d$std.error * 1.96)
 
     # drop BMI
-    d <- d %>% filter(trait != "body_mass_index.21001.0.0")
+    d <- d %>% dplyr::filter(trait != "body_mass_index.21001.0.0")
 
     # filter SNPs to show
-    d <- d %>% filter(p.value < 5e-8)
+    d <- d %>% dplyr::filter(p.value < 5e-8)
 
     # merge
     d <- cbind(d, as.data.frame(str_split(d$term, ":", simplify=T), stringsAsFactors=F))
@@ -34,7 +34,7 @@ get_dat <- function(file){
     d$key <- paste0(d$V2, "-", d$y)
     d <- merge(d, lookup, "key")
     d$key <- NULL
-    d$gene <- str_split(d[["Nearest Gene"]], ",", simplify=T)[,1]
+    d$gene <- stringr::str_split(d[["Nearest Gene"]], ",", simplify=T)[,1]
     d$f <- paste0(d$gene, " (", d$RSID, d$EA, ")")
     d$u <- factor(d$u)
     levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status")
