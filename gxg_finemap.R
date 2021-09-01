@@ -169,6 +169,7 @@ get_est <- function(trait, v1, v2, finemap, multiplicative=F){
     est <- data.frame(est, lci, uci)
     est$trait <- trait
     est$formula <- f
+    est$term <- rownames(est)
     rownames(est) <- NULL
     return(est)
 }
@@ -218,7 +219,7 @@ get_plot <- function(d){
     tp$fill <- as.factor(tp$fill)
 
     # create plot
-    p <- ggplot(d, aes(x=f, y=estimate, ymin=lci, ymax=uci)) +
+    p <- ggplot(d, aes(x=f, y=est, ymin=lci, ymax=uci)) +
         coord_flip() +
         facet_grid(Trait~., scales="free", space="free_y") +
         geom_point(size = 1.5) +
@@ -264,5 +265,10 @@ for (i in 1:nrow(multiplicative)){
 }
 
 # plot
-additive.plot <- get_plot(additive.results)
-multiplicative.plot <- get_plot(multiplicative.results)
+pdf("gxg-additive-finemap.pdf", height=6, width=8)
+print(get_plot(additive.results))
+dev.off()
+
+pdf("gxg-multiplicative-finemap.pdf", height=5, width=8)
+print(get_plot(multiplicative.results))
+dev.off()
