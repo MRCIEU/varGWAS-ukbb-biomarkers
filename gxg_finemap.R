@@ -158,16 +158,18 @@ get_est <- function(trait, v1, v2, finemap, multiplicative=F){
     adj <- unique(adj1, adj2)
     f <- paste0(trait, " ~ ", v1, " * ", v2, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse=" + "), " + ", paste0(adj, collapse=" + "))
     message(f)
-    f <- as.formula(f)
     mod <- lm(f, data=pheno)
     sandwich_se <- diag(vcovHC(mod, type = "HC"))^0.5
-    
-    est <- t[grep(":", t$term),]
+    est <- coef(mod)
+    lci <- coef(mod)-1.96*sandwich_se
+    uci <- coef(mod)+1.96*sandwich_se
+    est <- est[grepl(":", names(est))]
+    lci <- lci[grepl(":", names(lci))]
+    uci <- uci[grepl(":", names(uci))]
+    est <- data.frame(est, lci, uci)
     est$trait <- trait
     est$formula <- f
-    est$lci <- est$estimate - (est$std.error * 1.96)
-    est$uci <- est$estimate + (est$std.error * 1.96)
-
+    rownames(est) <- NULL
     return(est)
 }
 
