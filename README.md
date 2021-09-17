@@ -32,7 +32,7 @@ The following have low sample size ~ 50k
 - oestradiol.30800.0.0
 - rheumatoid_factor.30820
 
-## Histogram && QQ plot of trait
+## Phenotype distribution plots
 
 ```sh
 sbatch runR.sh dist.R
@@ -99,7 +99,7 @@ Combine nearest gene
 awk '{print $1"\t"$3"\t"$8}' data/*nearest* | uniq > data/nearest.txt
 ```
 
-## Produce vQTL table & sensitivity analyses
+## Top hits table
 
 Combine all vQTLs
 
@@ -107,7 +107,7 @@ Combine all vQTLs
 echo -n "trait," > data/vqtls.txt
 head -n1 data/body_mass_index.21001.0.0.clump.txt >> data/vqtls.txt
 grep -v chr data/*clump* | sed 's/data\///g' | sed 's/.clump.txt:/,/g' >> data/vqtls.txt
-sbatch runR.sh validate.vqtl.R
+sbatch runR.sh top_hits_table.R
 ```
 
 ## GxG interaction analysis
@@ -118,6 +118,11 @@ Test each vQTL for interaction with all other vQTLs to find GxG interaction effe
 # main analysis
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh gxg.R -t "$trait"
+done
+
+# finemap adjusted analysis
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
+    sbatch runR.sh gxg_finemap.R -t "$trait"
 done
 
 # qual analysis
@@ -133,6 +138,13 @@ echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg.txt
 grep -v term data/*.0.0.gxg.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg.txt:/\t/g' >> data/gxg.txt
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg-log.txt
 grep -v term data/*.0.0.gxg-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg-log.txt:/\t/g' >> data/gxg-log.txt
+```
+
+Plots
+
+```
+Rscript gxg_plot.R
+Rscript gxg_qual_plot.R
 ```
 
 ## GxE interaction analysis
@@ -156,4 +168,11 @@ echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe.txt
 grep -v term data/*.0.0.gxe.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe.txt:/\t/g' >> data/gxe.txt
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe-log.txt
 grep -v term data/*.0.0.gxe-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-log.txt:/\t/g' >> data/gxe-log.txt
+```
+
+Plots
+
+```
+Rscript gxe_plot.R
+Rscript gxe_qual_plot.R
 ```
