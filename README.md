@@ -40,79 +40,18 @@ sbatch runR.sh dist.R
 
 ## vGWAS
 
-TODO - if re-running add 20 genetic PCs
-TODO - ? add snp x covariate in model
-
 ```sh
-# more efficient to run the larger chromosomes first
+# NOTE more efficient to run the larger chromosomes first
 for chr in  $(seq -f "%02g" 1 22); do
     for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-        sbatch run_cpp.sh "$trait" "$chr"
+        sbatch run_vargwas.sh "$trait" "$chr"
     done
 done
 ```
 
-Run R implementation of B-P
+## QC
 
-```sh
-# randomly select 10000 SNPs for analysis
-module load apps/bgen/1.1.6
-echo -e "chromosome\tposition\tfirst_allele\talternative_alleles" > data/alkaline_phosphatase.30610.0.0.30k_snps.txt
-bgenix \
--g /mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/dosage_bgen/data.chr22.bgen \
--incl-range 22:0- \
--list | \
-awk 'NR > 2 {print $3"\t"$4"\t"$6"\t"$7}' | \
-shuf | \
-head -n 30000 >> data/alkaline_phosphatase.30610.0.0.30k_snps.txt
-
-# run vGWAS on subset of SNPs
-sbatch runR.sh \
-validate_app.R \
--t alkaline_phosphatase.30610.0.0 \
--m BP
-
-sbatch runR.sh \
-validate_app.R \
--t alkaline_phosphatase.30610.0.0 \
--m JLSSC
-
-sbatch runR.sh \
-validate_app.R \
--t alkaline_phosphatase.30610.0.0 \
--m MOM
-
-sbatch runR.sh \
-validate_app.R \
--t alkaline_phosphatase.30610.0.0 \
--m GxS
-```
-
-## vGWAS QC
-
-Map data to LDSC format (mean effect only)
-
-```sh
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh ldsc.R -t "$trait"
-done
-```
-
-Estimate LD intercept for mean effect
-
-```sh
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch ldsc.sh data/"$trait".ldsc
-done
-```
-
-Combine results
-
-```sh
-grep Intercept data/*ldsc.log | sed 's/.ldsc.log:/\t/g' | sed 's/data\///g' | sed 's/Intercept: //g' | sed 's/ (/\t/g' | tr -d ')' > data/ldsc.txt
-```
-
-Plot QQ & Manhattan
+Q-Q Plot & Manhattan
 
 ```sh
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
@@ -128,7 +67,7 @@ Rscript qc-fig.R
 
 ## Clump vQTLs
 
-Clump tophits & test for mean effect using heteroscedaticity robust model
+Clump tophits & test for mean effect using robust SEs
 
 ```sh
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
