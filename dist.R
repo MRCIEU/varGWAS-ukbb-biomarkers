@@ -21,7 +21,7 @@ for (i in 1:length(biomarkers)){
 # histogram
 png("data/hist.png", width = 480 * 6, height = 480 * 5)
 ggplot(data, aes(x=y)) +
-  geom_histogram() +
+  geom_density() +
   theme_minimal() +
   scale_x_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
   scale_y_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3)) +
