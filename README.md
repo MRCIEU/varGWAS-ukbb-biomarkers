@@ -67,26 +67,13 @@ Rscript qc-fig.R
 
 ## Clump vQTLs
 
-Clump tophits & test for mean effect using robust SEs
+Clump tophits
 
 ```sh
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh clump.R -t "$trait"
     sbatch runR.sh clump.R -t "$trait" -p 5e-5
 done
-```
-
-## Finemap main effect on biomarker conc at vQTL
-
-```sh
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh finemap.R -t "$trait"
-done
-
-# combine finemap
-echo -en "trait\t" > data/finemap.txt
-head -n1 data/ldl_direct.30780.0.0_finemap.txt >> data/finemap.txt
-grep -v vqtl data/*finemap.txt | sed 's/data\///g' | sed 's/_finemap.txt:/\t/g' >> data/finemap.txt
 ```
 
 ## Annotate vQTLs with nearest gene
@@ -112,21 +99,6 @@ Combine nearest gene
 awk '{print $1"\t"$3"\t"$8}' data/*nearest* | uniq > data/nearest.txt
 ```
 
-## Colocalize vQTLs with eQTLs and pQTLs
-
-```sh
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh run_coloc.R -t "$trait" -o "data/""$trait""_coloc.txt" -s "data/""$trait"".clump.txt"
-done
-```
-
-Combine coloc analyses
-
-```sh
-echo -e "nsnps\tPP.H0.abf\tPP.H1.abf\tPP.H2.abf\tPP.H3.abf\tPP.H4.abf\tgene\tregion\ttrait" > data/coloc.txt
-grep -hv nsnps data/*.0.0_coloc.txt | grep -v ^$ >> data/coloc.txt
-```
-
 ## Produce vQTL table & sensitivity analyses
 
 Combine all vQTLs
@@ -136,109 +108,6 @@ echo -n "trait," > data/vqtls.txt
 head -n1 data/body_mass_index.21001.0.0.clump.txt >> data/vqtls.txt
 grep -v chr data/*clump* | sed 's/data\///g' | sed 's/.clump.txt:/,/g' >> data/vqtls.txt
 sbatch runR.sh validate.vqtl.R
-```
-
-## Filter colocalization results to encoding gene cis region
-
-Select mvQTL that colocalize with gene / protein expression in blood that are in the cis region of gene coding sequence
-
-```sh
-Rscript filter_coloc_cis.R
-```
-
-| Biomarker                          | Target        |
-|------------------------------------|---------------|
-| c_reactive_protein.30710.0.0       | CRP           |
-| apolipoprotein_a.30630.0.0         | DDX28         |
-| triglycerides.30870.0.0            | DOCK7         |
-| apolipoprotein_a.30630.0.0         | DPEP3         |
-| apolipoprotein_a.30630.0.0         | DUS2          |
-| alanine_aminotransferase.30620.0.0 | HSD17B13      |
-| shbg.30830.0.0                     | MRPL45P2      |
-| vitamin_d.30890.0.0                | NADSYN1       |
-| apolipoprotein_a.30630.0.0         | NFATC3        |
-| hdl_cholesterol.30760.0.0          | NUP160        |
-| apolipoprotein_b.30640.0.0         | PSRC1         |
-| cholesterol.30690.0.0              | PSRC1         |
-| ldl_direct.30780.0.0               | PSRC1         |
-| hdl_cholesterol.30760.0.0          | PTPRJ         |
-| vitamin_d.30890.0.0                | RP11-660L16.2 |
-| hdl_cholesterol.30760.0.0          | SLC12A3       |
-| apolipoprotein_b.30640.0.0         | SLC12A3       |
-| cholesterol.30690.0.0              | TMEM258       |
-| shbg.30830.0.0                     | ZNF554        |
-
-- No interaction effects reported for these genes except for HSD17B13
-
-## Filter mvQTLs at drug target loci with MR evidence for uni-directional target effect on biomarker conc
-
-Select mvQTLs at drug target loci and perform bidirectional MR & Stieger filtering to retain targets with evidence of a mean and variance effect on biomarker concentration
-
-```sh
-Rscript filter_mvqtl_chembl.R
-```
-
-| Biomarker                 | Target|
-|---------------------------|-------|
-| hdl_cholesterol.30760.0.0 | NR1H3 |
-| triglycerides.30870.0.0   | KIF11 |
-| vitamin_d.30890.0.0       | PDE3B |
-
-- NR1H3 agonists increase LXR-alpha activity which reduces cholesterol. rs60515486:A increases expression and reduces mean and variance of cholesterol. Not other mvQTLs detected. No mvQTLs detected at NR1H2.
-- Increased KIF11 is associated with lower non-HDL and increased HDL. Existing drugs inhibit KIF11. Not progressed further.
-- Increased PDE3B is associated with reduced adiposity and increased BP and reduced Vit D. Lead SNP in high LD with CYP2R1 synonymous variant which is probably the casual gene. Not progressed furhter due to lack of data.
-
-## All targets where coloc evidence exists & MR evidence for effect of gene / protein expression on biomarker concentration
-
-Estimate casual effect of gene product on biomaker concentration & bidirectional effect
-Estimate reverse causation effect using Stiger filtering
-
-```sh
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh run_coloc_mr.R -t "$trait" -o $(echo "$trait" | cut -d. -f2 | sed 's/^/ukb-d-/g' | sed 's/$/_irnt/g')
-done
-```
-
-Combine MR analyses
-
-```sh
-echo -e "id.exposure\tid.outcome\toutcome\texposure\tmethod\tnsnp\tb\tse\tpval\tsnp_r2.exposure\tsnp_r2.outcome\tcorrect_causal_direction\tsteiger_pval" > data/mr.txt
-cat data/*.0.0.mr.txt | grep -v ^id >> data/mr.txt
-```
-
-Report only unidirectional effects of gene product on biomarker conc where coloc evidence is in cis-region of coding gene
-
-```sh
-Rscript filter_coloc_mr.R
-```
-
-Results
-
-Previously reported targets
-- APOA5
-- APOE
-- HSD17B13
-
-## Test for vQTL effect on biomarker using pQTLs
-
-Extract Tier1 pQTLs from Zheng et al
-
-```cypher
-MATCH (e:Exposure)<-[r:INST_EXP { tier: 'Tier1', trans_cis:'cis' }]-(i:Instruments) RETURN r.rs_ID as rsid, r.pval_exp as pval, r.se_exp as se, r.nea as nea, r.ea as ea, r.eaf_exp as eaf, r.beta_exp as beta, r.samplesize_exp as n, r.expID as gene, r.author_exp as study, r.units_exp as units
-```
-
-```sh
-Rscript pqlt.R
-```
-
-- This analysis identified effects of ATP1B2 & PLG on variance of biomarker conc. but these genes are close to coding region of biomakers so do not represent a casual effect of the target but LD
-
-## Select mvQTLs at LDL-c drug target loci
-
-Select instruments for LDL-c at drug target loci and test for variance effect on LDL-c & compare with RCT evidence
-
-```sh
-Rscript lipids_drug_targets.R
 ```
 
 ## GxG interaction analysis
@@ -252,18 +121,8 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
 done
 
 # qual analysis
-for trait in alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
+for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh gxg-qual.R -t "$trait"
-done
-
-# WF analysis
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh gxg_wf.R -t "$trait"
-done
-
-# disease analysis
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh gxg_disease.R -t "$trait"
 done
 ```
 
@@ -274,8 +133,6 @@ echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg.txt
 grep -v term data/*.0.0.gxg.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg.txt:/\t/g' >> data/gxg.txt
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg-log.txt
 grep -v term data/*.0.0.gxg-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg-log.txt:/\t/g' >> data/gxg-log.txt
-echo -e "trait\tbeta\tse\tpvalue\tsample_size\tterm" > data/gxg-wf.txt
-grep -v term data/*.0.0.gxg-wf.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg-wf.txt:/\t/g' >> data/gxg-wf.txt
 ```
 
 ## GxE interaction analysis
@@ -284,11 +141,6 @@ grep -v term data/*.0.0.gxg-wf.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gx
 # main analysis
 for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh gxe.R -t "$trait"
-done
-
-# WF analysis
-for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh gxe_wf.R -t "$trait"
 done
 
 # qualitative analysis
@@ -304,6 +156,4 @@ echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe.txt
 grep -v term data/*.0.0.gxe.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe.txt:/\t/g' >> data/gxe.txt
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe-log.txt
 grep -v term data/*.0.0.gxe-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-log.txt:/\t/g' >> data/gxe-log.txt
-echo -e "trait\tbeta\tse\tpvalue\tsample_size\tterm" > data/gxe-wf.txt
-grep -v term data/*.0.0.gxe-wf.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-wf.txt:/\t/g' >> data/gxe-wf.txt
 ```
