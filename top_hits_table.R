@@ -78,22 +78,6 @@ d$key <- paste0("chr", d$chr, "_", d$pos, "_", d$oa, "_", d$ea)
 d$id <- paste0("ukb-d-", str_split(d$trait, "\\.", simplify=T)[,2], "_irnt")
 d$chr_pos <- paste0(d$chr, ":", d$pos)
 
-# load finemapped snps
-finemap <- fread("data/finemap.txt")
-finemap.loci <- data.frame()
-for (i in 1:nrow(finemap)){
-    assoc <- ieugwasr::associations(variants=finemap$finemap.snp[i], id=finemap$id[i])
-    finemap.loci <- rbind(finemap.loci, data.frame(
-        finemap[i],
-        chr=assoc$chr,
-        pos=assoc$position,
-        oa=assoc$ea,
-        ea=assoc$nea,
-        stringsAsFactors=F
-    ), stringsAsFactors=F)
-}
-finemap.loci$key <- paste0("chr", finemap.loci$chr, "_", finemap.loci$pos, "_", finemap.loci$oa, "_", finemap.loci$ea)
-
 # load dosage
 snps <- d %>% dplyr::select(chr, pos, oa, ea)
 snps <- rbind(snps, finemap.loci %>% dplyr::select(chr, pos, oa, ea), stringsAsFactors=F)
