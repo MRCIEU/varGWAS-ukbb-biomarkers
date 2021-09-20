@@ -19,13 +19,13 @@ bp <- function(dat, snp, outcome, covar){
     varbeta1 <- glht(model=fit2, linfct=paste("x*1 + xsq*1 == 0"))
     varbeta2 <- glht(model=fit2, linfct=paste("x*2 + xsq*4 == 0"))
     res <- cbind(
-        tidy(fit1) %>% dplyr::filter(term=="x") %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(beta.estimate="estimate", beta.std.error="std.error"),
+        tidy(fit1) %>% dplyr::filter(term=="x") %>% dplyr::select("estimate", "std.error", "p.value") %>% dplyr::rename(beta.estimate="estimate", beta.std.error="std.error", beta.p.value="p.value"),
         tidy(varbeta1) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(varbeta1.estimate="estimate", varbeta1.std.error="std.error"),
         tidy(varbeta2) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(varbeta2.estimate="estimate", varbeta2.std.error="std.error"),
         n0=table(round(dat$x))[1],
         n1=table(round(dat$x))[2],
         n2=table(round(dat$x))[3],
-        p=tidy(anova(fitnull, fit2))$p.value[2]
+        varbeta.p.value=tidy(anova(fitnull, fit2))$p.value[2]
     )
     res$beta.lci <- res$beta.estimate - (res$beta.std.error * 1.96)
     res$beta.uci <- res$beta.estimate + (res$beta.std.error * 1.96)

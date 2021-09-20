@@ -68,7 +68,8 @@ for (i in 1:length(main$key)){
 
     # test GxG on additive scale
     f <- as.formula(paste0(opt$trait, " ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(main$key[i], " * " ,modifier$key[j], collapse=" + ")))
-    t <- tidy(lmrob(f, data=pheno))
+    mod <- lm(f, data=pheno)
+    sandwich_se <- diag(vcovHC(mod, type = "HC"))^0.5
 
     # store results
     results <- rbind(results, t[grep(":", t$term),])
