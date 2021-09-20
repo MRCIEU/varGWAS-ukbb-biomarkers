@@ -19,7 +19,7 @@ message(paste0("trait ", opt$trait))
 # read in extracted phenotypes
 pheno <- fread(paste0("data/", opt$trait, ".txt"))
 
-# read in main clumped vQTLs P < 5e-8 & add key
+# read in main clumped vQTLs P < 5e-8/30 & add key
 main <- fread(paste0("data/", opt$trait, ".clump.txt"))
 main$key <- paste0("chr", main$chr, "_", main$pos, "_", main$oa, "_", main$ea)
 stopifnot(nrow(main) > 0)

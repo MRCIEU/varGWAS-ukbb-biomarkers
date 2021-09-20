@@ -107,7 +107,7 @@ Combine all vQTLs
 echo -n "trait," > data/vqtls.txt
 head -n1 data/body_mass_index.21001.0.0.clump.txt >> data/vqtls.txt
 grep -v chr data/*.0.0.clump.txt | sed 's/data\///g' | sed 's/.clump.txt:/,/g' >> data/vqtls.txt
-sbatch runR.sh top_hits_table.R
+sbatch runR.sh vqtls.R
 ```
 
 ## GxG interaction analysis

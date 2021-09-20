@@ -111,4 +111,4 @@ all$key <- NULL
 all$outcome <- sapply(all$outcome, function(x) biomarkers_abr[x==biomarkers], simplify=T)
 
 # write to table
-write.csv(results, file="Table S1.csv", quote=F, row.names=F)
+write.csv(all, file="Table S1.csv", quote=F, row.names=F)
