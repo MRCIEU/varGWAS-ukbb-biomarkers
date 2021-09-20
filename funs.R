@@ -2,6 +2,7 @@ library('data.table')
 library('dplyr')
 library('purrr')
 library('rbgen')
+library('sandwich')
 library('stringr')
 
 get_filtered_linker <- function(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="16729") {
@@ -263,3 +264,21 @@ biomarkers_abr <- c(
 )
 
 env_exp <- c("smoking_status.20116.0.0","summed_minutes_activity.22034.0.0","alcohol_intake_frequency.1558.0.0","estimated_fat_yesterday.100004.0.0","estimated_total_sugars_yesterday.100008.0.0","sex.31.0.0","age_at_recruitment.21022.0.0","body_mass_index.21001.0.0")
+
+get_int_sandwich <- function(mod){
+    est <- coef(mod)
+    sandwich_se <- diag(vcovHC(mod, type = "HC"))^0.5
+    beta <- est[grepl(":", names(est))] %>% as.numeric
+    se <- sandwich_se[grepl(":", names(sandwich_se))] %>% as.numeric
+    t <- beta / se
+    n <- resid(mod) %>% length
+    k <- coef(mod) %>% length
+    p <- pt(abs(t), n - k, lower.tail = F) * 2
+    return(data.frame(
+      term=grep(":", names(est), value=T),
+      estimate=beta,
+      std.error=se,
+      t.statistic=t,
+      p.value=p
+    ))
+}
