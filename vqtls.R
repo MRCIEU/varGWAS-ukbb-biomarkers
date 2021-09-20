@@ -87,7 +87,7 @@ for (i in 1:nrow(d)){
 }
 
 # select fields for paper
-results <- results %>% dplyr::select("snp", "outcome", "beta.estimate", "beta.lci", "beta.uci", "beta.p.value", "varbeta1.estimate", "varbeta1.lci", "varbeta1.uci", "varbeta2.estimate", "varbeta2.lci", "varbeta2.uci", "varbeta.p.value", "beta.estimate.log", "beta.lci.log", "beta.uci.log", "beta.p.value.log", "varbeta1.estimate.log", "varbeta1.lci.log", "varbeta1.uci.log", "varbeta2.estimate.log", "varbeta2.lci.log", "varbeta2.uci.log", "varbeta.p.value")
+results <- results %>% dplyr::select("snp", "outcome", "beta.estimate", "beta.lci", "beta.uci", "beta.p.value", "varbeta1.estimate", "varbeta1.lci", "varbeta1.uci", "varbeta2.estimate", "varbeta2.lci", "varbeta2.uci", "varbeta.p.value", "beta.estimate.log", "beta.lci.log", "beta.uci.log", "beta.p.value.log", "varbeta1.estimate.log", "varbeta1.lci.log", "varbeta1.uci.log", "varbeta2.estimate.log", "varbeta2.lci.log", "varbeta2.uci.log", "varbeta.p.value.log")
 results$key <- stringr::str_split(results$snp, "_", simplify=T) %>% as.data.frame %>% dplyr::mutate(V1=gsub("chr", "", V1)) %>% dplyr::mutate(key=paste0(V1, ":",V2)) %>% dplyr::pull(key)
 
 # get data on nearest gene
