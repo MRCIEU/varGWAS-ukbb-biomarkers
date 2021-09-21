@@ -28,7 +28,7 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
 done
 ```
 
-The following have low sample size ~ 50k
+The following have low sample size
 - oestradiol.30800.0.0
 - rheumatoid_factor.30820
 
