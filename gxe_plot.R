@@ -29,18 +29,17 @@ get_dat <- function(file){
     d$u <- sapply(d$V1, get_trait_name)
 
     # map SNP to rsid & gene
-    lookup <- fread("all.vqtls.txt")
-    lookup$key <- paste0(lookup$key, "-", lookup$Trait)
-    d$key <- paste0(d$V2, "-", d$y)
-    d <- merge(d, lookup, "key")
-    d$key <- NULL
-    d$gene <- stringr::str_split(d[["Nearest Gene"]], ",", simplify=T)[,1]
-    d$f <- paste0(d$gene, " (", d$RSID, d$EA, ")")
+    lookup <- fread("Table S1.csv", select=c("snp", "gene"))
+    lookup <- unique(lookup)
+    d <- merge(d, lookup, by.x="V2", by.y="snp", all.x=T)
+    d$gene <- stringr::str_split(d[["gene"]], "|", simplify=T)[,1]
     d$u <- factor(d$u)
+    
     levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status")
 
     # add key
     d$tt <- paste0(d$trait, ":", d$term)
+    d$Trait <- d$y
 
     return(d)
 }

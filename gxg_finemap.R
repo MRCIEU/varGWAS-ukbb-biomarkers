@@ -4,6 +4,8 @@ library("dplyr")
 library("stringr")
 library("ggpubr")
 library("viridis")
+library("lmtest")
+library("sandwich")
 library('forestplot')
 library("viridis")
 library("RColorBrewer")
@@ -46,8 +48,8 @@ finemap_func <- function(chr_pos, id){
     dat <- ieugwasr_to_finemapr(
         region$region,
         id,
-        bfile = "/mnt/storage/home/ml18692/projects/jlst-cpp-vgwas/data/EUR",
-        plink_bin = "/mnt/storage/home/ml18692/projects/jlst-cpp-vgwas/data/plink_Linux"
+        bfile = "/mnt/storage/home/ml18692/projects/varGWAS-ukbb-biomarkers/data/EUR",
+        plink_bin = "/mnt/storage/home/ml18692/projects/varGWAS-ukbb-biomarkers/data/plink_Linux"
     )
 
     # perform finemapping using SuSie
@@ -127,13 +129,9 @@ get_finemap <- function(d){
     return(results)
 }
 
-get_est <- function(trait, v1, v2, finemap, multiplicative=F){
+get_est <- function(trait, v1, v2, finemap){
     # read in extracted phenotypes
     pheno <- fread(paste0("data/", trait, ".txt"))
-
-    if (multiplicative){
-        pheno[[trait]] <- log(pheno[[trait]])
-    }
 
     # subset finemapped variants for this trait
     finemap <- finemap %>% dplyr::filter(trait == !!trait)
@@ -159,19 +157,11 @@ get_est <- function(trait, v1, v2, finemap, multiplicative=F){
     f <- paste0(trait, " ~ ", v1, " * ", v2, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse=" + "), " + ", paste0(adj, collapse=" + "))
     message(f)
     mod <- lm(f, data=pheno)
-    sandwich_se <- diag(vcovHC(mod, type = "HC"))^0.5
-    est <- coef(mod)
-    lci <- coef(mod)-1.96*sandwich_se
-    uci <- coef(mod)+1.96*sandwich_se
-    est <- est[grepl(":", names(est))]
-    lci <- lci[grepl(":", names(lci))]
-    uci <- uci[grepl(":", names(uci))]
-    est <- data.frame(est, lci, uci)
-    est$trait <- trait
-    est$formula <- f
-    est$term <- rownames(est)
-    rownames(est) <- NULL
-    return(est)
+    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
+    t <- t %>% dplyr::filter(grepl(":", t$term))
+    t$trait <- trait
+    t$formula <- f
+    return(t)
 }
 
 get_plot <- function(d){
