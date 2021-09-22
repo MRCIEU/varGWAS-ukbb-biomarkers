@@ -50,7 +50,7 @@ for (i in 1:nrow(snps)){
 stopifnot(nrow(d) == 1)
 
 #stratify
-k <- "chr4_88212722_A_G" # HSDB1317
+k <- "chr4_88212722_G_A" # HSDB1317
 pheno$mod_gt <- round(pheno[[k]])
 pheno0 <- pheno %>% dplyr::filter(mod_gt == 0)
 pheno1 <- pheno %>% dplyr::filter(mod_gt == 1)
@@ -60,7 +60,7 @@ pheno2 <- pheno %>% dplyr::filter(mod_gt == 2)
 results <- data.frame()
 
 # test SNP effect on ALT by stratified modifier
-f <- as.formula(paste0("alanine_aminotransferase.30620.0.0", " ~ chr22_44324730_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
+f <- as.formula(paste0("alanine_aminotransferase.30620.0.0", " ~ chr22_44324730_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
 mod <- lm(f, data=pheno0)
 t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
 t <- t[2,]
@@ -86,8 +86,8 @@ t$trait <- "alanine_aminotransferase.30620.0.0"
 results <- rbind(results, t)
 
 # test SNP effect on liver disease by stratified modifier
-for (outcome in c("alcoholic_liver_disease", "fibrosis_liver_disease", "fatty_liver_disease")){
-  f <- as.formula(paste0(outcome, " ~ chr22_44324730_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
+for (outcome in c("liver_disease", "alcoholic_liver_disease", "fibrosis_liver_disease", "fatty_liver_disease")){
+  f <- as.formula(paste0(outcome, " ~ chr22_44324730_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
   mod <- glm(f, data=pheno0, family="binomial")
   t <- tidy(mod)[2,]
   t$mod <- 0

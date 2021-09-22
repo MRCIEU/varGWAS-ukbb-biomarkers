@@ -122,13 +122,6 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
     sbatch runR.sh gxg.R -t "$trait"
 done
 
-# finemap adjusted analysis
-sbatch runR.sh gxg_finemap.R -t alanine_aminotransferase.30620.0.0
-
-# qual analysis
-sbatch runR.sh gxg-qual.R -t alanine_aminotransferase.30620.0.0
-```
-
 Combine GxG analyses
 
 ```sh
@@ -136,6 +129,13 @@ echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg.txt
 grep -v term data/*.0.0.gxg.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg.txt:/\t/g' >> data/gxg.txt
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxg-log.txt
 grep -v term data/*.0.0.gxg-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxg-log.txt:/\t/g' >> data/gxg-log.txt
+```
+
+# finemap adjusted analysis
+sbatch runR.sh gxg_finemap.R -t alanine_aminotransferase.30620.0.0
+
+# qual analysis
+sbatch runR.sh gxg-qual.R -t alanine_aminotransferase.30620.0.0
 ```
 
 Plots
