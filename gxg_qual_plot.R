@@ -6,6 +6,7 @@ library("ggpubr")
 library("viridis")
 library('forestplot')
 library("viridis")
+library("ggpubr")
 library("RColorBrewer")
 library("grid")
 source("funs.R")
@@ -16,23 +17,52 @@ d <- fread("data/alanine_aminotransferase.30620.0.0.gxg-qual.txt")
 d$lci <- d$estimate - (1.96 * d$std.error)
 d$uci <- d$estimate + (1.96 * d$std.error)
 d$mod_gt <- NA
-d$mod_gt[d$mod == 0] <- "TT"
-d$mod_gt[d$mod == 1] <- "TC"
-d$mod_gt[d$mod == 2] <- "CC"
+d$mod_gt[d$mod == 0] <- "AA"
+d$mod_gt[d$mod == 1] <- "AG"
+d$mod_gt[d$mod == 2] <- "GG"
 
-p <- ggplot(d, aes(x=mod_gt, y=estimate, ymin=lci, ymax=uci)) +
+d1 <- d %>% filter(trait=="alanine_aminotransferase.30620.0.0")
+d1$trait <- gsub("alanine_aminotransferase.30620.0.0", "Alanine aminotransferase", d1$trait)
+d2 <- d %>% filter(trait!="alanine_aminotransferase.30620.0.0")
+d2$estimate <- exp(d2$estimate)
+d2$lci <- exp(d2$lci)
+d2$uci <- exp(d2$uci)
+d2$trait <- gsub("alcoholic_liver_disease", "Alcoholic liver disease", d2$trait)
+d2$trait <- gsub("fibrosis_liver_disease", "Fibrotic liver disease", d2$trait)
+d2$trait <- gsub("fatty_liver_disease", "Fatty liver disease", d2$trait)
+
+p1 <- ggplot(d1, aes(x=mod_gt, y=estimate, ymin=lci, ymax=uci, group=trait, shape=trait)) +
     geom_point(size = 1.5, position = position_dodge(width = 0.9)) +
     geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
     theme_classic() +
     scale_y_continuous(breaks = scales::pretty_breaks(5)) +
     geom_hline(yintercept = c(0), linetype = "dashed", color = "grey") +
+    labs(shape = "Trait") +
     theme(
         panel.spacing.y = unit(0, "lines"),
-        legend.box.background = element_rect(colour = "black")
+        legend.box.background = element_rect(colour = "black"),
+        legend.position = "bottom"
     ) +
-    ylab("Per allele effect estimate, (95% CI)") +
-    xlab("PNPLA3 (rs738408)")
+    ylab("PNPLA3 per rs738408C allele average effect estimate, (95% CI)") +
+    xlab("HSD17B13 (rs13141441)")
 
-pdf("gxg-qual.pdf")
+p2 <- ggplot(d2, aes(x=mod_gt, y=estimate, ymin=lci, ymax=uci, group=trait, shape=trait)) +
+    geom_point(size = 1.5, position = position_dodge(width = 0.9)) +
+    geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
+    theme_classic() +
+    scale_y_continuous(breaks = scales::pretty_breaks(5)) +
+    geom_hline(yintercept = c(1), linetype = "dashed", color = "grey") +
+    labs(shape = "Trait") +
+    theme(
+        panel.spacing.y = unit(0, "lines"),
+        legend.box.background = element_rect(colour = "black"),
+        legend.position = "bottom"
+    ) +
+    ylab("PNPLA3 per rs738408C allele average effect estimate, (OR, 95% CI)") +
+    xlab("HSD17B13 (rs13141441)")
+
+p <- ggarrange(p1, p2, labels = c("A", "B"), ncol = 2, nrow = 1)
+
+pdf("gxg-qual.pdf", height=7, width=14)
 print(p)
 dev.off()

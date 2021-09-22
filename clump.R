@@ -2,8 +2,6 @@ library('data.table')
 library('optparse')
 library('dplyr')
 library('ieugwasr')
-library('jlst')
-library('robustbase')
 library('broom')
 source("funs.R")
 set.seed(124)
@@ -34,8 +32,10 @@ sig <- ld_clump(sig)
 # subset rows
 sig <- gwas[gwas$rsid %in% sig$rsid]
 
+# flip alleles and drop effect estimate
+sig <- sig %>% select(chr, pos, rsid, oa, ea) %>% rename(oa="ea", ea="oa")
+
 # save assoc
-sig$key <- NULL
 if (opt$p == 5e-8/30){
   write.csv(sig, file=paste0("data/", opt$trait, ".clump.txt"), row.names=F)
 } else {
