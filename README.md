@@ -90,7 +90,7 @@ for trait in body_mass_index.21001.0.0 alanine_aminotransferase.30620.0.0 albumi
     closest \
     -g /mnt/storage/home/ml18692/db/reference_genomes/released/2019-08-30/data/2.8/b37/human_g1k_v37.fasta.fai \
     -a <(awk -F"," 'NR>1 {print $1"\t"$2-1"\t"$2}' "data/""$trait"".clump.txt" | sort -k1,1n -k2,2n) \
-    -b data/Homo_sapiens.GRCh37.82.sorted.bed \
+    -b data/Homo_sapiens.GRCh37.104.hgnc.bed \
     > "data/""$trait"".nearest-gene.txt"
 done
 ```
@@ -98,7 +98,7 @@ done
 Combine nearest gene
 
 ```sh
-awk '{print $1"\t"$3"\t"$8}' data/*nearest* | uniq > data/nearest.txt
+awk '{print $1"\t"$3"\t"$7}' data/*nearest* | uniq > data/nearest.txt
 ```
 
 ## Top hits table
@@ -166,6 +166,8 @@ echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe.txt
 grep -v term data/*.0.0.gxe.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe.txt:/\t/g' >> data/gxe.txt
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe-log.txt
 grep -v term data/*.0.0.gxe-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-log.txt:/\t/g' >> data/gxe-log.txt
+head -n1 data/alanine_aminotransferase.30620.0.0.gxe-qual.txt > data/gxe-qual.txt
+cat data/*gxe-qual.txt | grep -v ^term >> data/gxe-qual.txt
 ```
 
 Plots

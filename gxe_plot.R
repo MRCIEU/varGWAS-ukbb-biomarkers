@@ -29,12 +29,12 @@ get_dat <- function(file){
     d$u <- sapply(d$V1, get_trait_name)
 
     # map SNP to rsid & gene
-    lookup <- fread("Table S1.csv", select=c("snp", "gene"))
+    lookup <- fread("Table S1.csv", select=c("snp", "gene", "rsid"))
     lookup <- unique(lookup)
     d <- merge(d, lookup, by.x="V2", by.y="snp", all.x=T)
-    d$gene <- stringr::str_split(d[["gene"]], "|", simplify=T)[,1]
+    d$gene <- stringr::str_split(d$gene, "\\|", simplify=T)[,1]
     d$u <- factor(d$u)
-    d$f <- paste0(d$gene, "(", d$)
+    d$f <- paste0(d$gene, " (", d$rsid, ")")
     
     levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status")
 
@@ -91,6 +91,7 @@ get_plot <- function(d, leg_name){
             strip.background = element_blank(),
             strip.text.y = element_text(angle = 0),
             legend.position = "bottom",
+            legend.background = element_blank(),
             legend.box.background = element_rect(colour = "black"),
             panel.spacing.y = unit(0, "lines")
         ) +
@@ -108,9 +109,9 @@ multiplicative <- merge(multiplicative, fread("data/gxe.txt") %>% mutate(tt=past
 
 # save plot
 pdf("gxe-additive.pdf", height=12, width=11)
-print(get_plot(additive, "Multiplicative (P < 5e-5"))
+print(get_plot(additive, "Multiplicative (P < 5e-5)"))
 dev.off()
 
 pdf("gxe-multiplicative.pdf", height=12, width=11)
-print(get_plot(multiplicative, "Additive (P < 5e-5"))
+print(get_plot(multiplicative, "Additive (P < 5e-5)"))
 dev.off()

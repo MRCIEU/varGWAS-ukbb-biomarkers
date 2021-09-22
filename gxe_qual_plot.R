@@ -40,18 +40,18 @@ get_dat <- function(file){
     d$u <- sapply(d$u, get_trait_name)
 
     # map SNP to rsid & gene
-    lookup <- fread("all.vqtls.txt")
-    lookup$key <- paste0(lookup$key, "-", lookup$Trait)
-    d$key <- paste0(d$term, "-", d$y)
-    d <- merge(d, lookup, "key")
-    d$key <- NULL
-    d$gene <- str_split(d[["Nearest Gene"]], ",", simplify=T)[,1]
-    d$f <- paste0(d$gene, " (", d$RSID, d$EA, ")")
+    lookup <- fread("Table S1.csv", select=c("snp", "gene", "rsid"))
+    lookup <- unique(lookup)
+    d <- merge(d, lookup, by.x="term", by.y="snp", all.x=T)
+    d$gene <- stringr::str_split(d$gene, "\\|", simplify=T)[,1]
     d$u <- factor(d$u)
+    d$f <- paste0(d$gene, "(", d$rsid, ")")
+
     levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status")
 
     # add key
-    d$tt <- paste0(d$trait, ":", d$term)
+    d$tt <- paste0(d$y, ":", d$term)
+    d$Trait <- d$y
 
     return(d)
 }
@@ -116,7 +116,7 @@ get_plot <- function(d){
         geom_errorbar(width=.05) +
         theme_classic() +
         geom_rect(inherit.aes = F, show.legend = FALSE, data = tp, aes(fill = fill), xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = 0.15) +
-        scale_y_continuous(breaks = scales::pretty_breaks(3)) +
+        scale_y_continuous(limits = c(-.55, .55), breaks = scales::pretty_breaks(3)) +
         geom_hline(yintercept = c(0), linetype = "dashed", color = "grey") +
         scale_fill_manual(values=brewer.pal(2,"Paired")[1:2]) +
         scale_color_manual(values=brewer.pal(4,"Paired")[3:4], name="Subgroup") +
@@ -125,13 +125,15 @@ get_plot <- function(d){
             strip.background = element_blank(),
             strip.text.y = element_text(angle = 0),
             legend.position = "bottom",
-            panel.spacing.y = unit(0, "lines"),
-            legend.box.background = element_rect(colour = "black")
+            legend.background = element_blank(),
+            legend.box.background = element_rect(colour = "black"),
+            panel.spacing.y = unit(0, "lines")
         ) +
         ylab("Per allele effect estimate stratified by modifier, SD (95% CI)")
     return(p)
 }
 
 pdf("gxe-qual.pdf", width=8.5, height=8)
-print(get_plot(get_dat("data/gxe-qual.txt")))
+d <- get_dat("data/gxe-qual.txt")
+print(get_plot(d))
 dev.off()
