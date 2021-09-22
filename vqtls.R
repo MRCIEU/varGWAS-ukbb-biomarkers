@@ -82,7 +82,7 @@ for (i in 1:nrow(d)){
     res <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
 
     # log-scale analysis
-    res_log <- bp(dat, d$key[i], paste0(d$trait[i], "_log"), c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"), log=T)
+    res_log <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"), log=T)
     names(res_log) <- paste0(names(res_log), ".log")
 
     results <- rbind(results, cbind(res, res_log))
