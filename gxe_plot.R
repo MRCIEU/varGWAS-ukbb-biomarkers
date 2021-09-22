@@ -34,6 +34,7 @@ get_dat <- function(file){
     d <- merge(d, lookup, by.x="V2", by.y="snp", all.x=T)
     d$gene <- stringr::str_split(d[["gene"]], "|", simplify=T)[,1]
     d$u <- factor(d$u)
+    d$f <- paste0(d$gene, "(", d$)
     
     levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status")
 
@@ -90,6 +91,7 @@ get_plot <- function(d, leg_name){
             strip.background = element_blank(),
             strip.text.y = element_text(angle = 0),
             legend.position = "bottom",
+            legend.box.background = element_rect(colour = "black"),
             panel.spacing.y = unit(0, "lines")
         ) +
         ylab("Genotype (dosage) * modifier (SD) interaction effect estimate, SD (95% CI)")
