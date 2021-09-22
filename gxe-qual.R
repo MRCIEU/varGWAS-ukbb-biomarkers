@@ -4,7 +4,6 @@ library('data.table')
 library('dplyr')
 library('broom')
 library('ieugwasr')
-library('robustbase')
 source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
@@ -65,10 +64,12 @@ results <- data.frame()
 for (i in env_exp){
   for (j in 1:length(vqtls)){
     f <- as.formula(paste0(opt$trait, " ~ ", vqtls[j], " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
-    k <- paste0(i, "_b")
-    t <- tidy(lmrob(f, data=dat %>% dplyr::filter(!!sym(k) == T)))
+    k <- paste0(i, "_b")    
+    mod <- lm(f, data=dat %>% dplyr::filter(!!sym(k) == T))
+    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
     res1 <- t[2,]
-    t <- tidy(lmrob(f, data=dat %>% dplyr::filter(!!sym(k) == F)))
+    mod <- lm(f, data=dat %>% dplyr::filter(!!sym(k) == F))
+    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
     res2 <- t[2,]
     names(res1) <- paste0(names(res1), ".T")
     names(res2) <- paste0(names(res2), ".F")
