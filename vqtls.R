@@ -7,9 +7,12 @@ source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
 
-bp <- function(dat, snp, outcome, covar){
+bp <- function(dat, snp, outcome, covar, log=FALSE){
     dat <- dat %>% dplyr::select(!!snp, !!outcome, !!covar) %>% tidyr::drop_na()
     dat[[outcome]] <- dat[[outcome]] / sd(dat[[outcome]])
+    if (log){
+        dat[[outcome]] <- log(dat[[outcome]])
+    }
     dat$x <- dat[[snp]]
     dat$xsq <- dat$x^2
     fit1 <- lm(paste0(outcome, " ~ x + ", paste0(covar, collapse= " + ")), data=dat)
@@ -79,8 +82,7 @@ for (i in 1:nrow(d)){
     res <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
 
     # log-scale analysis
-    dat[[paste0(d$trait[i], "_log")]] <- log(dat[[d$trait[i]]])
-    res_log <- bp(dat, d$key[i], paste0(d$trait[i], "_log"), c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
+    res_log <- bp(dat, d$key[i], paste0(d$trait[i], "_log"), c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"), log=T)
     names(res_log) <- paste0(names(res_log), ".log")
 
     results <- rbind(results, cbind(res, res_log))

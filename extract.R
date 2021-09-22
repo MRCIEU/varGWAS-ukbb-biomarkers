@@ -6,8 +6,7 @@ source("funs.R")
 set.seed(1234)
 
 option_list = list(
-  make_option(c("-t", "--trait"), type="character", default=NULL, help="Variable name for outcome", metavar="character"),
-  make_option(c("-l", "--log"), action="store_true", default=FALSE, help="Log trait")
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Variable name for outcome", metavar="character")
 );
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -33,13 +32,6 @@ dat <- dat[,c("appieu", "sex.31.0.0", "age_at_recruitment.21022.0.0", "chip", op
 
 # drop missing values
 dat <- dat[complete.cases(dat), ]
-
-# log scale
-if (opt$log){
-  dat[[paste0(opt$trait, "_log")]] <- log(dat[[opt$trait]])
-  dat <- dat %>% select(-!!opt$trait)
-  opt$trait <- paste0(opt$trait, "_log")
-}
 
 # SD scale
 dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]])
