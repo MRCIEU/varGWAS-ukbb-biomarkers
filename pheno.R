@@ -135,10 +135,13 @@ pheno$heart_attack.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_
 pheno$angina.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==2, na.rm=T)>0})
 pheno$stroke.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==3, na.rm=T)>0})
 pheno$hypertension.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==4, na.rm=T)>0})
+pheno$none_of_the_above.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==-7, na.rm=T)>0})
 pheno[is.na(pheno$vascular_heart_problems_diagnosed_by_doctor.6150.0.0)]$heart_attack.6150 <- NA
 pheno[is.na(pheno$vascular_heart_problems_diagnosed_by_doctor.6150.0.0)]$angina.6150 <- NA
 pheno[is.na(pheno$vascular_heart_problems_diagnosed_by_doctor.6150.0.0)]$stroke.6150 <- NA
 pheno[is.na(pheno$vascular_heart_problems_diagnosed_by_doctor.6150.0.0)]$hypertension.6150 <- NA
+pheno[is.na(pheno$vascular_heart_problems_diagnosed_by_doctor.6150.0.0)]$none_of_the_above.6150 <- NA
+pheno$vascular_problems.6150 <- !pheno$none_of_the_above.6150
 
 # derive binary disease
 pheno$liver_disease <- apply(pheno %>% select(all_of(disease_name)), 1, function(x) {sum(startsWith(x, "K7"), na.rm=T)>0})
