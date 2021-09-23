@@ -46,7 +46,7 @@ p1 <- ggplot(d1, aes(x=mod_gt, y=estimate, ymin=lci, ymax=uci, group=trait, shap
         legend.box.background = element_rect(colour = "black"),
         legend.position = "none"
     ) +
-    ylab("PNPLA3 per rs738408T allele average effect estimate, (95% CI)") +
+    ylab("ALT (95% CI)") +
     xlab("HSD17B13 (rs13141441)")
 
 p2 <- ggplot(d2, aes(x=mod_gt, y=estimate, ymin=lci, ymax=uci, group=trait, shape=trait)) +
@@ -61,11 +61,11 @@ p2 <- ggplot(d2, aes(x=mod_gt, y=estimate, ymin=lci, ymax=uci, group=trait, shap
         legend.box.background = element_rect(colour = "black"),
         legend.position = "none"
     ) +
-    ylab("PNPLA3 per rs738408T allele average effect estimate, (OR, 95% CI)") +
+    ylab("Liver disease (OR, 95% CI)") +
     xlab("HSD17B13 (rs13141441)")
 
 p <- ggarrange(p1, p2, labels = c("A", "B"), ncol = 2, nrow = 1)
 
-pdf("gxg-qual.pdf", height=7, width=14)
+pdf("gxg-qual.pdf", height=7*(2/3), width=14)
 print(p)
 dev.off()
