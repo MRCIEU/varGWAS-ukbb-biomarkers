@@ -152,6 +152,6 @@ p6 <- get_glm_plot(results %>% filter(term == "chr4_10402838_T_C" & binary), "Go
 
 p <- ggarrange(p1, p2, p3, p4, p5, p6, labels = c("A", "B", "C", "D", "E", "F"), ncol = 2, nrow = 3)
 
-pdf("gxe-disease-qual.pdf", height=21, width=14)
+pdf("gxe-disease-qual.pdf", height=10.5, width=14)
 print(p)
 dev.off()
