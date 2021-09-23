@@ -115,3 +115,23 @@ dev.off()
 pdf("gxe-multiplicative.pdf", height=12, width=11)
 print(get_plot(multiplicative, "Additive (P < 5e-5)"))
 dev.off()
+
+# GxE table
+additive$ea <- stringr::str_split(additive$V2, "_", simplify=T)[,4]
+additive_tbl <- additive %>% 
+    filter(tt != "hdl_cholesterol.30760.0.0:sex.31.0.0:chr19_45413576_C_T") %>%
+    filter(tt != "triglycerides.30870.0.0:body_mass_index.21001.0.0:chr22_44324727_C_G") %>%
+    filter(tt != "urate.30880.0.0:sex.31.0.0:chr4_10402838_T_C") %>%
+    filter(p_sens < 5e-8) %>%
+    arrange(p.value) %>%
+    select(rsid, ea, u, y, estimate, lci, uci, p.value, gene)
+additive_tbl$SNP <- paste0(additive_tbl$rsid, additive_tbl$ea)
+additive_tbl$rsid <- NULL
+additive_tbl$ea <- NULL
+names(additive_tbl) <- c("Modifier", "Outcome", "Effect", "L95CI", "U95CI", "P", "Gene", "SNP")
+additive_tbl <- additive_tbl %>% select(c("SNP", "Modifier", "Outcome", "Effect", "L95CI", "U95CI", "P", "Gene"))
+additive_tbl$Effect <- round(additive_tbl$Effect, 2)
+additive_tbl$L95CI <- round(additive_tbl$L95CI, 2)
+additive_tbl$U95CI <- round(additive_tbl$U95CI, 2)
+additive_tbl$P <- signif(additive_tbl$P, digits=2)
+write.csv(additive_tbl, file="Table_2.csv", row.names=F, quote=F)
