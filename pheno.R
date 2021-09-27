@@ -58,6 +58,7 @@ pheno <- fread(f, select=c(
         "6150-0.3",
         "129-0.0",
         "130-0.0",
+        "1160-0.0",
         disease_id
     ),
     col.names=c(
@@ -110,6 +111,7 @@ pheno <- fread(f, select=c(
         "vascular_heart_problems_diagnosed_by_doctor.6150.0.3",
         "place_of_birth_in_UK_north_co_ordinate.129.0.0",
         "place_of_birth_in_UK_east_co_ordinate.130.0.0",
+        "sleep_duration.1160.0.0"
         disease_name
     )
 )
@@ -129,6 +131,8 @@ pheno <- pheno %>% mutate_at(c('vascular_heart_problems_diagnosed_by_doctor.6150
 pheno <- pheno %>% mutate_at(c('vascular_heart_problems_diagnosed_by_doctor.6150.0.3'), na_if, -3)
 pheno <- pheno %>% mutate_at(c('place_of_birth_in_UK_north_co_ordinate.129.0.0'), na_if, -1)
 pheno <- pheno %>% mutate_at(c('place_of_birth_in_UK_east_co_ordinate.130.0.0'), na_if, -1)
+pheno <- pheno %>% mutate_at(c('sleep_duration.1160.0.0'), na_if, -1)
+pheno <- pheno %>% mutate_at(c('sleep_duration.1160.0.0'), na_if, -3)
 
 # 6150
 pheno$heart_attack.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==1, na.rm=T)>0})

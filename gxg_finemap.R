@@ -259,6 +259,10 @@ pdf("gxg-additive-finemap.pdf", height=6, width=8)
 print(get_plot(additive.results))
 dev.off()
 
+write.table(additive.results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxg-add-finemap.txt"))
+
 pdf("gxg-multiplicative-finemap.pdf", height=5, width=8)
 print(get_plot(multiplicative.results))
 dev.off()
+
+write.table(multiplicative.results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxg-multi-finemap.txt"))
