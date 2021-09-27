@@ -36,7 +36,7 @@ get_dat <- function(file){
     d$u <- factor(d$u)
     d$f <- paste0(d$gene, " (", d$rsid, ")")
     
-    levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status")
+    levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status", Sleep="Sleep Duration", Meat="Processed Meat Intake", Fruit="Fresh Fruit Intake", Vegetable="Cooked Vegetable Intake")
 
     # add key
     d$tt <- paste0(d$trait, ":", d$term)

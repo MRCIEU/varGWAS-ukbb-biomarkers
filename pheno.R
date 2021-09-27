@@ -7,7 +7,7 @@ set.seed(1234)
 disease_id <- paste0("41270-0.", seq(0, 212))
 disease_name <- paste0("diagnoses_icd10_41270.0.", seq(0, 212))
 
-f <- "/tmp/tmp.FmhxZZciGm/data.33352.csv"
+f <- "/tmp/tmp.U9uJ1Afy9i/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
         "31-0.0",
@@ -62,6 +62,12 @@ pheno <- fread(f, select=c(
         "1349-0.0",
         "1309-0.0",
         "1289-0.0",
+        "4079-0.0",
+        "4080-0.0",
+        "21027-0.0",
+        "1528-0.0",
+        "24012-0.0",
+        "24024-0.0",
         disease_id
     ),
     col.names=c(
@@ -118,6 +124,12 @@ pheno <- fread(f, select=c(
         "processed_meat_intake.1349.0.0",
         "fresh_fruit_intake.1309.0.0",
         "cooked_vegetable_intake.1289.0.0",
+        "diastolic_blood_pressure_automated_reading.4079.0.0",
+        "systolic_blood_pressure_automated_reading.4080.0.0",
+        "abdominal_discomfort_pain_for_6_months_or_longer.21027.0.0",
+        "water_intake.1528.0.0",
+        "inverse_distance_to_the_nearest_major_road.24012.0.0",
+        "average_24_hour_sound_level_of_noise_pollution.24024.0.0",
         disease_name
     )
 )
@@ -149,6 +161,11 @@ pheno <- pheno %>% mutate_at(c("cooked_vegetable_intake.1289.0.0"), na_if, -1)
 pheno <- pheno %>% mutate_at(c("cooked_vegetable_intake.1289.0.0"), na_if, -3)
 pheno$cooked_vegetable_intake.1289.0.0 <- as.double(pheno$cooked_vegetable_intake.1289.0.0)
 pheno$cooked_vegetable_intake.1289.0.0[pheno$cooked_vegetable_intake.1289.0.0 == -10] <- 0.5
+pheno <- pheno %>% mutate_at(c("abdominal_discomfort_pain_for_6_months_or_longer.21027.0.0"), na_if, -818)
+pheno <- pheno %>% mutate_at(c("water_intake.1528.0.0"), na_if, -1)
+pheno <- pheno %>% mutate_at(c("water_intake.1528.0.0"), na_if, -3)
+pheno$water_intake.1528.0.0 <- as.double(pheno$water_intake.1528.0.0)
+pheno$water_intake.1528.0.0[pheno$water_intake.1528.0.0 == -10] <- 0.5
 
 # 6150
 pheno$heart_attack.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==1, na.rm=T)>0})
