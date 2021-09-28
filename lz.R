@@ -26,5 +26,5 @@ males <- cbind(males, stringr::str_split(males$variant, ":", simplify=T) %>% as.
 females <- fread("data/30880_irnt.gwas.imputed_v3.female.varorder.tsv")
 females <- cbind(females, stringr::str_split(females$variant, ":", simplify=T) %>% as.data.frame(., stringsAsFactors=F) %>% dplyr::rename(chr="V1", pos="V2", ref="V3", alt="V4"))
 
-locuszoom(males$chr, males$pos, males$ref, males$alt, males$pval, "4", 10402838 - 250000, 10402838 + 250000, "Urate (Males)")
-locuszoom(females$chr, females$pos, females$ref, females$alt, females$pval, "4", 10402838 - 250000, 10402838 + 250000, "Urate (Females)")
+locuszoom(males$chr, males$pos, males$ref, males$alt, males$pval, "4", 10402838 - 250000, 10402838 + 250000, "Urate_M")
+locuszoom(females$chr, females$pos, females$ref, females$alt, females$pval, "4", 10402838 - 250000, 10402838 + 250000, "Urate_F")
