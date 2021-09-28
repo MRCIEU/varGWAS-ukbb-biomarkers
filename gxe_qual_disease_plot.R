@@ -1,4 +1,4 @@
-load("data/pheno2.RData")
+load("data/pheno.RData")
 library('optparse')
 library('data.table')
 library('dplyr')
@@ -34,12 +34,40 @@ dat$hdl_cholesterol.30760.0.0 <- dat$hdl_cholesterol.30760.0.0 / sd(dat$hdl_chol
 dat$triglycerides.30870.0.0 <- dat$triglycerides.30870.0.0 / sd(dat$triglycerides.30870.0.0, na.rm=T)
 dat$urate.30880.0.0 <- dat$urate.30880.0.0 / sd(dat$urate.30880.0.0, na.rm=T)
 
-# load dosages
+# load dosages for gxe
+
+# APOE rs75627662
 dosage <- extract_variant_from_bgen("19", 45413576, "C", "T")
 dat <- merge(dat, dosage, "appieu")
+
+# PNPLA3 rs738409
 dosage <- extract_variant_from_bgen("22", 44324727, "C", "G")
 dat <- merge(dat, dosage, "appieu")
+
+# SLC2A9 rs4530622
 dosage <- extract_variant_from_bgen("4", 10402838, "T", "C")
+dat <- merge(dat, dosage, "appieu")
+
+# replication
+
+# APOE rs429358
+dosage <- extract_variant_from_bgen("19", 45411941, "T", "C")
+dat <- merge(dat, dosage, "appieu")
+
+# APOE rs7412
+dosage <- extract_variant_from_bgen("19", 45412079, "C", "T")
+dat <- merge(dat, dosage, "appieu")
+
+# SLC2A9
+dosage <- extract_variant_from_bgen("4", 9922167, "C", "T")
+dat <- merge(dat, dosage, "appieu")
+dosage <- extract_variant_from_bgen("4", 9979159, "C", "T")
+dat <- merge(dat, dosage, "appieu")
+dosage <- extract_variant_from_bgen("4", 9530799, "A", "G")
+dat <- merge(dat, dosage, "appieu")
+dosage <- extract_variant_from_bgen("4", 9701572, "G", "A")
+dat <- merge(dat, dosage, "appieu")
+dosage <- extract_variant_from_bgen("4", 10113047, "A", "G")
 dat <- merge(dat, dosage, "appieu")
 
 results <- data.frame()
@@ -82,18 +110,51 @@ results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "hdl_cholester
 f <- as.formula(vascular_problems.6150 ~ chr19_45413576_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "vascular_problems.6150", "Male", "Female"))
 
+f <- as.formula(hdl_cholesterol.30760.0.0 ~ chr19_45411941_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "hdl_cholesterol.30760.0.0", "Male", "Female"))
+f <- as.formula(vascular_problems.6150 ~ chr19_45411941_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "vascular_problems.6150", "Male", "Female"))
+
+f <- as.formula(hdl_cholesterol.30760.0.0 ~ chr19_45412079_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "hdl_cholesterol.30760.0.0", "Male", "Female"))
+f <- as.formula(vascular_problems.6150 ~ chr19_45412079_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "vascular_problems.6150", "Male", "Female"))
+
 # Effect of rs738409 on TG/CVD by BMI
 f <- as.formula(triglycerides.30870.0.0 ~ chr22_44324727_C_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_lm_estimate(f, "body_mass_index.21001.0.0_b", dat, "triglycerides.30870.0.0", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2"))
-
 f <- as.formula(vascular_problems.6150 ~ chr22_44324727_C_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_glm_estimate(f, "body_mass_index.21001.0.0_b", dat, "vascular_problems.6150", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2"))
 
 # Effect of rs4530622 on Urate/Gout by sex
 f <- as.formula(urate.30880.0.0 ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
-
 f <- as.formula(gout ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
+
+f <- as.formula(urate.30880.0.0 ~ chr4_9922167_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
+f <- as.formula(gout ~ chr4_9922167_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
+
+f <- as.formula(urate.30880.0.0 ~ chr4_9979159_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
+f <- as.formula(gout ~ chr4_9979159_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
+
+f <- as.formula(urate.30880.0.0 ~ chr4_9530799_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
+f <- as.formula(gout ~ chr4_9530799_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
+
+f <- as.formula(urate.30880.0.0 ~ chr4_9701572_G_A + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
+f <- as.formula(gout ~ chr4_9701572_G_A + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
+
+f <- as.formula(urate.30880.0.0 ~ chr4_10113047_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
+results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
+f <- as.formula(gout ~ chr4_10113047_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
 
 # plots
