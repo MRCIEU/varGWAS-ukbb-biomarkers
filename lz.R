@@ -18,7 +18,7 @@ locuszoom <- function(gchr, gpos, ga1, ga2, gpval, chr, start, end, trait){
   write.table(gwas, sep="\t", row.names=F, quote=F, file=t)
 
   # call LocusZoom
-  system(paste0("locuszoom --cache None --rundir ./data --metal ", t ," -p ", trait, " --plotonly --pop EUR --build hg19 --source 1000G_Nov2014 --no-date --chr ", chr, " --start " ,start, " --end ", end))
+  system(paste0("locuszoom --refsnp rs4530622 --cache None --rundir ./data --metal ", t ," -p ", trait, " --plotonly --pop EUR --build hg19 --source 1000G_Nov2014 --no-date --chr ", chr, " --start " ,start, " --end ", end))
 }
 
 males <- fread("data/30880_irnt.gwas.imputed_v3.male.varorder.tsv")

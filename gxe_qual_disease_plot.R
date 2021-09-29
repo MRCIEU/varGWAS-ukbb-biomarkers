@@ -48,28 +48,6 @@ dat <- merge(dat, dosage, "appieu")
 dosage <- extract_variant_from_bgen("4", 10402838, "T", "C")
 dat <- merge(dat, dosage, "appieu")
 
-# replication
-
-# APOE rs429358
-dosage <- extract_variant_from_bgen("19", 45411941, "T", "C")
-dat <- merge(dat, dosage, "appieu")
-
-# APOE rs7412
-dosage <- extract_variant_from_bgen("19", 45412079, "C", "T")
-dat <- merge(dat, dosage, "appieu")
-
-# SLC2A9
-dosage <- extract_variant_from_bgen("4", 9922167, "C", "T")
-dat <- merge(dat, dosage, "appieu")
-dosage <- extract_variant_from_bgen("4", 9979159, "C", "T")
-dat <- merge(dat, dosage, "appieu")
-dosage <- extract_variant_from_bgen("4", 9530799, "A", "G")
-dat <- merge(dat, dosage, "appieu")
-dosage <- extract_variant_from_bgen("4", 9701572, "G", "A")
-dat <- merge(dat, dosage, "appieu")
-dosage <- extract_variant_from_bgen("4", 10113047, "A", "G")
-dat <- merge(dat, dosage, "appieu")
-
 results <- data.frame()
 
 get_lm_estimate <- function(f, k, dat, trait, g1, g2){
@@ -79,9 +57,13 @@ get_lm_estimate <- function(f, k, dat, trait, g1, g2){
     mod <- lm(f, data=dat %>% dplyr::filter(!!sym(k) == F))
     t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
     res2 <- t[2,]
+    mod <- lm(f, data=dat)
+    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
+    res3 <- t[2,]
     res1$group <- g1
     res2$group <- g2
-    res <- rbind(res1, res2)
+    res3$group <- "All"
+    res <- rbind(res1, res2, res3)
     res$trait <- trait
     res$binary = FALSE
     res$k <- k
@@ -95,9 +77,13 @@ get_glm_estimate <- function(f, k, dat, trait, g1, g2){
     mod <- glm(f, family="binomial", data=dat %>% dplyr::filter(!!sym(k) == F))
     t <- tidy(mod)
     res2 <- t[2,]
+    mod <- glm(f, family="binomial", data=dat)
+    t <- tidy(mod)
+    res3 <- t[2,]
     res1$group <- g1
     res2$group <- g2
-    res <- rbind(res1, res2)
+    res3$group <- "All"
+    res <- rbind(res1, res2, res3)
     res$trait <- trait
     res$binary = TRUE
     res$k <- k
@@ -110,16 +96,6 @@ results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "hdl_cholester
 f <- as.formula(vascular_problems.6150 ~ chr19_45413576_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "vascular_problems.6150", "Male", "Female"))
 
-f <- as.formula(hdl_cholesterol.30760.0.0 ~ chr19_45411941_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "hdl_cholesterol.30760.0.0", "Male", "Female"))
-f <- as.formula(vascular_problems.6150 ~ chr19_45411941_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "vascular_problems.6150", "Male", "Female"))
-
-f <- as.formula(hdl_cholesterol.30760.0.0 ~ chr19_45412079_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "hdl_cholesterol.30760.0.0", "Male", "Female"))
-f <- as.formula(vascular_problems.6150 ~ chr19_45412079_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "vascular_problems.6150", "Male", "Female"))
-
 # Effect of rs738409 on TG/CVD by BMI
 f <- as.formula(triglycerides.30870.0.0 ~ chr22_44324727_C_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_lm_estimate(f, "body_mass_index.21001.0.0_b", dat, "triglycerides.30870.0.0", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2"))
@@ -130,31 +106,6 @@ results <- rbind(results, get_glm_estimate(f, "body_mass_index.21001.0.0_b", dat
 f <- as.formula(urate.30880.0.0 ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
 f <- as.formula(gout ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
-
-f <- as.formula(urate.30880.0.0 ~ chr4_9922167_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
-f <- as.formula(gout ~ chr4_9922167_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
-
-f <- as.formula(urate.30880.0.0 ~ chr4_9979159_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
-f <- as.formula(gout ~ chr4_9979159_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
-
-f <- as.formula(urate.30880.0.0 ~ chr4_9530799_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
-f <- as.formula(gout ~ chr4_9530799_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
-
-f <- as.formula(urate.30880.0.0 ~ chr4_9701572_G_A + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
-f <- as.formula(gout ~ chr4_9701572_G_A + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
-
-f <- as.formula(urate.30880.0.0 ~ chr4_10113047_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female"))
-f <- as.formula(gout ~ chr4_10113047_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female"))
 
 # plots
@@ -202,14 +153,14 @@ get_glm_plot <- function(results, x, y, title){
         return(p)
 }
 
-p1 <- get_lm_plot(results %>% filter(term == "chr19_45413576_C_T" & !binary), "HDL (95% CI)", "Sex", "APOE (rs75627662)")
-p2 <- get_glm_plot(results %>% filter(term == "chr19_45413576_C_T" & binary), "Vascular disease (OR, 95% CI)", "Sex", "")
+p1 <- get_lm_plot(results %>% dplyr::filter(term == "chr19_45413576_C_T" & !binary), "HDL (95% CI)", "Sex", "APOE (rs75627662)")
+p2 <- get_glm_plot(results %>% dplyr::filter(term == "chr19_45413576_C_T" & binary), "Vascular disease (OR, 95% CI)", "Sex", "")
 
-p3 <- get_lm_plot(results %>% filter(term == "chr22_44324727_C_G" & !binary), "TG (95% CI)", "BMI", "PNPLA3 (rs738409)")
-p4 <- get_glm_plot(results %>% filter(term == "chr22_44324727_C_G" & binary), "Vascular disease (OR, 95% CI)", "BMI", "")
+p3 <- get_lm_plot(results %>% dplyr::filter(term == "chr22_44324727_C_G" & !binary), "TG (95% CI)", "BMI", "PNPLA3 (rs738409)")
+p4 <- get_glm_plot(results %>% dplyr::filter(term == "chr22_44324727_C_G" & binary), "Vascular disease (OR, 95% CI)", "BMI", "")
 
-p5 <- get_lm_plot(results %>% filter(term == "chr4_10402838_T_C" & !binary), "Urate (95% CI)", "Sex", "SLC2A9 (rs4530622)")
-p6 <- get_glm_plot(results %>% filter(term == "chr4_10402838_T_C" & binary), "Gout (OR, 95% CI)", "Sex", "")
+p5 <- get_lm_plot(results %>% dplyr::filter(term == "chr4_10402838_T_C" & !binary), "Urate (95% CI)", "Sex", "SLC2A9 (rs4530622)")
+p6 <- get_glm_plot(results %>% dplyr::filter(term == "chr4_10402838_T_C" & binary), "Gout (OR, 95% CI)", "Sex", "")
 
 p <- ggarrange(p1, p2, p3, p4, p5, p6, labels = c("A", "B", "C", "D", "E", "F"), ncol = 2, nrow = 3)
 
