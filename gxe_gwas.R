@@ -11,9 +11,9 @@ options(ieugwasr_api="http://64.227.44.193:8006/")
 option_list = list(
   make_option(c("-t", "--outcome"), type="character", default=NULL, help="Name of trait", metavar="character"),
   make_option(c("-m", "--modifier"), type="character", default=NULL, help="Name of trait", metavar="character"),
-  make_option(c("-c", "--chr"), type="number", default=NULL, help="Chromosome", metavar="character"),
-  make_option(c("-s", "--start"), type="number", default=NULL, help="Start", metavar="character"),
-  make_option(c("-e", "--end"), type="number", default=NULL, help="End", metavar="character"),
+  make_option(c("-c", "--chr"), type="integer", default=NULL, help="Chromosome", metavar="character"),
+  make_option(c("-s", "--start"), type="integer", default=NULL, help="Start", metavar="character"),
+  make_option(c("-e", "--end"), type="integer", default=NULL, help="End", metavar="character"),
   make_option(c("-o", "--output"), type="character", default=NULL, help="Output", metavar="character")
 );
 opt_parser = OptionParser(option_list=option_list);
