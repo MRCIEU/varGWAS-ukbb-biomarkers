@@ -52,6 +52,8 @@ names(dosage) <- paste0(names(dosage), "_", variants$variants$allele0, "_", vari
 snps <- names(dosage)
 dosage$appieu <- row.names(dosage)
 
+message(paste0("Found ", length(names(dosage))))
+
 # merge geno & pheno
 dat <- merge(dat, dosage, "appieu")
 
