@@ -9,8 +9,8 @@ set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
 
 option_list = list(
-  make_option(c("-t", "--outcome"), type="character", default=NULL, help="Name of trait", metavar="character"),
-  make_option(c("-m", "--modifier"), type="character", default=NULL, help="Name of trait", metavar="character"),
+  make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character"),
+  make_option(c("-m", "--modifier"), type="character", default=NULL, help="Name of modifier", metavar="character"),
   make_option(c("-c", "--chr"), type="integer", default=NULL, help="Chromosome", metavar="character"),
   make_option(c("-s", "--start"), type="integer", default=NULL, help="Start", metavar="character"),
   make_option(c("-e", "--end"), type="integer", default=NULL, help="End", metavar="character"),
@@ -32,7 +32,7 @@ dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
 dat <- merge(dat, pc, "appieu")
 
 # SD
-dat[[opt$outcome]] <- dat[[opt$outcome]] / sd(dat[[opt$outcome]], na.rm=T)
+dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]], na.rm=T)
 dat[[opt$modifier]] <- dat[[opt$modifier]] / sd(dat[[opt$modifier]], na.rm=T)
 
 # load snps
@@ -60,7 +60,7 @@ dat <- merge(dat, dosage, "appieu")
 # test GxE
 results <- data.frame()
 for (snp in snps){
-    f <- paste0(opt$outcome, " ~ ", snp, " * ", opt$modifier, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10")
+    f <- paste0(opt$trait, " ~ ", snp, " * ", opt$modifier, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10")
     fit <- lm(as.formula(f), data=dat)
     fit <- tidy(fit)
     term <- fit %>% dplyr::filter(grepl(":", term))
