@@ -49,6 +49,7 @@ dosage <- as.data.frame(
     apply(variants$data, 1, function(data) { return(data[,1]*0 + data[,2]*1 + data[,3]*2) })
 )
 names(dosage) <- paste0(gsub(":", "_", names(dosage)), "_", variants$variants$allele0, "_", variants$variants$allele1)
+names(dosage)[!grepl("^rs", names(dosage))] <- paste0("chr", names(dosage)[!grepl("^rs", names(dosage))])
 snps <- names(dosage)
 dosage$appieu <- row.names(dosage)
 
