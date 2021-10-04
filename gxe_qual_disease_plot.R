@@ -197,6 +197,6 @@ p6 <- get_glm_plot(results %>% dplyr::filter((term == "rs4530622" | term == "rs1
 
 p <- ggarrange(p1, p2, p3, p4, p5, p6, labels = c("A", "B", "C", "D", "E", "F"), ncol = 2, nrow = 3)
 
-pdf("gxe-disease-qual.pdf", height=7*(2/3)*3, width=14)
+pdf("gxe-disease-qual.pdf", height=7*(2/3)*3, width=7*(2/3)*4)
 print(p)
 dev.off()
