@@ -60,10 +60,6 @@ dat <- merge(dat, dosage, "appieu")
 dosage <- extract_variant_from_bgen("4", 9944052, "A", "G")
 dat <- merge(dat, dosage, "appieu")
 
-# SLC2A9 rs149561889
-dosage <- extract_variant_from_bgen("4", 10447155, "A", "T")
-dat <- merge(dat, dosage, "appieu")
-
 results <- data.frame()
 
 get_lm_estimate <- function(f, k, dat, trait, g1, g2){
@@ -142,19 +138,13 @@ results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0
 f <- as.formula(gout ~ chr4_9944052_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female") %>% mutate(term="rs12498742"))
 
-# Effect of rs149561889 on Urate/Gout by sex
-f <- as.formula(urate.30880.0.0 ~ chr4_10447155_A_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female") %>% mutate(term="rs149561889"))
-f <- as.formula(gout ~ chr4_10447155_A_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female") %>% mutate(term="rs149561889"))
-
 # plots
 results$lci <- results$estimate - (1.96 * results$std.error)
 results$uci <- results$estimate + (1.96 * results$std.error)
 results$estimate[results$binary] <- exp(results$estimate[results$binary])
 results$lci[results$binary] <- exp(results$lci[results$binary])
 results$uci[results$binary] <- exp(results$uci[results$binary])
-results$term <- factor(results$term, levels=c("rs75627662", "rs7412", "rs738409", "rs3747207", "rs4530622", "rs12498742", "rs149561889"))
+results$term <- factor(results$term, levels=c("rs75627662", "rs7412", "rs738409", "rs3747207", "rs4530622", "rs12498742"))
 
 get_lm_plot <- function(results, x, y, title){
     results$group <- as.factor(results$group)
@@ -202,8 +192,8 @@ p2 <- get_glm_plot(results %>% dplyr::filter((term == "rs75627662" | term == "rs
 p3 <- get_lm_plot(results %>% dplyr::filter((term == "rs738409" | term == "rs3747207") & !binary), "TG (95% CI)", "BMI", "PNPLA3")
 p4 <- get_glm_plot(results %>% dplyr::filter((term == "rs738409" | term == "rs3747207") & binary), "Vascular disease (OR, 95% CI)", "BMI", "")
 
-p5 <- get_lm_plot(results %>% dplyr::filter((term == "rs4530622" | term == "rs149561889") & !binary), "Urate (95% CI)", "Sex", "SLC2A9")
-p6 <- get_glm_plot(results %>% dplyr::filter((term == "rs4530622" | term == "rs149561889") & binary), "Gout (OR, 95% CI)", "Sex", "")
+p5 <- get_lm_plot(results %>% dplyr::filter((term == "rs4530622" | term == "rs12498742") & !binary), "Urate (95% CI)", "Sex", "SLC2A9")
+p6 <- get_glm_plot(results %>% dplyr::filter((term == "rs4530622" | term == "rs12498742") & binary), "Gout (OR, 95% CI)", "Sex", "")
 
 p <- ggarrange(p1, p2, p3, p4, p5, p6, labels = c("A", "B", "C", "D", "E", "F"), ncol = 2, nrow = 3)
 
