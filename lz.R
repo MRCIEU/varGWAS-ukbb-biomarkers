@@ -23,8 +23,9 @@ locuszoom <- function(gchr, gpos, ga1, ga2, gpval, chr, start, end, trait, refsn
   # call LocusZoom
   system(paste0("locuszoom --refsnp ", refsnp, " --cache None --rundir ./data --metal ", t ," -p ", trait, " --plotonly --pop EUR --build hg19 --source 1000G_Nov2014 --no-date --chr ", chr, " --start " ,start, " --end ", end))
 }
-locuszoom_gxe <- function(f, trait, label_file, chr, start, end, main=T){
+locuszoom_gxe <- function(f, trait, label_file, chr, start, end, refsnp, main=T){
   d <- fread(f)
+  d$p.value[which(d$p.value == 0)] <- .Machine$double.xmin
   t <- tempfile()
   d %>% 
     filter(main != grepl(":", term)) %>% 
@@ -34,7 +35,7 @@ locuszoom_gxe <- function(f, trait, label_file, chr, start, end, main=T){
     select(MarkerName, p.value) %>% 
     rename('P-value'="p.value") %>% 
     write.table(., sep="\t", row.names=F, quote=F, file=t)
-  system(paste0("locuszoom --denote-markers-file ", label_file, " --cache None --rundir ./data --metal ", t ," -p ", trait, " --plotonly --pop EUR --build hg19 --source 1000G_Nov2014 --no-date --chr ", chr, " --start " ,start, " --end ", end))
+  system(paste0("locuszoom --denote-markers-file ", label_file, " --refsnp ", refsnp, " --cache None --rundir ./data --metal ", t ," -p ", trait, " --plotonly --pop EUR --build hg19 --source 1000G_Nov2014 --no-date --chr ", chr, " --start " ,start, " --end ", end))
   snps <- fread(t, col.names=c("rsid", "pval"))
   snps <- ieugwasr::ld_clump(snps %>% filter(pval < 5e-8))
   print(snps)
@@ -56,6 +57,7 @@ locuszoom_gxe(
   "main_hdl_cholesterol.30760.0.0",
   "data/hdl_cholesterol.30760.0.0.x.sex.31.0.0.label.txt",
   "19", 45413576 - 500000, 45413576 + 500000,
+  "rs75627662",
   main=T
 )
 locuszoom_gxe(
@@ -63,5 +65,40 @@ locuszoom_gxe(
   "x_sex.31.0.0_hdl_cholesterol.30760.0.0",
   "data/hdl_cholesterol.30760.0.0.x.sex.31.0.0.label.txt",
   "19", 45413576 - 500000, 45413576 + 500000,
+  "rs75627662",
+  main=F
+)
+
+locuszoom_gxe(
+  "data/triglycerides.30870.0.0.x.body_mass_index.21001.0.0.rs738409.txt",
+  "main_triglycerides.30870.0.0",
+  "data/triglycerides.30870.0.0.x.body_mass_index.21001.0.0.label.txt",
+  "22", 44324727 - 500000, 44324727 + 500000,
+  "rs738409",
+  main=T
+)
+locuszoom_gxe(
+  "data/triglycerides.30870.0.0.x.body_mass_index.21001.0.0.rs738409.txt",
+  "x_body_mass_index.21001.0.0_triglycerides.30870.0.0",
+  "data/triglycerides.30870.0.0.x.body_mass_index.21001.0.0.label.txt",
+  "22", 44324727 - 500000, 44324727 + 500000,
+  "rs738409",
+  main=F
+)
+
+locuszoom_gxe(
+  "data/urate.30880.0.0.x.sex.31.0.0.rs4530622.txt",
+  "main_urate.30880.0.0",
+  "data/urate.30880.0.0.x.sex.31.0.0.label.txt",
+  "4", 10402838 - 500000, 10402838 + 500000,
+  "rs4530622",
+  main=T
+)
+locuszoom_gxe(
+  "data/urate.30880.0.0.x.sex.31.0.0.rs4530622.txt",
+  "x_sex.31.0.0_urate.30880.0.0",
+  "data/urate.30880.0.0.x.sex.31.0.0.label.txt",
+  "4", 10402838 - 500000, 10402838 + 500000,
+  "rs4530622",
   main=F
 )
