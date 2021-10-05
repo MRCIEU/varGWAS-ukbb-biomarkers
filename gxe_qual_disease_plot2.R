@@ -53,7 +53,8 @@ finemap <- function(dat){
                 dat4$zscore,
                 ld,
                 L=10,
-                estimate_prior_variance=TRUE
+                estimate_prior_variance=TRUE,
+                max_iter=500
             )
         },
         error = function(e){ 
@@ -75,32 +76,19 @@ finemap <- function(dat){
     snps <- data.frame()
     for (j in 1:nrow(cs)){
         for (k in stringr::str_split(cs$variable[j], ",", simplify=T) %>% as.numeric){
+            rsid=str_split(dat4$SNP[k], "_", simplify=T)[1]
             res <- cs[j,]
             res <- cbind(res, data.frame(
                 snp=dat4$SNP[k],
                 pip=fitted_rss$pip[k]
             ))
+            res <- cbind(res, associations(rsid, "ukb-b-19953") %>% select(chr, position, nea, ea))
             snps <- rbind(snps, res)
         }
     }
 
     return(snps)
 }
-
-# load GxE 1Mb interval around vQTL
-rs738409 <- fread("data/triglycerides.30870.0.0.x.body_mass_index.21001.0.0.rs738409.txt") %>% filter(grepl(":", term))
-rs75627662 <- fread("data/hdl_cholesterol.30760.0.0.x.sex.31.0.0.rs75627662.txt") %>% filter(grepl(":", term))
-rs4530622 <- fread("data/urate.30880.0.0.x.sex.31.0.0.rs4530622.txt") %>% filter(grepl(":", term))
-
-# finemap GxE effects
-rs738409_f <- finemap(rs738409)
-rs75627662_f <- finemap(rs75627662)
-rs4530622_f <- finemap(rs4530622)
-
-# test for subgroup effect on vQTL and GxE casual variants
-
-
-# plot effects
 
 # load linker
 linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
@@ -124,30 +112,33 @@ dat$hdl_cholesterol.30760.0.0 <- dat$hdl_cholesterol.30760.0.0 / sd(dat$hdl_chol
 dat$triglycerides.30870.0.0 <- dat$triglycerides.30870.0.0 / sd(dat$triglycerides.30870.0.0, na.rm=T)
 dat$urate.30880.0.0 <- dat$urate.30880.0.0 / sd(dat$urate.30880.0.0, na.rm=T)
 
-# load dosages for gxe
+# load GxE interval around vQTL
+rs738409 <- fread("data/triglycerides.30870.0.0.x.body_mass_index.21001.0.0.rs738409.txt") %>% filter(grepl(":", term))
+rs75627662 <- fread("data/hdl_cholesterol.30760.0.0.x.sex.31.0.0.rs75627662.txt") %>% filter(grepl(":", term))
+rs4530622 <- fread("data/urate.30880.0.0.x.sex.31.0.0.rs4530622.txt2") %>% filter(grepl(":", term))
 
-# APOE rs75627662
+# finemap GxE effects
+rs738409_f <- finemap(rs738409)
+rs75627662_f <- finemap(rs75627662)
+rs4530622_f <- finemap(rs4530622)
+
+# load GxE dosages
+for (i in 1:nrow(rs738409_f)){
+    
+}
+
+# load dosages for vQTLs and finemapped effects
+
+# APOE
 dosage <- extract_variant_from_bgen("19", 45413576, "C", "T")
 dat <- merge(dat, dosage, "appieu")
 
-# APOE rs7412
-dosage <- extract_variant_from_bgen("19", 45412079, "C", "T")
-dat <- merge(dat, dosage, "appieu")
-
-# PNPLA3 rs738409
+# PNPLA3
 dosage <- extract_variant_from_bgen("22", 44324727, "C", "G")
 dat <- merge(dat, dosage, "appieu")
 
-# PNPLA3 rs3747207
-dosage <- extract_variant_from_bgen("22", 44324855, "G", "A")
-dat <- merge(dat, dosage, "appieu")
-
-# SLC2A9 rs4530622
+# SLC2A9
 dosage <- extract_variant_from_bgen("4", 10402838, "T", "C")
-dat <- merge(dat, dosage, "appieu")
-
-# SLC2A9 rs12498742
-dosage <- extract_variant_from_bgen("4", 9944052, "A", "G")
 dat <- merge(dat, dosage, "appieu")
 
 results <- data.frame()
@@ -198,35 +189,17 @@ results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "hdl_cholester
 f <- as.formula(vascular_problems.6150 ~ chr19_45413576_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "vascular_problems.6150", "Male", "Female") %>% mutate(term="rs75627662"))
 
-# Effect of rs7412 on HDL/CVD by sex
-f <- as.formula(hdl_cholesterol.30760.0.0 ~ chr19_45412079_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "hdl_cholesterol.30760.0.0", "Male", "Female") %>% mutate(term="rs7412"))
-f <- as.formula(vascular_problems.6150 ~ chr19_45412079_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "vascular_problems.6150", "Male", "Female") %>% mutate(term="rs7412"))
-
 # Effect of rs738409 on TG/CVD by BMI
 f <- as.formula(triglycerides.30870.0.0 ~ chr22_44324727_C_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_lm_estimate(f, "body_mass_index.21001.0.0_b", dat, "triglycerides.30870.0.0", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2") %>% mutate(term="rs738409"))
 f <- as.formula(vascular_problems.6150 ~ chr22_44324727_C_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_glm_estimate(f, "body_mass_index.21001.0.0_b", dat, "vascular_problems.6150", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2") %>% mutate(term="rs738409"))
 
-# Effect of rs3747207 on TG/CVD by BMI
-f <- as.formula(triglycerides.30870.0.0 ~ chr22_44324855_G_A + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "body_mass_index.21001.0.0_b", dat, "triglycerides.30870.0.0", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2") %>% mutate(term="rs3747207"))
-f <- as.formula(vascular_problems.6150 ~ chr22_44324855_G_A + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "body_mass_index.21001.0.0_b", dat, "vascular_problems.6150", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2") %>% mutate(term="rs3747207"))
-
 # Effect of rs4530622 on Urate/Gout by sex
 f <- as.formula(urate.30880.0.0 ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female") %>% mutate(term="rs4530622"))
 f <- as.formula(gout ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
 results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female") %>% mutate(term="rs4530622"))
-
-# Effect of rs12498742 on Urate/Gout by sex
-f <- as.formula(urate.30880.0.0 ~ chr4_9944052_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female") %>% mutate(term="rs12498742"))
-f <- as.formula(gout ~ chr4_9944052_A_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female") %>% mutate(term="rs12498742"))
 
 # plots
 results$lci <- results$estimate - (1.96 * results$std.error)

@@ -102,3 +102,11 @@ locuszoom_gxe(
   "rs4530622",
   main=F
 )
+locuszoom_gxe(
+  "data/urate.30880.0.0.x.sex.31.0.0.rs4530622.txt2",
+  "x_sex.31.0.0_urate.30880.0.0",
+  "data/urate.30880.0.0.x.sex.31.0.0.label.txt",
+  "4", 10402838 - 1000000, 10402838 + 500000,
+  "rs4530622",
+  main=F
+)
