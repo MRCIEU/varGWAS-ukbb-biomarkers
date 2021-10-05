@@ -14,8 +14,7 @@ option_list = list(
   make_option(c("-c", "--chr"), type="integer", default=NULL, help="Chromosome", metavar="character"),
   make_option(c("-s", "--start"), type="integer", default=NULL, help="Start", metavar="character"),
   make_option(c("-e", "--end"), type="integer", default=NULL, help="End", metavar="character"),
-  make_option(c("-o", "--output"), type="character", default=NULL, help="Output", metavar="character"),
-  make_option(c("-z", "--zhit"), type="character", default=NULL, help="Conditional hit", metavar="character")
+  make_option(c("-o", "--output"), type="character", default=NULL, help="Output", metavar="character")
 );
 opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
@@ -62,11 +61,7 @@ dat <- merge(dat, dosage, "appieu")
 # test GxE
 results <- data.frame()
 for (snp in snps){
-    if (!is.null(opt$z)){
-        f <- paste0(opt$trait, " ~ ", snp, " * ", opt$modifier, " + ", opt$z, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10")
-    } else {
-        f <- paste0(opt$trait, " ~ ", snp, " * ", opt$modifier, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10")
-    }
+    f <- paste0(opt$trait, " ~ ", snp, " * ", opt$modifier, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10")
     fit <- lm(as.formula(f), data=dat)
     fit <- tidy(fit)
     term <- fit %>% dplyr::filter(grepl(":", term))
