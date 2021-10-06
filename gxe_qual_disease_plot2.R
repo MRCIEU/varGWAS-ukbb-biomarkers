@@ -82,12 +82,96 @@ finemap <- function(dat){
                 snp=dat4$SNP[k],
                 pip=fitted_rss$pip[k]
             ))
-            res <- cbind(res, associations(rsid, "ukb-b-19953") %>% select(chr, position, nea, ea))
+            res <- cbind(res, associations(rsid, "ukb-d-30640_irnt") %>% select(chr, position, nea, ea))
             snps <- rbind(snps, res)
         }
     }
 
     return(snps)
+}
+
+get_lm_estimate <- function(f, k, dat, trait, g1, g2){
+    mod <- lm(f, data=dat %>% dplyr::filter(!!sym(k) == T))
+    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
+    res1 <- t[2,]
+    mod <- lm(f, data=dat %>% dplyr::filter(!!sym(k) == F))
+    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
+    res2 <- t[2,]
+    mod <- lm(f, data=dat)
+    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
+    res3 <- t[2,]
+    res1$group <- g1
+    res2$group <- g2
+    res3$group <- "All"
+    res <- rbind(res1, res2, res3)
+    res$trait <- trait
+    res$binary <- FALSE
+    res$k <- k
+    return(res)
+}
+
+get_glm_estimate <- function(f, k, dat, trait, g1, g2){
+    mod <- glm(f, family="binomial", data=dat %>% dplyr::filter(!!sym(k) == T))
+    t <- tidy(mod)
+    res1 <- t[2,]
+    mod <- glm(f, family="binomial", data=dat %>% dplyr::filter(!!sym(k) == F))
+    t <- tidy(mod)
+    res2 <- t[2,]
+    mod <- glm(f, family="binomial", data=dat)
+    t <- tidy(mod)
+    res3 <- t[2,]
+    res1$group <- g1
+    res2$group <- g2
+    res3$group <- "All"
+    res <- rbind(res1, res2, res3)
+    res$trait <- trait
+    res$binary <- TRUE
+    res$k <- k
+    return(res)
+}
+
+est <- function(f_dat, vqtl, dat, trait_c, trait_b, group, k1, k2){
+    results <- data.frame()
+    chrsnp <- paste0("chr", vqtl$chr, "_", vqtl$position, "_", vqtl$nea, "_", vqtl$ea)
+    lookup <- data.frame(rsid=str_split(f_dat$snp, "_", simplify=T)[,1], key=paste0("chr", f_dat$chr, "_", f_dat$position, "_", f_dat$nea, "_", f_dat$ea), stringsAsFactors=F)
+    lookup <- rbind(lookup, data.frame(rsid=vqtl$rsid, key=chrsnp, stringsAsFactors=F))
+    lookup <- unique(lookup)
+
+    # load finemap dosage
+    for (i in 1:nrow(f_dat)){
+        dosage <- extract_variant_from_bgen(f_dat$chr[i], as.double(f_dat$position[i]), f_dat$nea[i], f_dat$ea[i])
+        dat <- merge(dat, dosage, "appieu")
+    }
+    
+    # load vQTL dosage
+    if (!chrsnp %in% names(dat)){
+        dosage <- extract_variant_from_bgen(vqtl$chr, as.double(vqtl$position), vqtl$nea, vqtl$ea)
+        dat <- merge(dat, dosage, "appieu")
+    }
+
+    for (snp in unique(c(chrsnp, paste0("chr", f_dat$chr, "_", f_dat$position, "_", f_dat$nea, "_", f_dat$ea)))){
+        f <- as.formula(paste0(trait_c, " ~ ", snp, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
+        results <- rbind(results, get_lm_estimate(f, group, dat, trait_c, k1, k2))
+        f <- as.formula(paste0(trait_b, " ~ ", snp, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
+        results <- rbind(results, get_glm_estimate(f, group, dat, trait_b, k1, k2))
+    }
+
+    results$lci <- results$estimate - (1.96 * results$std.error)
+    results$uci <- results$estimate + (1.96 * results$std.error)
+    results$estimate[results$binary] <- exp(results$estimate[results$binary])
+    results$lci[results$binary] <- exp(results$lci[results$binary])
+    results$uci[results$binary] <- exp(results$uci[results$binary])
+
+    results <- merge(results, lookup, by.x="term", by.y="key")
+    results$rsid <- factor(results$rsid, levels=unique(c(vqtl$rsid, f_dat$rsid)))
+
+    results <- merge(results, f_dat %>% select(cs, rsid), "rsid", all.x=T)
+    results$cs[which(results$rsid == vqtl$rsid)] <- 0
+    results$cs <- paste0("CS ", results$cs)
+    results$cs <- gsub("CS 0", "vQTL", results$cs)
+    results$cs <- factor(results$cs, levels=c("vQTL", "CS 1", "CS 2", "CS 3", "CS 4", "CS 5", "CS 6"))
+        
+    return(results)
 }
 
 # load linker
@@ -113,153 +197,39 @@ dat$triglycerides.30870.0.0 <- dat$triglycerides.30870.0.0 / sd(dat$triglyceride
 dat$urate.30880.0.0 <- dat$urate.30880.0.0 / sd(dat$urate.30880.0.0, na.rm=T)
 
 # load GxE interval around vQTL
-rs738409 <- fread("data/triglycerides.30870.0.0.x.body_mass_index.21001.0.0.rs738409.txt") %>% filter(grepl(":", term))
 rs75627662 <- fread("data/hdl_cholesterol.30760.0.0.x.sex.31.0.0.rs75627662.txt") %>% filter(grepl(":", term))
+rs738409 <- fread("data/triglycerides.30870.0.0.x.body_mass_index.21001.0.0.rs738409.txt") %>% filter(grepl(":", term))
 rs4530622 <- fread("data/urate.30880.0.0.x.sex.31.0.0.rs4530622.txt2") %>% filter(grepl(":", term))
 
 # finemap GxE effects
-rs738409_f <- finemap(rs738409)
 rs75627662_f <- finemap(rs75627662)
+rs738409_f <- finemap(rs738409)
 rs4530622_f <- finemap(rs4530622)
 
-# load GxE dosages
-for (i in 1:nrow(rs738409_f)){
-    
-}
+# estimate per SNP effect on outcome by subgroup of vQTL and finemapped variants
+rs75627662_est <- est(rs75627662_f, data.frame(chr="19", position=45413576, nea="C", ea="T", rsid="rs75627662", stringsAsFactors=F), dat, "hdl_cholesterol.30760.0.0", "vascular_problems.6150", "sex.31.0.0_b", "Male", "Female")
+rs738409_est <- est(rs738409_f, data.frame(chr="22", position=44324727, nea="C", ea="G", rsid="rs738409", stringsAsFactors=F), dat, "triglycerides.30870.0.0", "vascular_problems.6150", "body_mass_index.21001.0.0_b", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2")
+rs4530622_est <- est(rs4530622_f, data.frame(chr="4", position=10402838, nea="T", ea="C", rsid="rs4530622", stringsAsFactors=F), dat, "urate.30880.0.0", "gout", "sex.31.0.0_b", "Male", "Female")
 
-# load dosages for vQTLs and finemapped effects
-
-# APOE
-dosage <- extract_variant_from_bgen("19", 45413576, "C", "T")
-dat <- merge(dat, dosage, "appieu")
-
-# PNPLA3
-dosage <- extract_variant_from_bgen("22", 44324727, "C", "G")
-dat <- merge(dat, dosage, "appieu")
-
-# SLC2A9
-dosage <- extract_variant_from_bgen("4", 10402838, "T", "C")
-dat <- merge(dat, dosage, "appieu")
-
-results <- data.frame()
-
-get_lm_estimate <- function(f, k, dat, trait, g1, g2){
-    mod <- lm(f, data=dat %>% dplyr::filter(!!sym(k) == T))
-    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
-    res1 <- t[2,]
-    mod <- lm(f, data=dat %>% dplyr::filter(!!sym(k) == F))
-    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
-    res2 <- t[2,]
-    mod <- lm(f, data=dat)
-    t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
-    res3 <- t[2,]
-    res1$group <- g1
-    res2$group <- g2
-    res3$group <- "All"
-    res <- rbind(res1, res2, res3)
-    res$trait <- trait
-    res$binary = FALSE
-    res$k <- k
-    return(res)
-}
-
-get_glm_estimate <- function(f, k, dat, trait, g1, g2){
-    mod <- glm(f, family="binomial", data=dat %>% dplyr::filter(!!sym(k) == T))
-    t <- tidy(mod)
-    res1 <- t[2,]
-    mod <- glm(f, family="binomial", data=dat %>% dplyr::filter(!!sym(k) == F))
-    t <- tidy(mod)
-    res2 <- t[2,]
-    mod <- glm(f, family="binomial", data=dat)
-    t <- tidy(mod)
-    res3 <- t[2,]
-    res1$group <- g1
-    res2$group <- g2
-    res3$group <- "All"
-    res <- rbind(res1, res2, res3)
-    res$trait <- trait
-    res$binary = TRUE
-    res$k <- k
-    return(res)
-}
-
-# Effect of rs75627662 on HDL/CVD by sex
-f <- as.formula(hdl_cholesterol.30760.0.0 ~ chr19_45413576_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "hdl_cholesterol.30760.0.0", "Male", "Female") %>% mutate(term="rs75627662"))
-f <- as.formula(vascular_problems.6150 ~ chr19_45413576_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "vascular_problems.6150", "Male", "Female") %>% mutate(term="rs75627662"))
-
-# Effect of rs738409 on TG/CVD by BMI
-f <- as.formula(triglycerides.30870.0.0 ~ chr22_44324727_C_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "body_mass_index.21001.0.0_b", dat, "triglycerides.30870.0.0", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2") %>% mutate(term="rs738409"))
-f <- as.formula(vascular_problems.6150 ~ chr22_44324727_C_G + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "body_mass_index.21001.0.0_b", dat, "vascular_problems.6150", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2") %>% mutate(term="rs738409"))
-
-# Effect of rs4530622 on Urate/Gout by sex
-f <- as.formula(urate.30880.0.0 ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_lm_estimate(f, "sex.31.0.0_b", dat, "urate.30880.0.0", "Male", "Female") %>% mutate(term="rs4530622"))
-f <- as.formula(gout ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10)
-results <- rbind(results, get_glm_estimate(f, "sex.31.0.0_b", dat, "gout", "Male", "Female") %>% mutate(term="rs4530622"))
-
-# plots
-results$lci <- results$estimate - (1.96 * results$std.error)
-results$uci <- results$estimate + (1.96 * results$std.error)
-results$estimate[results$binary] <- exp(results$estimate[results$binary])
-results$lci[results$binary] <- exp(results$lci[results$binary])
-results$uci[results$binary] <- exp(results$uci[results$binary])
-results$term <- factor(results$term, levels=c("rs75627662", "rs7412", "rs738409", "rs3747207", "rs4530622", "rs12498742"))
-
-get_lm_plot <- function(results, x, y, title){
-    results$group <- as.factor(results$group)
-    p <- ggplot(results, aes(x=group, y=estimate, ymin=lci, ymax=uci)) +
-        geom_point(size = 1.5, position = position_dodge(width = 0.9)) +
+plot <- function(dat_est, xlab, ylab){
+    p <- ggplot(dat_est, aes(x=group, y=estimate, ymin=lci, ymax=uci, shape=cs)) +
+        geom_point(size = 2.25, position = position_dodge(width = 0.9)) +
         geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
         theme_classic() +
-        facet_wrap(~ term, scales = "free_y") +
+        facet_grid(~ rsid) +
         scale_y_continuous(breaks = scales::pretty_breaks(5)) +
         geom_hline(yintercept = c(0), linetype = "dashed", color = "grey") +
         theme(
             panel.spacing.y = unit(0, "lines"),
             legend.box.background = element_rect(colour = "black"),
-            legend.position = "bottom"
+            legend.position = "bottom",
+            legend.title = element_blank()
         ) +
-        ylab(x) +
-        xlab(y) + 
-        ggtitle(title)
-        return(p)
+        xlab(xlab) +
+        ylab(ylab)
+    return(p)
 }
 
-get_glm_plot <- function(results, x, y, title){
-    results$group <- as.factor(results$group)
-    p <- ggplot(results, aes(x=group, y=estimate, ymin=lci, ymax=uci)) +
-        geom_point(size = 1.5, position = position_dodge(width = 0.9)) +
-        geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
-        theme_classic() +
-        facet_wrap(~ term, scales = "free_y") +
-        scale_y_continuous(breaks = scales::pretty_breaks(5)) +
-        geom_hline(yintercept = c(1), linetype = "dashed", color = "grey") +
-        theme(
-            panel.spacing.y = unit(0, "lines"),
-            legend.box.background = element_rect(colour = "black"),
-            legend.position = "bottom"
-        ) +
-        ylab(x) +
-        xlab(y) + 
-        ggtitle(title)
-        return(p)
-}
-
-p1 <- get_lm_plot(results %>% dplyr::filter((term == "rs75627662" | term == "rs7412") & !binary), "HDL (95% CI)", "Sex", "APOE")
-p2 <- get_glm_plot(results %>% dplyr::filter((term == "rs75627662" | term == "rs7412") & binary), "Vascular disease (OR, 95% CI)", "Sex", "")
-
-p3 <- get_lm_plot(results %>% dplyr::filter((term == "rs738409" | term == "rs3747207") & !binary), "TG (95% CI)", "BMI", "PNPLA3")
-p4 <- get_glm_plot(results %>% dplyr::filter((term == "rs738409" | term == "rs3747207") & binary), "Vascular disease (OR, 95% CI)", "BMI", "")
-
-p5 <- get_lm_plot(results %>% dplyr::filter((term == "rs4530622" | term == "rs12498742") & !binary), "Urate (95% CI)", "Sex", "SLC2A9")
-p6 <- get_glm_plot(results %>% dplyr::filter((term == "rs4530622" | term == "rs12498742") & binary), "Gout (OR, 95% CI)", "Sex", "")
-
-p <- ggarrange(p1, p2, p3, p4, p5, p6, labels = c("A", "B", "C", "D", "E", "F"), ncol = 2, nrow = 3)
-
-pdf("gxe-disease-qual.pdf", height=7*(2/3)*3, width=7*(2/3)*4)
-print(p)
-dev.off()
+p1 <- plot(rs75627662_est %>% filter(trait == "hdl_cholesterol.30760.0.0"), xlab = "Sex", ylab = "HDL (SD, 95% CI)")
+p1 <- plot(rs75627662_est %>% filter(trait == "hdl_cholesterol.30760.0.0"), xlab = "Sex", ylab = "HDL (SD, 95% CI)")
+p1 <- plot(rs75627662_est %>% filter(trait == "hdl_cholesterol.30760.0.0"), xlab = "Sex", ylab = "HDL (SD, 95% CI)")
