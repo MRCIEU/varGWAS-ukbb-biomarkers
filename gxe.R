@@ -67,10 +67,10 @@ for (i in env_exp){
     f <- as.formula(paste0(opt$trait, " ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(i, " * " ,vqtls[j], collapse=" + ")))
     mod <- lm(f, data=dat)
     t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
-    t <- t %>% dplyr::filter(grepl(":", t$term))
-    results <- rbind(results, t)
-    t <- t %>% dplyr::filter(term == !!vqtls[j])
-    main <- rbind(main, t)
+    tint <- t %>% dplyr::filter(grepl(":", t$term))
+    results <- rbind(results, tint)
+    tmain <- t %>% dplyr::filter(term == !!vqtls[j])
+    main <- rbind(main, tmain)
 
     f <- as.formula(paste0(opt$trait, "_log ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(i, " * " ,vqtls[j], collapse=" + ")))
     mod <- lm(f, data=dat)
