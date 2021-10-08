@@ -163,15 +163,36 @@ est <- function(f_dat, vqtl, dat, trait_c, trait_b, group, k1, k2){
     results$uci[results$binary] <- exp(results$uci[results$binary])
 
     results <- merge(results, lookup, by.x="term", by.y="key")
-    results$rsid <- factor(results$rsid, levels=unique(c(vqtl$rsid, f_dat$rsid)))
+    #results$rsid <- factor(results$rsid, levels=unique(c(vqtl$rsid, f_dat$rsid)))
 
+    f_dat$rsid <- str_split(f_dat$snp, "_", simplify=T)[,1]
     results <- merge(results, f_dat %>% select(cs, rsid), "rsid", all.x=T)
     results$cs[which(results$rsid == vqtl$rsid)] <- 0
+    results <- results %>% arrange(cs)
     results$cs <- paste0("CS ", results$cs)
     results$cs <- gsub("CS 0", "vQTL", results$cs)
-    results$cs <- factor(results$cs, levels=c("vQTL", "CS 1", "CS 2", "CS 3", "CS 4", "CS 5", "CS 6"))
+    results$cs <- factor(results$cs, levels=c("vQTL", "CS 1", "CS 2", "CS 3", "CS 4", "CS 5", "CS 6", "CS 7", "CS 8", "CS 9"))
         
     return(results)
+}
+
+plot <- function(dat_est, xlab, ylab){
+    p <- ggplot(dat_est, aes(x=group, y=estimate, ymin=lci, ymax=uci, color=rsid)) +
+        geom_point(size = 1.5, position = position_dodge(width = 0.9)) +
+        geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
+        theme_classic() +
+        facet_grid(~ cs) +
+        scale_y_continuous(breaks = scales::pretty_breaks(5)) +
+        geom_hline(yintercept = c(0), linetype = "dashed", color = "grey") +
+        theme(
+            panel.spacing.y = unit(0, "lines"),
+            legend.box.background = element_rect(colour = "black"),
+            legend.position = "bottom",
+            legend.title = element_blank()
+        ) +
+        xlab(xlab) +
+        ylab(ylab)
+    return(p)
 }
 
 # load linker
@@ -211,25 +232,19 @@ rs75627662_est <- est(rs75627662_f, data.frame(chr="19", position=45413576, nea=
 rs738409_est <- est(rs738409_f, data.frame(chr="22", position=44324727, nea="C", ea="G", rsid="rs738409", stringsAsFactors=F), dat, "triglycerides.30870.0.0", "vascular_problems.6150", "body_mass_index.21001.0.0_b", "BMI > 26.7 kg/m2", "BMI < 26.7 kg/m2")
 rs4530622_est <- est(rs4530622_f, data.frame(chr="4", position=10402838, nea="T", ea="C", rsid="rs4530622", stringsAsFactors=F), dat, "urate.30880.0.0", "gout", "sex.31.0.0_b", "Male", "Female")
 
-plot <- function(dat_est, xlab, ylab){
-    p <- ggplot(dat_est, aes(x=group, y=estimate, ymin=lci, ymax=uci, shape=cs)) +
-        geom_point(size = 2.25, position = position_dodge(width = 0.9)) +
-        geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
-        theme_classic() +
-        facet_grid(~ rsid) +
-        scale_y_continuous(breaks = scales::pretty_breaks(5)) +
-        geom_hline(yintercept = c(0), linetype = "dashed", color = "grey") +
-        theme(
-            panel.spacing.y = unit(0, "lines"),
-            legend.box.background = element_rect(colour = "black"),
-            legend.position = "bottom",
-            legend.title = element_blank()
-        ) +
-        xlab(xlab) +
-        ylab(ylab)
-    return(p)
-}
+rs4530622_est$cs[which(rs4530622_est$cs == "CS 6")] <- "CS 5"
+rs4530622_est$cs[which(rs4530622_est$cs == "CS 7")] <- "CS 6"
+rs4530622_est$cs[which(rs4530622_est$cs == "CS 8")] <- "CS 7"
+rs4530622_est$cs[which(rs4530622_est$cs == "CS 9")] <- "CS 8"
+rs4530622_est$cs <- factor(as.character(rs4530622_est$cs), levels=c("vQTL", "CS 1", "CS 2", "CS 3", "CS 4", "CS 5", "CS 6", "CS 7", "CS 8"))
 
 p1 <- plot(rs75627662_est %>% filter(trait == "hdl_cholesterol.30760.0.0"), xlab = "Sex", ylab = "HDL (SD, 95% CI)")
-p1 <- plot(rs75627662_est %>% filter(trait == "hdl_cholesterol.30760.0.0"), xlab = "Sex", ylab = "HDL (SD, 95% CI)")
-p1 <- plot(rs75627662_est %>% filter(trait == "hdl_cholesterol.30760.0.0"), xlab = "Sex", ylab = "HDL (SD, 95% CI)")
+p2 <- plot(rs738409_est %>% filter(trait == "triglycerides.30870.0.0"), xlab = "BMI", ylab = "TG (SD, 95% CI)")
+p3 <- plot(rs4530622_est %>% filter(trait == "urate.30880.0.0"), xlab = "Sex", ylab = "Urate (SD, 95% CI)")
+
+pa <- ggarrange(p1, p2, labels = c("A", "B"), ncol = 2, nrow = 1)
+pb <- ggarrange(pa, p3, labels = c(NA, "C"), ncol = 1, nrow = 2)
+
+pdf("gxe-qual2.pdf", height=7*2, width=16)
+print(pb)
+dev.off()

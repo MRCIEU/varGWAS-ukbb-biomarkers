@@ -58,6 +58,7 @@ vqtls <- grep("^chr", names(dat), value=T)
 # test for interaction between each snp
 results <- data.frame()
 results_log <- data.frame()
+main <- data.frame()
 for (i in env_exp){
   for (j in 1:length(vqtls)){
     # test GxE
@@ -68,6 +69,8 @@ for (i in env_exp){
     t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
     t <- t %>% dplyr::filter(grepl(":", t$term))
     results <- rbind(results, t)
+    t <- t %>% dplyr::filter(term == !!vqtls[j])
+    main <- rbind(main, t)
 
     f <- as.formula(paste0(opt$trait, "_log ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(i, " * " ,vqtls[j], collapse=" + ")))
     mod <- lm(f, data=dat)
@@ -80,3 +83,4 @@ for (i in env_exp){
 # save
 write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxe.txt"))
 write.table(results_log, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxe-log.txt"))
+write.table(main, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$trait, ".gxe-main.txt"))
