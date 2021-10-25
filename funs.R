@@ -156,7 +156,7 @@ get_variants <- function(trait){
         snp_stats <- snp_stats[!snp_stats$position %in% ma$Var1]
         
         # exclude MAF < q
-        snp_stats <- snp_stats[which(snp_stats$minor_allele_frequency > 0.2)]
+        #snp_stats <- snp_stats[which(snp_stats$minor_allele_frequency > 0.05)]
         
         # exclude HWE violations
         snp_stats <- snp_stats[which(snp_stats$HW_exact_p_value > 1e-5)]
@@ -171,7 +171,7 @@ get_variants <- function(trait){
         snp_stats <- snp_stats[!(snp_stats$chromosome == 6 & snp_stats$position >= (28477797-5000000) & snp_stats$position <= 33448354+5000000),]
 
         # drop vGWAS failed rows
-        gwas <- gwas %>% filter(phi_p != -1)
+        gwas <- gwas %>% dplyr::filter(phi_p != -1)
 
         # merge/filter vGWAS
         snp_stats$key <- paste0(snp_stats$chromosome, "_", snp_stats$position, "_", snp_stats$alleleB, "_", snp_stats$alleleA)
