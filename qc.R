@@ -97,13 +97,13 @@ qq_plot <- function(plotdata, title, ldsc=NULL){
 }
 
 # load LDSC results
-ldsc <- fread("data/ldsc.txt")
-names(ldsc) <- c("trait", "intercept", "se")
-ldsc$lci <- ldsc$intercept - (1.96 * ldsc$se)
-ldsc$uci <- ldsc$intercept + (1.96 * ldsc$se)
-ldsc$lab <- paste0("lambda == ", sprintf('%.2f',ldsc$intercept), "  (", sprintf('%.2f',ldsc$lci), "-", sprintf('%.2f',ldsc$uci), ")")
-ldsc <- ldsc[ldsc$trait %in% biomarkers]
-ldsc$outcome <- sapply(ldsc$trait, function(x) biomarkers_abr[x == biomarkers])
+#ldsc <- fread("data/ldsc.txt")
+#names(ldsc) <- c("trait", "intercept", "se")
+#ldsc$lci <- ldsc$intercept - (1.96 * ldsc$se)
+#ldsc$uci <- ldsc$intercept + (1.96 * ldsc$se)
+#ldsc$lab <- paste0("lambda == ", sprintf('%.2f',ldsc$intercept), "  (", sprintf('%.2f',ldsc$lci), "-", sprintf('%.2f',ldsc$uci), ")")
+#ldsc <- ldsc[ldsc$trait %in% biomarkers]
+#ldsc$outcome <- sapply(ldsc$trait, function(x) biomarkers_abr[x == biomarkers])
 
 trait_name <- get_trait_name(opt$trait)
 abr <- biomarkers_abr[biomarkers == opt$trait]
@@ -122,7 +122,8 @@ qq_plot(qq_var, abr)
 dev.off()
 
 png(paste0("data/", opt$trait, "_gwas_qq_mu.png"))
-qq_plot(qq_mu, abr, ldsc[ldsc$trait == opt$trait])
+#qq_plot(qq_mu, abr, ldsc[ldsc$trait == opt$trait])
+qq_plot(qq_mu, abr)
 dev.off()
 
 png(paste0("data/", opt$trait, "_gwas_man_var.png"))
