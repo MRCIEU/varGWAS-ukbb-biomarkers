@@ -15,18 +15,18 @@ opt = parse_args(opt_parser);
 # Taken from https://danielroelfs.com/blog/how-i-create-manhattan-plots-using-ggplot/
 man_plot <- function(gwas_data, title, sig=5e-8/30, ylim=30){
     data_cum <- gwas_data %>% 
-        group_by(chr) %>% 
-        summarise(max_bp = max(pos)) %>% 
-        mutate(bp_add = lag(cumsum(as.numeric(max_bp)), default = 0)) %>% 
-        select(chr, bp_add)
+        dplyr::group_by(chr) %>% 
+        dplyr::summarise(max_bp = max(pos)) %>% 
+        dplyr::mutate(bp_add = dplyr::lag(cumsum(as.numeric(max_bp)), default = 0)) %>% 
+        dplyr::select(chr, bp_add)
 
     gwas_data <- gwas_data %>% 
-        inner_join(data_cum, by = "chr") %>% 
-        mutate(bp_cum = pos + bp_add)
+        dplyr::inner_join(data_cum, by = "chr") %>% 
+        dplyr::mutate(bp_cum = pos + bp_add)
 
     axis_set <- gwas_data %>% 
-        group_by(chr) %>% 
-        summarize(center = mean(bp_cum))
+        dplyr::group_by(chr) %>% 
+        dplyr::summarize(center = mean(bp_cum))
 
     gwas_data$p <- -log10(gwas_data$p)
 
@@ -114,8 +114,8 @@ data <- get_variants(opt$trait)
 # calculate params for QQ plot
 qq_var <- qq_plot_dat(data, "phi_p", abr)
 qq_mu <- qq_plot_dat(data, "p", abr)
-man_var <- data %>% select(chr, pos, phi_p) %>% rename(p=phi_p) %>% mutate(trait = abr)
-man_mu <- data %>% select(chr, pos, p) %>% mutate(trait = abr)
+man_var <- data %>% dplyr::select(chr, pos, phi_p) %>% dplyr::rename(p=phi_p) %>% dplyr::mutate(trait = abr)
+man_mu <- data %>% dplyr::select(chr, pos, p) %>% dplyr::mutate(trait = abr)
 
 png(paste0("data/", opt$trait, "_gwas_qq_var.png"))
 qq_plot(qq_var, abr)
