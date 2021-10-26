@@ -13,7 +13,7 @@ opt_parser = OptionParser(option_list=option_list);
 opt = parse_args(opt_parser);
 
 # Taken from https://danielroelfs.com/blog/how-i-create-manhattan-plots-using-ggplot/
-man_plot <- function(gwas_data, title, sig=5e-8/30, ylim=30){
+man_plot <- function(gwas_data, title, sig=5e-8/30, ylim=50){
     data_cum <- gwas_data %>% 
         dplyr::group_by(chr) %>% 
         dplyr::summarise(max_bp = max(pos)) %>% 
