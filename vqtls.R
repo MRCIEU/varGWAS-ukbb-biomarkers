@@ -3,11 +3,12 @@ library("multcomp")
 library("broom")
 library("data.table")
 library("stringr")
+library("quantreg")
 source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
 
-bp <- function(dat, snp, outcome, covar, log=FALSE){
+bf <- function(dat, snp, outcome, covar, log=FALSE){
     dat <- dat %>% dplyr::select(!!snp, !!outcome, !!covar) %>% tidyr::drop_na()
     dat[[outcome]] <- dat[[outcome]] / sd(dat[[outcome]])
     if (log){
@@ -15,8 +16,8 @@ bp <- function(dat, snp, outcome, covar, log=FALSE){
     }
     dat$x <- dat[[snp]]
     dat$xsq <- dat$x^2
-    fit1 <- lm(paste0(outcome, " ~ x + ", paste0(covar, collapse= " + ")), data=dat)
-    dat$dsq <- resid(fit1)^2
+    fit1 <- rq(paste0(outcome, " ~ x + ", paste0(covar, collapse= " + ")), data=dat)
+    dat$dsq <- abs(resid(fit1))
     fit2 <- lm(paste0("dsq ~ x + xsq + ", paste0(covar, collapse= " + ")), data=dat)
     fitnull <- lm(paste0("dsq ~ 1 + ", paste0(covar, collapse= " + ")), data=dat)
     varbeta1 <- glht(model=fit2, linfct=paste("x*1 + xsq*1 == 0"))
