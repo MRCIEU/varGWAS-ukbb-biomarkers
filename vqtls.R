@@ -3,34 +3,63 @@ library("multcomp")
 library("broom")
 library("data.table")
 library("stringr")
-library("quantreg")
+library("cqrReg")
 source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
 
-bf <- function(dat, snp, outcome, covar, log=FALSE){
+get_residual <- function(x, y, covar=NULL){
+    if (!is.null(covar)){
+        X <- as.matrix(cbind(x, covar))
+    } else {
+        X <- as.matrix(data.frame(x))
+    }
+    # betas
+    fit <- qrfit(X=X, y=y, tau=.5, method="mm")
+    b <- rbind(fit$b, fit$beta)
+    # predicted
+    X <- cbind(rep(1, nrow(X)), X)
+    fitted <- X %*% b
+    # residual
+    d <- y - fitted
+    return(as.vector(d))
+}
+
+model <- function(dat, snp, outcome, covar, log=FALSE){
+    # extract fields and drop NA
     dat <- dat %>% dplyr::select(!!snp, !!outcome, !!covar) %>% tidyr::drop_na()
     dat[[outcome]] <- dat[[outcome]] / sd(dat[[outcome]])
     if (log){
         dat[[outcome]] <- log(dat[[outcome]])
     }
+
+    # LAD-BF model (as implemented in varGWAS)
     dat$x <- dat[[snp]]
     dat$xsq <- dat$x^2
-    fit1 <- rq(paste0(outcome, " ~ x + ", paste0(covar, collapse= " + ")), data=dat)
-    dat$dsq <- abs(resid(fit1))
-    fit2 <- lm(paste0("dsq ~ x + xsq + ", paste0(covar, collapse= " + ")), data=dat)
-    fitnull <- lm(paste0("dsq ~ 1 + ", paste0(covar, collapse= " + ")), data=dat)
-    varbeta1 <- glht(model=fit2, linfct=paste("x*1 + xsq*1 == 0"))
-    varbeta2 <- glht(model=fit2, linfct=paste("x*2 + xsq*4 == 0"))
+    fit0 <- lm(paste0(outcome, " ~ x + ", paste0(covar, collapse= " + ")), data=dat)
+    dat$d <- abs(get_residual(
+        dat %>% dplyr::select(x),
+        dat %>% dplyr::pull(!!outcome),
+        covar=dat %>% dplyr::select(!!covar)
+    ))
+    fit2 <- lm(paste0("d ~ x + xsq + ", paste0(covar, collapse= " + ")), data=dat)
+    fitnull <- lm(paste0("d ~ 1 + ", paste0(covar, collapse= " + ")), data=dat)
+
+    # variance effect for var(Y|G==1) and var(Y|G==2) for presentation only
+    dat$xr <- as.factor(round(dat$x))
+    fit3 <- lm(paste0("d ~ xr + ", paste0(covar, collapse= " + ")), data=dat)
+
     res <- cbind(
         tidy(fit1) %>% dplyr::filter(term=="x") %>% dplyr::select("estimate", "std.error", "p.value") %>% dplyr::rename(beta.estimate="estimate", beta.std.error="std.error", beta.p.value="p.value"),
         tidy(varbeta1) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(varbeta1.estimate="estimate", varbeta1.std.error="std.error"),
         tidy(varbeta2) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(varbeta2.estimate="estimate", varbeta2.std.error="std.error"),
-        n0=table(round(dat$x))[1],
-        n1=table(round(dat$x))[2],
-        n2=table(round(dat$x))[3],
+        n0=table(dat$xr)[1],
+        n1=table(dat$xr)[2],
+        n2=table(dat$xr)[3],
         varbeta.p.value=tidy(anova(fitnull, fit2))$p.value[2]
     )
+
+
     res$beta.lci <- res$beta.estimate - (res$beta.std.error * 1.96)
     res$beta.uci <- res$beta.estimate + (res$beta.std.error * 1.96)
     res$varbeta1.lci <- res$varbeta1.estimate - (res$varbeta1.std.error * 1.96)
@@ -80,10 +109,10 @@ for (i in 1:nrow(snps)){
 results <- data.frame()
 for (i in 1:nrow(d)){
     # main analysis
-    res <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
+    res <- bf(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
 
     # log-scale analysis
-    res_log <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"), log=T)
+    res_log <- bf(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"), log=T)
     names(res_log) <- paste0(names(res_log), ".log")
 
     results <- rbind(results, cbind(res, res_log))

@@ -18,10 +18,10 @@ get_dat <- function(file){
     d$uci <- d$estimate + (d$std.error * 1.96)
 
     # drop BMI
-    d <- d %>% filter(trait != "body_mass_index.21001.0.0")
+    d <- d %>% dplyr::filter(trait != "body_mass_index.21001.0.0")
 
     # filter SNPs to show
-    d <- d %>% filter(p.value < 5e-8)
+    d <- d %>% dplyr::filter(p.value < 5e-8)
 
     # merge
     d <- cbind(d, as.data.frame(str_split(d$term, ":", simplify=T), stringsAsFactors=F))
