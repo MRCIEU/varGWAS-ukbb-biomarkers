@@ -131,11 +131,11 @@ get_q_null <- function(trait){
     }
 }
 
-get_variants <- function(trait){
+get_variants <- function(trait, chrs=seq(1,22)){
     # load vGWAS & SNP stats; QC loci
     data <- data.frame()
 
-    for (chr in seq(1,22)){
+    for (chr in chrs){
         message(paste0("loading chr", chr))
         if (chr < 10){
             gwas <- fread(paste0("data/", trait, ".vgwas.chr0", chr, ".txt"))
