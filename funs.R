@@ -131,11 +131,11 @@ get_q_null <- function(trait){
     }
 }
 
-get_variants <- function(trait){
+get_variants <- function(trait, chrs=seq(1,22)){
     # load vGWAS & SNP stats; QC loci
     data <- data.frame()
 
-    for (chr in seq(1,22)){
+    for (chr in chrs){
         message(paste0("loading chr", chr))
         if (chr < 10){
             gwas <- fread(paste0("data/", trait, ".vgwas.chr0", chr, ".txt"))
@@ -156,7 +156,7 @@ get_variants <- function(trait){
         snp_stats <- snp_stats[!snp_stats$position %in% ma$Var1]
         
         # exclude MAF < q
-        snp_stats <- snp_stats[which(snp_stats$minor_allele_frequency > 0.2)]
+        #snp_stats <- snp_stats[which(snp_stats$minor_allele_frequency > 0.05)]
         
         # exclude HWE violations
         snp_stats <- snp_stats[which(snp_stats$HW_exact_p_value > 1e-5)]
@@ -171,7 +171,7 @@ get_variants <- function(trait){
         snp_stats <- snp_stats[!(snp_stats$chromosome == 6 & snp_stats$position >= (28477797-5000000) & snp_stats$position <= 33448354+5000000),]
 
         # drop vGWAS failed rows
-        gwas <- gwas %>% filter(phi_p != -1)
+        gwas <- gwas %>% dplyr::filter(phi_p != -1)
 
         # merge/filter vGWAS
         snp_stats$key <- paste0(snp_stats$chromosome, "_", snp_stats$position, "_", snp_stats$alleleB, "_", snp_stats$alleleA)
@@ -262,4 +262,4 @@ biomarkers_abr <- c(
     "Vitamin D"
 )
 
-env_exp <- c("smoking_status.20116.0.0","summed_minutes_activity.22034.0.0","alcohol_intake_frequency.1558.0.0","estimated_fat_yesterday.100004.0.0","estimated_total_sugars_yesterday.100008.0.0","sex.31.0.0","age_at_recruitment.21022.0.0","body_mass_index.21001.0.0", "sleep_duration.1160.0.0", "processed_meat_intake.1349.0.0", "fresh_fruit_intake.1309.0.0", "cooked_vegetable_intake.1289.0.0", "diastolic_blood_pressure_automated_reading.4079.0.0", "systolic_blood_pressure_automated_reading.4080.0.0", "abdominal_discomfort_pain_for_6_months_or_longer.21027.0.0", "water_intake.1528.0.0", "inverse_distance_to_the_nearest_major_road.24012.0.0", "average_24_hour_sound_level_of_noise_pollution.24024.0.0")
+env_exp <- c("smoking_status.20116.0.0","summed_minutes_activity.22034.0.0","alcohol_intake_frequency.1558.0.0","estimated_fat_yesterday.100004.0.0","estimated_total_sugars_yesterday.100008.0.0","sex.31.0.0","age_at_recruitment.21022.0.0","body_mass_index.21001.0.0")

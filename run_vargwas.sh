@@ -6,7 +6,7 @@
 #SBATCH --partition=mrcieu
 set -euo pipefail
 
-module load build/gcc-5.5.0
+module load build/gcc-7.2.0
 
 # set trait from args
 trait="$1"
@@ -15,7 +15,7 @@ trait="$1"
 chr="$2"
 
 # run vGWAS
-varGWAS \
+/mnt/storage/home/ml18692/projects/varGWAS-1.1/varGWAS/build/bin/varGWAS \
 -v data/"$trait".txt \
 -s , \
 -o data/"$trait".vgwas.chr"$chr".txt \
@@ -23,4 +23,6 @@ varGWAS \
 -p "$trait" \
 -c sex.31.0.0,age_at_recruitment.21022.0.0,PC1,PC2,PC3,PC4,PC5,PC6,PC7,PC8,PC9,PC10 \
 -i appieu \
--t 6
+-t 6 \
+-r \
+-m 0.05

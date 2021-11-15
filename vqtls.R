@@ -3,6 +3,7 @@ library("multcomp")
 library("broom")
 library("data.table")
 library("stringr")
+library("quantreg")
 source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
@@ -15,7 +16,7 @@ bp <- function(dat, snp, outcome, covar, log=FALSE){
     }
     dat$x <- dat[[snp]]
     dat$xsq <- dat$x^2
-    fit1 <- lm(paste0(outcome, " ~ x + ", paste0(covar, collapse= " + ")), data=dat)
+    fit1 <- rq(paste0(outcome, " ~ x + ", paste0(covar, collapse= " + ")), data=dat, tau=.5)
     dat$dsq <- resid(fit1)^2
     fit2 <- lm(paste0("dsq ~ x + xsq + ", paste0(covar, collapse= " + ")), data=dat)
     fitnull <- lm(paste0("dsq ~ 1 + ", paste0(covar, collapse= " + ")), data=dat)

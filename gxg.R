@@ -30,8 +30,8 @@ modifier <- fread(paste0("data/", opt$trait, ".clump_5e-05.txt"))
 modifier$key <- paste0("chr", modifier$chr, "_", modifier$pos, "_", modifier$oa, "_", modifier$ea)
 
 # load dosages
-snps <- main %>% select(chr, pos, oa, ea)
-snps <- rbind(snps, modifier %>% select(chr, pos, oa, ea))
+snps <- main %>% dplyr::select(chr, pos, oa, ea)
+snps <- rbind(snps, modifier %>% dplyr::select(chr, pos, oa, ea))
 snps <- unique(snps)
 snps$key <- paste0("chr", snps$chr, "_", snps$pos, "_", snps$oa, "_", snps$ea)
 
@@ -48,10 +48,10 @@ for (i in 1:length(main$key)){
   for (j in 1:length(modifier$key)){
 
     # skip GxG on same chromosome within 10Mb
-    i_chr <- snps %>% filter(key == main$key[i]) %>% pull("chr")
-    i_pos <- snps %>% filter(key == main$key[i]) %>% pull("pos")
-    j_chr <- snps %>% filter(key == modifier$key[j]) %>% pull("chr")
-    j_pos <- snps %>% filter(key == modifier$key[j]) %>% pull("pos")
+    i_chr <- snps %>% dplyr::filter(key == main$key[i]) %>% dplyr::pull("chr")
+    i_pos <- snps %>% dplyr::filter(key == main$key[i]) %>% dplyr::pull("pos")
+    j_chr <- snps %>% dplyr::filter(key == modifier$key[j]) %>% dplyr::pull("chr")
+    j_pos <- snps %>% dplyr::filter(key == modifier$key[j]) %>% dplyr::pull("pos")
 
     if (i_chr == j_chr){
       if (abs(i_pos - j_pos) < 10000000){
