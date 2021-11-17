@@ -1,46 +1,11 @@
 library("dplyr")
-library("multcomp")
 library("broom")
 library("data.table")
 library("stringr")
-library("quantreg")
+library("varGWASR")
 source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
-
-bp <- function(dat, snp, outcome, covar, log=FALSE){
-    dat <- dat %>% dplyr::select(!!snp, !!outcome, !!covar) %>% tidyr::drop_na()
-    dat[[outcome]] <- dat[[outcome]] / sd(dat[[outcome]])
-    if (log){
-        dat[[outcome]] <- log(dat[[outcome]])
-    }
-    dat$x <- dat[[snp]]
-    dat$xsq <- dat$x^2
-    fit1 <- rq(paste0(outcome, " ~ x + ", paste0(covar, collapse= " + ")), data=dat, tau=.5)
-    dat$dsq <- resid(fit1)^2
-    fit2 <- lm(paste0("dsq ~ x + xsq + ", paste0(covar, collapse= " + ")), data=dat)
-    fitnull <- lm(paste0("dsq ~ 1 + ", paste0(covar, collapse= " + ")), data=dat)
-    varbeta1 <- glht(model=fit2, linfct=paste("x*1 + xsq*1 == 0"))
-    varbeta2 <- glht(model=fit2, linfct=paste("x*2 + xsq*4 == 0"))
-    res <- cbind(
-        tidy(fit1) %>% dplyr::filter(term=="x") %>% dplyr::select("estimate", "std.error", "p.value") %>% dplyr::rename(beta.estimate="estimate", beta.std.error="std.error", beta.p.value="p.value"),
-        tidy(varbeta1) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(varbeta1.estimate="estimate", varbeta1.std.error="std.error"),
-        tidy(varbeta2) %>% dplyr::select("estimate", "std.error") %>% dplyr::rename(varbeta2.estimate="estimate", varbeta2.std.error="std.error"),
-        n0=table(round(dat$x))[1],
-        n1=table(round(dat$x))[2],
-        n2=table(round(dat$x))[3],
-        varbeta.p.value=tidy(anova(fitnull, fit2))$p.value[2]
-    )
-    res$beta.lci <- res$beta.estimate - (res$beta.std.error * 1.96)
-    res$beta.uci <- res$beta.estimate + (res$beta.std.error * 1.96)
-    res$varbeta1.lci <- res$varbeta1.estimate - (res$varbeta1.std.error * 1.96)
-    res$varbeta1.uci <- res$varbeta1.estimate + (res$varbeta1.std.error * 1.96)
-    res$varbeta2.lci <- res$varbeta2.estimate - (res$varbeta2.std.error * 1.96)
-    res$varbeta2.uci <- res$varbeta2.estimate + (res$varbeta2.std.error * 1.96)
-    res$snp <- snp
-    res$outcome <- outcome
-    return(res)
-}
 
 # load phenotypes
 load("data/pheno.RData")
@@ -51,9 +16,13 @@ dat <- merge(linker, covariates, "appieu")
 dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
 dat <- merge(dat, pc, "appieu")
 
+# SD standardise traits
+for (trait in biomarkers){
+    dat[[trait]] <- dat[[trait]] / sd(dat[[trait]], na.rm=T)
+}
+
 # load clumped vQTLs
 d <- fread("data/vqtls.txt")
-d <- d %>% dplyr::filter(trait != "body_mass_index.21001.0.0")
 d$key <- paste0("chr", d$chr, "_", d$pos, "_", d$oa, "_", d$ea)
 d$chr_pos <- paste0(d$chr, ":", d$pos)
 
@@ -79,18 +48,68 @@ for (i in 1:nrow(snps)){
 
 results <- data.frame()
 for (i in 1:nrow(d)){
-    # main analysis
-    res <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"))
+    tmp <- dat %>% dplyr::select(!!d$key[i], !!d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")) %>% tidyr::drop_na(.)
+    
+    # main
+    test_main <- varGWASR::model(
+        data=tmp,
+        x=d$key[i], 
+        y=d$trait[i], 
+        covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
+        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
+    )
+    est_main <- boot::boot(
+        data=tmp,
+        statistic=varGWASR::model_bs,
+        R=500,
+        x=d$key[i], 
+        y=d$trait[i], 
+        covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
+        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
+    )
+    est_main <- est_main %>% tidy
 
-    # log-scale analysis
-    res_log <- bp(dat, d$key[i], d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"), log=T)
-    names(res_log) <- paste0(names(res_log), ".log")
+    # log scale
+    tmp[[d$trait[i]]] <- log(tmp[[d$trait[i]]])
+    test_log <- varGWASR::model(
+        data=tmp,
+        x=d$key[i], 
+        y=d$trait[i], 
+        covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
+        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
+    )
+    est_log <- boot::boot(
+        data=tmp,
+        statistic=varGWASR::model_bs,
+        R=500,
+        x=d$key[i], 
+        y=d$trait[i], 
+        covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
+        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
+    )
+    est_log <- est_log %>% tidy
 
-    results <- rbind(results, cbind(res, res_log))
+    results <- rbind(results, data.frame(
+        snp=d$key[i],
+        outcome=d$trait[i],
+        p_main=test_main[4],
+        p_log=test_log[4],
+        b0_main=est_main$statistic[1],
+        b1_main=est_main$statistic[2],
+        b2_main=est_main$statistic[3],
+        s0_main=est_main$std.error[1],
+        s1_main=est_main$std.error[2],
+        s2_main=est_main$std.error[3],
+        b0_log=est_log$statistic[1],
+        b1_log=est_log$statistic[2],
+        b2_log=est_log$statistic[3],
+        s0_log=est_log$std.error[1],
+        s1_log=est_log$std.error[2],
+        s2_log=est_log$std.error[3]
+    ))
 }
 
 # select fields for paper
-results <- results %>% dplyr::select("snp", "outcome", "beta.estimate", "beta.lci", "beta.uci", "beta.p.value", "varbeta1.estimate", "varbeta1.lci", "varbeta1.uci", "varbeta2.estimate", "varbeta2.lci", "varbeta2.uci", "varbeta.p.value", "beta.estimate.log", "beta.lci.log", "beta.uci.log", "beta.p.value.log", "varbeta1.estimate.log", "varbeta1.lci.log", "varbeta1.uci.log", "varbeta2.estimate.log", "varbeta2.lci.log", "varbeta2.uci.log", "varbeta.p.value.log")
 results$key <- stringr::str_split(results$snp, "_", simplify=T) %>% as.data.frame %>% dplyr::mutate(V1=gsub("chr", "", V1)) %>% dplyr::mutate(key=paste0(V1, ":",V2)) %>% dplyr::pull(key)
 
 # add RSID
