@@ -58,83 +58,85 @@ for (i in 1:nrow(d)){
         covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
         covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
     )
-    est_main <- boot::boot(
-        data=tmp,
-        statistic=varGWASR::model_bs,
-        R=500,
-        x=d$key[i], 
-        y=d$trait[i], 
-        covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
-        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
-    )
-    est_main <- est_main %>% tidy
+    #est_main <- boot::boot(
+    #    data=tmp,
+    #    statistic=varGWASR::model_bs,
+    #    R=500,
+    #    x=d$key[i], 
+    #    y=d$trait[i], 
+    #    covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
+    #    covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
+    #)
+    #est_main <- est_main %>% tidy
 
     # log scale
-    tmp[[d$trait[i]]] <- log(tmp[[d$trait[i]]])
-    test_log <- varGWASR::model(
-        data=tmp,
-        x=d$key[i], 
-        y=d$trait[i], 
-        covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
-        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
-    )
-    est_log <- boot::boot(
-        data=tmp,
-        statistic=varGWASR::model_bs,
-        R=500,
-        x=d$key[i], 
-        y=d$trait[i], 
-        covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
-        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
-    )
-    est_log <- est_log %>% tidy
+    #tmp[[d$trait[i]]] <- log(tmp[[d$trait[i]]])
+    #test_log <- varGWASR::model(
+    #    data=tmp,
+    #    x=d$key[i], 
+    #    y=d$trait[i], 
+    #    covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
+    #    covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
+    #)
+    #est_log <- boot::boot(
+    #    data=tmp,
+    #    statistic=varGWASR::model_bs,
+    #    R=500,
+    #    x=d$key[i], 
+    #    y=d$trait[i], 
+    #    covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
+    #    covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
+    #)
+    #est_log <- est_log %>% tidy
 
     results <- rbind(results, data.frame(
         snp=d$key[i],
         outcome=d$trait[i],
         p_main=test_main[4],
-        p_log=test_log[4],
-        b0_main=est_main$statistic[1],
-        b1_main=est_main$statistic[2],
-        b2_main=est_main$statistic[3],
-        s0_main=est_main$std.error[1],
-        s1_main=est_main$std.error[2],
-        s2_main=est_main$std.error[3],
-        b0_log=est_log$statistic[1],
-        b1_log=est_log$statistic[2],
-        b2_log=est_log$statistic[3],
-        s0_log=est_log$std.error[1],
-        s1_log=est_log$std.error[2],
-        s2_log=est_log$std.error[3]
+        #p_log=test_log[4],
+        b0_main=test_main$statistic[1],
+        b1_main=test_main$statistic[2],
+        b2_main=test_main$statistic[3]
+        #s0_main=est_main$std.error[1],
+        #s1_main=est_main$std.error[2],
+        #s2_main=est_main$std.error[3],
+        #b0_log=test_log$statistic[1],
+        #b1_log=test_log$statistic[2],
+        #b2_log=test_log$statistic[3],
+        #s0_log=est_log$std.error[1],
+        #s1_log=est_log$std.error[2],
+        #s2_log=est_log$std.error[3]
     ))
 }
 
 # select fields for paper
-results$key <- stringr::str_split(results$snp, "_", simplify=T) %>% as.data.frame %>% dplyr::mutate(V1=gsub("chr", "", V1)) %>% dplyr::mutate(key=paste0(V1, ":",V2)) %>% dplyr::pull(key)
+#results$key <- stringr::str_split(results$snp, "_", simplify=T) %>% as.data.frame %>% dplyr::mutate(V1=gsub("chr", "", V1)) %>% dplyr::mutate(key=paste0(V1, ":",V2)) %>% dplyr::pull(key)
 
 # add RSID
-rsid <- d %>% dplyr::select("key", "rsid")
-results <- merge(results, rsid, by.x="snp", by.y="key")
+#rsid <- d %>% dplyr::select("key", "rsid")
+#results <- merge(results, rsid, by.x="snp", by.y="key")
 
 # get data on nearest gene
-ng <- fread("data/nearest.txt")
-ng <- unique(ng)
-ng$key <- paste0(ng$V1,":",ng$V2)
-ng$V1 <- NULL
-ng$V2 <- NULL
-names(ng)[1] <- "gene"
-ng <- ng %>%
-  group_by_at(vars(key)) %>%
-  summarize(gene = toString(gene)) %>%
-  ungroup()
-ng$gene <- gsub(", ", "|", ng$gene)
+#ng <- fread("data/nearest.txt")
+#ng <- unique(ng)
+#ng$key <- paste0(ng$V1,":",ng$V2)
+#ng$V1 <- NULL
+#ng$V2 <- NULL
+#names(ng)[1] <- "gene"
+#ng <- ng %>%
+#  group_by_at(vars(key)) %>%
+#  summarize(gene = toString(gene)) %>%
+#  ungroup()
+#ng$gene <- gsub(", ", "|", ng$gene)
 
 # results with nearest gene
-all <- merge(results, ng, "key", all.x=T)
-all$key <- NULL
+#all <- merge(results, ng, "key", all.x=T)
+#all$key <- NULL
 
 # tidy outcome name
-all$outcome <- sapply(all$outcome, function(x) biomarkers_abr[x==biomarkers], simplify=T)
+#all$outcome <- sapply(all$outcome, function(x) biomarkers_abr[x==biomarkers], simplify=T)
 
 # write to table
-write.csv(all, file="Table S1.csv", quote=F, row.names=F)
+#write.csv(all, file="Table S1.csv", quote=F, row.names=F)
+
+write.csv(results, file="results.csv")
