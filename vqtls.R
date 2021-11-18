@@ -49,6 +49,17 @@ for (i in 1:nrow(snps)){
 results <- data.frame()
 for (i in 1:nrow(d)){
     tmp <- dat %>% dplyr::select(!!d$key[i], !!d$trait[i], c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")) %>% tidyr::drop_na(.)
+    tmp$PC1_xq <- tmp$PC1^2
+    tmp$PC2_xq <- tmp$PC2^2
+    tmp$PC3_xq <- tmp$PC3^2
+    tmp$PC4_xq <- tmp$PC4^2
+    tmp$PC5_xq <- tmp$PC5^2
+    tmp$PC6_xq <- tmp$PC6^2
+    tmp$PC7_xq <- tmp$PC7^2
+    tmp$PC8_xq <- tmp$PC8^2
+    tmp$PC9_xq <- tmp$PC9^2
+    tmp$PC10_xq <- tmp$PC10^2
+    tmp$age_at_recruitment.21022.0.0_xq <- tmp$age_at_recruitment.21022.0.0^2
     
     # main
     test_main <- varGWASR::model(
@@ -56,7 +67,7 @@ for (i in 1:nrow(d)){
         x=d$key[i], 
         y=d$trait[i], 
         covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
-        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
+        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", "age_at_recruitment.21022.0.0_xq", "PC1_xq", "PC2_xq", "PC3_xq", "PC4_xq", "PC5_xq", "PC6_xq", "PC7_xq", "PC8_xq", "PC9_xq", "PC10_xq")
     )
     #est_main <- boot::boot(
     #    data=tmp,
@@ -94,9 +105,9 @@ for (i in 1:nrow(d)){
         outcome=d$trait[i],
         p_main=test_main[4],
         #p_log=test_log[4],
-        b0_main=test_main$statistic[1],
-        b1_main=test_main$statistic[2],
-        b2_main=test_main$statistic[3]
+        b0_main=test_main[1],
+        b1_main=test_main[2],
+        b2_main=test_main[3]
         #s0_main=est_main$std.error[1],
         #s1_main=est_main$std.error[2],
         #s2_main=est_main$std.error[3],
@@ -139,4 +150,4 @@ for (i in 1:nrow(d)){
 # write to table
 #write.csv(all, file="Table S1.csv", quote=F, row.names=F)
 
-write.csv(results, file="results.csv")
+write.csv(results, file="results_xq.csv")
