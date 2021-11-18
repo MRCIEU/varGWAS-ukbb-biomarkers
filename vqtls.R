@@ -67,7 +67,7 @@ for (i in 1:nrow(d)){
         x=d$key[i], 
         y=d$trait[i], 
         covar1=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"),
-        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", "age_at_recruitment.21022.0.0_xq", "PC1_xq", "PC2_xq", "PC3_xq", "PC4_xq", "PC5_xq", "PC6_xq", "PC7_xq", "PC8_xq", "PC9_xq", "PC10_xq")
+        covar2=c("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
     )
     #est_main <- boot::boot(
     #    data=tmp,
@@ -150,4 +150,4 @@ for (i in 1:nrow(d)){
 # write to table
 #write.csv(all, file="Table S1.csv", quote=F, row.names=F)
 
-write.csv(results, file="results_xq.csv")
+write.csv(results, file="results.csv")
