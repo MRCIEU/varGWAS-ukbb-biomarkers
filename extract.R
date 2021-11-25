@@ -28,14 +28,33 @@ dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
 dat <- merge(dat, pc, "appieu")
 
 # select fields for GWAS
-dat <- dat[,c("appieu", "sex.31.0.0", "age_at_recruitment.21022.0.0", "chip", opt$trait, paste0("PC", seq(1, 20))), with=F]
+dat <- dat[,c("appieu", "sex.31.0.0", "age_at_recruitment.21022.0.0", opt$trait, paste0("PC", seq(1, 10))), with=F]
 
 # drop missing values
 dat <- dat[complete.cases(dat), ]
 
+# drop outlier values
+s <- sd(dat[[opt$trait]])
+dat$z <- (dat[[opt$trait]] - mean (dat[[opt$trait]])) / s
+dat$z <- abs(dat$z)
+dat <- dat %>% dplyr::filter(z < 5)
+dat$z <- NULL
+
 # SD scale
-dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]])
-dat$age_at_recruitment.21022.0.0 <- dat$age_at_recruitment.21022.0.0 / sd(dat$age_at_recruitment.21022.0.0)
+dat[[opt$trait]] <- dat[[opt$trait]] / s
+
+# squared terms
+dat$age_at_recruitment.21022.0.0_sq <- dat$age_at_recruitment.21022.0.0^2
+dat$PC1_sq <- dat$PC1^2
+dat$PC2_sq <- dat$PC2^2
+dat$PC3_sq <- dat$PC3^2
+dat$PC4_sq <- dat$PC4^2
+dat$PC5_sq <- dat$PC5^2
+dat$PC6_sq <- dat$PC6^2
+dat$PC7_sq <- dat$PC7^2
+dat$PC8_sq <- dat$PC8^2
+dat$PC9_sq <- dat$PC9^2
+dat$PC10_sq <- dat$PC10^2
 
 # write out pheno for vGWAS
 write.table(dat, file=paste0("data/", opt$trait, ".txt"), row.names=F, quote=F, sep=",")
