@@ -19,6 +19,7 @@ trait="$1"
 chr="$2"
 
 # run vGWAS
+export SPDLOG_LEVEL=debug
 /mnt/storage/home/ml18692/projects/varGWAS/build/bin/varGWAS \
 -v data/"$trait".txt \
 -s , \
