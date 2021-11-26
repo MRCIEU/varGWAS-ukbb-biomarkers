@@ -8,6 +8,10 @@ set -euo pipefail
 
 module load languages/gcc/9.3.0
 
+# increase stack size for openmp
+ulimit -s unlimited
+export OMP_STACKSIZE=500m
+
 # set trait from args
 trait="$1"
 
