@@ -15,7 +15,7 @@ trait="$1"
 chr="$2"
 
 # run vGWAS
-/mnt/storage/home/ml18692/projects/varGWAS/bin/varGWAS \
+/mnt/storage/home/ml18692/projects/varGWAS/build/bin/varGWAS \
 -v data/"$trait".txt \
 -s , \
 -o data/"$trait".vgwas.chr"$chr".txt \
