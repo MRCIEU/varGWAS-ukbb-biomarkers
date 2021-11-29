@@ -114,10 +114,12 @@ for (i in 1:nrow(d)){
   fit <- varGWASR::model(dat2, d$V1[i], d$trait[i], covar1 = covar, covar2 = covar)
   fit$int=F
   fit$term <- paste0(d$V1[i], ":", d$V2[i])
+  fit$trait <- d$trait[i]
   results_var <- rbind(results_var, fit)
   covar <- c(covar,d$V2[i],"XU")
   dat2 <- dat %>% dplyr::select(!!d$V1[i], !!covar, !!d$trait[i]) %>% tidyr::drop_na()
   fit <- varGWASR::model(dat2, d$V1[i], d$trait[i], covar1 = covar, covar2 = covar)
+  fit$trait <- d$trait[i]
   fit$int=T
   fit$term <- paste0(d$V1[i], ":", d$V2[i])
   results_var <- rbind(results_var, fit)
