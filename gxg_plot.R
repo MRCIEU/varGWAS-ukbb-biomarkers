@@ -11,6 +11,39 @@ library("grid")
 source("funs.R")
 set.seed(123)
 
+get_rsid <- function(snp){
+    d <- as.data.frame(str_split(snp, "_", simplify=T), stringsAsFactors=F)
+    names(d) <- c("chr", "pos", "oa", "ea")
+    d$chr <- gsub("chr", "", d$chr) %>% as.numeric
+    if (d$chr[1] < 10){
+        snp_stats <- fread(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/snp-stats/data.chr0", d$chr[1], ".snp-stats"), skip=15)
+    } else {
+        snp_stats <- fread(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/snp-stats/data.chr", d$chr[1], ".snp-stats"), skip=15)
+    }
+    rsid <- snp_stats %>% dplyr::filter(position == !!d$pos[1]) %>% dplyr::pull(rsid) %>% unique
+    return(rsid)
+}
+
+get_gene <- function(snp){
+    key <- as.data.frame(str_split(snp, "_", simplify=T), stringsAsFactors=F) %>% dplyr::mutate(key=paste0(V1, ":", V2))
+    key$key <- gsub("chr", "", key$key)
+
+    # get data on nearest gene
+    ng <- fread("data/nearest.txt")
+    ng <- unique(ng)
+    ng$key <- paste0(ng$V1,":",ng$V2)
+    ng$V1 <- NULL
+    ng$V2 <- NULL
+    names(ng)[1] <- "gene"
+    ng <- ng %>%
+        group_by_at(vars(key)) %>%
+        summarize(gene = toString(gene)) %>%
+        ungroup()
+    ng$gene <- gsub(", ", "|", ng$gene)
+    gene = ng %>% dplyr::filter(key==!!key$key) %>% pull(gene)
+    return(gene)
+}
+
 get_dat <- function(file){
     # read in gxe results
     d <- fread(file)
@@ -26,30 +59,14 @@ get_dat <- function(file){
     # merge
     d <- cbind(d, as.data.frame(str_split(d$term, ":", simplify=T), stringsAsFactors=F))
     d$Trait <- sapply(d$trait, function(x) return(biomarkers_abr[biomarkers==x]))
-
-    # add rsid
-    lookup <- data.frame(
-        term=c(
-            "chr22_44324730_T_C:chr4_88212722_A_G",
-            "chr19_45411941_C_T:chr12_121420260_G_A",
-            "chr19_19379549_T_C:chr19_45416741_T_C",
-            "chr9_136149830_A_G:chr19_49210869_G_A",
-            "chr11_116648917_C_G:chr8_19863507_T_C",
-            "chr8_19912370_A_G:chr11_116651115_T_C"
-        ), 
-        f=c(
-            "PNPLA3 (rs738408C) x HSD17B13 (rs13141441G)",
-            "APOE (rs429358T) x HNF1A (rs7979473A)",
-            "TM6SF2 (rs58542926C) x APOE (rs438811C)",
-            "ABO (rs532436G) x FUT2 (rs2638281A)",
-            "APOA5 (rs964184) x LPL (rs2119689C)",
-            "LPL (rs115849089G) x APOA5 (rs11604424C)"
-        )
-    )
-    d <- merge(d, lookup, "term")
+    d$rsid.1 <- sapply(d$V1, get_rsid)
+    d$rsid.2 <- sapply(d$V2, get_rsid)
+    d$gene.1 <- sapply(d$V1, get_gene)
+    d$gene.2 <- sapply(d$V2, get_gene)
 
     # add key
     d$tt <- paste0(d$trait, ":", d$term)
+    d$f <- paste0(d$gene.1, " (", d$rsid.1, ") x ",d$gene.2, " (", d$rsid.2, ")")
 
     return(d)
 }
@@ -82,7 +99,7 @@ get_plot <- function(d, leg_name){
     d$f <- factor(d$f, levels=unique(d$f) %>% sort(decreasing=T))
 
     # threshold rep P
-    d$p_sens <- d$p_sens < 5e-5
+    d$p_sens <- d$p_sens < 5e-8
     d$p_sens <- factor(d$p_sens, levels=c(T, F))
 
     # create plot
@@ -118,9 +135,9 @@ multiplicative <- merge(multiplicative, fread("data/gxg.txt") %>% mutate(tt=past
 
 # save plot
 pdf("gxg-additive.pdf", height=6, width=8)
-print(get_plot(additive, "Multiplicative (P < 5e-5)"))
+print(get_plot(additive, "Multiplicative (P < 5e-8)"))
 dev.off()
 
 pdf("gxg-multiplicative.pdf", height=5, width=8)
-print(get_plot(multiplicative, "Additive (P < 5e-5)"))
+print(get_plot(multiplicative, "Additive (P < 5e-8)"))
 dev.off()

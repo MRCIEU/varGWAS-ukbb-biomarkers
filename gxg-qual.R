@@ -9,13 +9,10 @@ source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
 
-# get liver disease outcomes
-load("data/pheno.RData")
-linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
-dat <- merge(linker, pheno, by.x="app15825", by.y="eid")
-dat <- dat %>% select(appieu, liver_disease, alcoholic_liver_disease, fibrosis_liver_disease, fatty_liver_disease)
+# read in GxG effects
+d <- fread("data/gxg")
 
-# read in extracted phenotypes & merge with liver disease
+# read in extracted phenotypes
 pheno <- fread(paste0("data/alanine_aminotransferase.30620.0.0.txt"))
 pheno <- merge(pheno, dat, "appieu")
 

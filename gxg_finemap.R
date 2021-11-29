@@ -237,7 +237,27 @@ additive <- get_dat("data/gxg.txt")
 additive <- merge(additive, fread("data/gxg-log.txt") %>% dplyr::mutate(tt=paste0(trait, ":", term)) %>% dplyr::select(tt, p.value) %>% dplyr::rename(p_sens="p.value"), "tt")
 
 # finemap gxg snps
-additive.finemap <- get_finemap(additive)
+additive.finemap_1 <- get_finemap(additive[1])
+additive.finemap_1$target <- additive$V1[1]
+additive.finemap_2 <- get_finemap(additive[2])
+additive.finemap_2$target <- additive$V1[2]
+additive.finemap_3 <- get_finemap(additive[3])
+additive.finemap_3$target <- additive$V1[3]
+additive.finemap_4 <- get_finemap(additive[4])
+additive.finemap_4$target <- additive$V1[4]
+additive.finemap_5 <- get_finemap(additive[5])
+additive.finemap_5$target <- additive$V1[5]
+additive.finemap_6 <- get_finemap(additive[6])
+additive.finemap_6$target <- additive$V1[6]
+
+additive.finemap <- rbind(
+    additive.finemap_1,
+    additive.finemap_2,
+    additive.finemap_3,
+    additive.finemap_4,
+    additive.finemap_5,
+    additive.finemap_6
+)
 
 # test for effect adjusting for finemapped variants
 additive.results <- data.frame()
@@ -246,9 +266,5 @@ for (i in 1:nrow(additive)){
     additive.results <- rbind(additive.results, est)
 }
 
-# plot
-pdf("gxg-additive-finemap.pdf", height=6, width=8)
-print(get_plot(additive.results))
-dev.off()
-
 write.table(additive.results, sep="\t", quote=F, row.names=F, file=paste0("data/gxg-add-finemap.txt"))
+write.table(additive.finemap, sep="\t", quote=F, row.names=F, file=paste0("data/additive.finemap.txt"))

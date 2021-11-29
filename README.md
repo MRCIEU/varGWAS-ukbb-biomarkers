@@ -133,7 +133,7 @@ grep -v term data/*.0.0.gxg-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.g
 ```
 
 # finemap adjusted analysis
-sbatch runR.sh gxg_finemap.R -t alanine_aminotransferase.30620.0.0
+sbatch runR.sh gxg_finemap.R
 
 # qual analysis
 sbatch runR.sh gxg-qual.R -t alanine_aminotransferase.30620.0.0
