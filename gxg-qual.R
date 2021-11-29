@@ -1,25 +1,39 @@
+load("data/pheno.RData")
 library('optparse')
 library('data.table')
 library('dplyr')
 library('broom')
 library('ieugwasr')
+library('varGWASR')
 library("lmtest")
 library("sandwich")
 source("funs.R")
 set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
 
+# load linker
+linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
+
+# load covariates
+covariates <- get_covariates()
+covariates$chip <- as.numeric(as.factor(covariates$chip)) - 1
+pc <- get_genetic_principal_components()
+
+# merge data
+dat <- merge(linker, covariates, "appieu")
+dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
+dat <- merge(dat, pc, "appieu")
+
+# SD scale outcomes
+for (e in biomarkers){
+  dat[[e]] <- dat[[e]] / sd(dat[[e]], na.rm=T)
+}
+
 # read in GxG effects
-d <- fread("data/gxg")
-
-# read in extracted phenotypes
-pheno <- fread(paste0("data/alanine_aminotransferase.30620.0.0.txt"))
-pheno <- merge(pheno, dat, "appieu")
-
-# read in ALT effects PNPLA3 x HSD17B13
 d <- fread("data/gxg.txt")
-d <- d %>% filter(trait != "body_mass_index.21001.0.0")
-d <- d %>% filter(p.value < 5e-8)
+d <- d %>% dplyr::filter(trait != "body_mass_index.21001.0.0")
+d <- d %>% dplyr::filter(trait != "c_reactive_protein.30710.0.0") # not replicating on log scale
+d <- d %>% dplyr::filter(p.value < 5e-8)
 d <- cbind(d, as.data.frame(str_split(d$term, ":", simplify=T), stringsAsFactors=F))
 d$V3 <- d$V1
 d$V1 <- d$V2
@@ -41,71 +55,72 @@ snps$key <- paste0("chr", snps$chr, "_", snps$pos, "_", snps$oa, "_", snps$ea)
 
 for (i in 1:nrow(snps)){
     dosage <- extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$oa[i], snps$ea[i])
-    pheno <- merge(pheno, dosage, "appieu")
+    dat <- merge(dat, dosage, "appieu")
 }
-
-stopifnot(nrow(d) == 1)
-
-#stratify
-k <- "chr4_88212722_G_A" # HSDB1317
-pheno$mod_gt <- round(pheno[[k]])
-pheno0 <- pheno %>% dplyr::filter(mod_gt == 0)
-pheno1 <- pheno %>% dplyr::filter(mod_gt == 1)
-pheno2 <- pheno %>% dplyr::filter(mod_gt == 2)
 
 # test for effect of SNP stratified by modifier
 results <- data.frame()
+results_var <- data.frame()
+for (i in 1:nrow(d)){
+  k <- d$V2[i]
+  dat$mod_gt <- round(dat[[k]])
+  dat0 <- dat %>% dplyr::filter(mod_gt == 0)
+  dat1 <- dat %>% dplyr::filter(mod_gt == 1)
+  dat2 <- dat %>% dplyr::filter(mod_gt == 2)
 
-# test SNP effect on ALT by stratified modifier
-f <- as.formula(paste0("alanine_aminotransferase.30620.0.0", " ~ chr22_44324730_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
-mod <- lm(f, data=pheno0)
-t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
-t <- t[2,]
-t$mod <- 0
-t$mod_snp <- k
-t$trait <- "alanine_aminotransferase.30620.0.0"
-results <- rbind(results, t)
-
-mod <- lm(f, data=pheno1)
-t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
-t <- t[2,]
-t$mod <- 1
-t$mod_snp <- k
-t$trait <- "alanine_aminotransferase.30620.0.0"
-results <- rbind(results, t)
-
-mod <- lm(f, data=pheno2)
-t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
-t <- t[2,]
-t$mod <- 2
-t$mod_snp <- k
-t$trait <- "alanine_aminotransferase.30620.0.0"
-results <- rbind(results, t)
-
-# test SNP effect on liver disease by stratified modifier
-for (outcome in c("liver_disease", "alcoholic_liver_disease", "fibrosis_liver_disease", "fatty_liver_disease")){
-  f <- as.formula(paste0(outcome, " ~ chr22_44324730_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
-  mod <- glm(f, data=pheno0, family="binomial")
-  t <- tidy(mod)[2,]
+  # test SNP effect on outcome by stratified modifier
+  f <- as.formula(paste0(d$trait[i], " ~ ", d$V1[i], " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
+  mod <- lm(f, data=dat0)
+  t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
+  t <- t[2,]
   t$mod <- 0
   t$mod_snp <- k
-  t$trait <- outcome
+  t$trait <- d$trait[i]
   results <- rbind(results, t)
 
-  mod <- glm(f, data=pheno1, family="binomial")
-  t <- tidy(mod)[2,]
+  mod <- lm(f, data=dat1)
+  t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
+  t <- t[2,]
   t$mod <- 1
   t$mod_snp <- k
-  t$trait <- outcome
+  t$trait <- d$trait[i]
   results <- rbind(results, t)
 
-  mod <- glm(f, data=pheno2, family="binomial")
-  t <- tidy(mod)[2,]
+  mod <- lm(f, data=dat2)
+  t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
+  t <- t[2,]
   t$mod <- 2
   t$mod_snp <- k
-  t$trait <- outcome
+  t$trait <- d$trait[i]
   results <- rbind(results, t)
+
+  # test SNP effect on outcome variance ajusted for int
+  dat$XU <- dat[[d$V1[i]]] * dat[[d$V2[i]]]
+  covar <- c(
+    "age_at_recruitment.21022.0.0",
+    "sex.31.0.0",
+    "PC1",
+    "PC2",
+    "PC3",
+    "PC4",
+    "PC5",
+    "PC6",
+    "PC7",
+    "PC8",
+    "PC9",
+    "PC10"
+  )
+  dat2 <- dat %>% dplyr::select(!!d$V1[i], !!covar, !!d$trait[i]) %>% tidyr::drop_na()
+  fit <- varGWASR::model(dat2, d$V1[i], d$trait[i], covar1 = covar, covar2 = covar)
+  fit$int=F
+  results_var <- rbind(results_var, fit)
+  covar <- c(covar,d$V2[i],"XU")
+  dat2 <- dat %>% dplyr::select(!!d$V1[i], !!covar, !!d$trait[i]) %>% tidyr::drop_na()
+  fit <- varGWASR::model(dat2, d$V1[i], d$trait[i], covar1 = covar, covar2 = covar)
+  fit$int=T
+  results_var <- rbind(results_var, fit)
 }
 
 # save
-write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/alanine_aminotransferase.30620.0.0.gxg-qual.txt"))
+write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/gxg-qual.txt"))
+write.table(results, sep="\t", quote=F, row.names=F, file=paste0("data/gxg-qual-var.txt"))

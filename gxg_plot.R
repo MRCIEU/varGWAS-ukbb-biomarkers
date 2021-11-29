@@ -127,11 +127,13 @@ get_plot <- function(d, leg_name){
 
 # load gxe effects
 additive <- get_dat("data/gxg.txt")
+finemapped <- get_dat("data/gxg-add-finemap.txt")
 multiplicative <- get_dat("data/gxg-log.txt")
 
 # append sensitivity P value
 additive <- merge(additive, fread("data/gxg-log.txt") %>% mutate(tt=paste0(trait, ":", term)) %>% select(tt, p.value) %>% rename(p_sens="p.value"), "tt")
 multiplicative <- merge(multiplicative, fread("data/gxg.txt") %>% mutate(tt=paste0(trait, ":", term)) %>% select(tt, p.value) %>% rename(p_sens="p.value"), "tt")
+finemapped$p_sens=NA
 
 # save plot
 pdf("gxg-additive.pdf", height=6, width=8)
@@ -140,4 +142,8 @@ dev.off()
 
 pdf("gxg-multiplicative.pdf", height=5, width=8)
 print(get_plot(multiplicative, "Additive (P < 5e-8)"))
+dev.off()
+
+pdf("gxg-finemap.pdf", height=6, width=8)
+print(get_plot(finemapped, ""))
 dev.off()
