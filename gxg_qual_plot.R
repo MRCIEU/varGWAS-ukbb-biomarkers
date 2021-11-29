@@ -13,31 +13,19 @@ source("funs.R")
 set.seed(123)
 
 # read in gxg qual
-d <- fread("data/alanine_aminotransferase.30620.0.0.gxg-qual.txt")
+d <- fread("data/gxg-qual.txt")
+d$rsid.1 <- sapply(d$term, get_rsid)
+d$rsid.2 <- sapply(d$mod_snp, get_rsid)
+d$gene.1 <- sapply(d$term, get_gene)
+d$gene.2 <- sapply(d$mod_snp, get_gene)
 d$lci <- d$estimate - (1.96 * d$std.error)
 d$uci <- d$estimate + (1.96 * d$std.error)
-d$mod_gt <- NA
-d$mod_gt[d$mod == 0] <- "GG"
-d$mod_gt[d$mod == 1] <- "GA"
-d$mod_gt[d$mod == 2] <- "AA"
-d$mod_gt <- factor(d$mod_gt, levels=c("GG", "GA", "AA"))
 
-d1 <- d %>% filter(trait=="alanine_aminotransferase.30620.0.0")
-d1$trait <- gsub("alanine_aminotransferase.30620.0.0", "Alanine aminotransferase", d1$trait)
-d2 <- d %>% filter(trait!="alanine_aminotransferase.30620.0.0")
-d2 <- d %>% filter(trait=="liver_disease")
-d2$estimate <- exp(d2$estimate)
-d2$lci <- exp(d2$lci)
-d2$uci <- exp(d2$uci)
-d2$trait <- gsub("alcoholic_liver_disease", "Alcoholic liver disease", d2$trait)
-d2$trait <- gsub("fibrosis_liver_disease", "Fibrotic liver disease", d2$trait)
-d2$trait <- gsub("fatty_liver_disease", "Fatty liver disease", d2$trait)
-d2$trait <- gsub("liver_disease", "Liver disease", d2$trait)
-
-p1 <- ggplot(d1, aes(x=mod_gt, y=estimate, ymin=lci, ymax=uci, group=trait, shape=trait)) +
+p1 <- ggplot(d, aes(x=mod, y=estimate, ymin=lci, ymax=uci, group=trait, shape=trait)) +
     geom_point(size = 1.5, position = position_dodge(width = 0.9)) +
     geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
     theme_classic() +
+    facet_grid(Trait~., scales="free", space="free_y") + 
     scale_y_continuous(breaks = scales::pretty_breaks(5)) +
     geom_hline(yintercept = c(0), linetype = "dashed", color = "grey") +
     labs(shape = "Trait") +
@@ -46,8 +34,8 @@ p1 <- ggplot(d1, aes(x=mod_gt, y=estimate, ymin=lci, ymax=uci, group=trait, shap
         legend.box.background = element_rect(colour = "black"),
         legend.position = "none"
     ) +
-    ylab("ALT (95% CI)") +
-    xlab("HSD17B13 (rs13141441)")
+    ylab("Trait (95% CI)") +
+    xlab("SNP modifier (genotype copies)")
 
 p2 <- ggplot(d2, aes(x=mod_gt, y=estimate, ymin=lci, ymax=uci, group=trait, shape=trait)) +
     geom_point(size = 1.5, position = position_dodge(width = 0.9)) +

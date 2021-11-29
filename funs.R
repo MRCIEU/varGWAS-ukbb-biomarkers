@@ -263,3 +263,37 @@ biomarkers_abr <- c(
 )
 
 env_exp <- c("smoking_status.20116.0.0","summed_minutes_activity.22034.0.0","alcohol_intake_frequency.1558.0.0","estimated_fat_yesterday.100004.0.0","estimated_total_sugars_yesterday.100008.0.0","sex.31.0.0","age_at_recruitment.21022.0.0","body_mass_index.21001.0.0")
+
+
+get_rsid <- function(snp){
+    d <- as.data.frame(str_split(snp, "_", simplify=T), stringsAsFactors=F)
+    names(d) <- c("chr", "pos", "oa", "ea")
+    d$chr <- gsub("chr", "", d$chr) %>% as.numeric
+    if (d$chr[1] < 10){
+        snp_stats <- fread(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/snp-stats/data.chr0", d$chr[1], ".snp-stats"), skip=15)
+    } else {
+        snp_stats <- fread(paste0("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/snp-stats/data.chr", d$chr[1], ".snp-stats"), skip=15)
+    }
+    rsid <- snp_stats %>% dplyr::filter(position == !!d$pos[1]) %>% dplyr::pull(rsid) %>% unique
+    return(rsid)
+}
+
+get_gene <- function(snp){
+    key <- as.data.frame(str_split(snp, "_", simplify=T), stringsAsFactors=F) %>% dplyr::mutate(key=paste0(V1, ":", V2))
+    key$key <- gsub("chr", "", key$key)
+
+    # get data on nearest gene
+    ng <- fread("data/nearest.txt")
+    ng <- unique(ng)
+    ng$key <- paste0(ng$V1,":",ng$V2)
+    ng$V1 <- NULL
+    ng$V2 <- NULL
+    names(ng)[1] <- "gene"
+    ng <- ng %>%
+        group_by_at(vars(key)) %>%
+        summarize(gene = toString(gene)) %>%
+        ungroup()
+    ng$gene <- gsub(", ", "|", ng$gene)
+    gene = ng %>% dplyr::filter(key==!!key$key) %>% pull(gene)
+    return(gene)
+}
