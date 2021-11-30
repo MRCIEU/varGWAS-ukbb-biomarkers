@@ -6,7 +6,6 @@ library("ggpubr")
 library("viridis")
 library("lmtest")
 library("sandwich")
-library('forestplot')
 library("viridis")
 library("RColorBrewer")
 library("grid")
@@ -152,5 +151,5 @@ for (i in 1:nrow(additive)){
     additive.results <- rbind(additive.results, est)
 }
 
-write.table(additive.results, sep="\t", quote=F, row.names=F, file=paste0("data/gxe-add-finemap.txt"))
-write.table(additive.finemap, sep="\t", quote=F, row.names=F, file=paste0("data/gxe-additive.finemap.txt"))
+write.table(additive.results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$t,"_gxe-add-finemap.txt"))
+write.table(additive.finemap, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$t,"_gxe-additive.finemap.txt"))
