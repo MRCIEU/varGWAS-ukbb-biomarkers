@@ -62,6 +62,8 @@ get_finemap <- function(d){
         res <- finemap_func(d$chr_pos.1[i], d$id[i])
         if (!is.null(res)){
             res$trait <- d$trait[i]
+            res$target <- d$V2[i]
+            res$modifier <- d$V1[i]
             results <- rbind(res, results)
         }
     }
@@ -142,8 +144,6 @@ additive <- additive %>% dplyr::filter(trait == !!opt$trait)
 
 # finemap gxg snps
 additive.finemap <- get_finemap(additive)
-additive.finemap$target <- additive$V2
-additive.finemap$modifier <- additive$V1
 
 # test for effect adjusting for finemapped variants
 additive.results <- data.frame()
