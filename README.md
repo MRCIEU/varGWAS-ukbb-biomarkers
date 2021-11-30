@@ -136,7 +136,7 @@ grep -v term data/*.0.0.gxg-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.g
 sbatch runR.sh gxg_finemap.R
 
 # qual analysis
-sbatch runR.sh gxg-qual.R -t alanine_aminotransferase.30620.0.0
+sbatch runR.sh gxg-qual.R
 ```
 
 Plots
@@ -169,8 +169,6 @@ echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe-main.t
 grep -v term data/*.0.0.gxe-main.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-main.txt:/\t/g' >> data/gxe-main.txt
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe-log.txt
 grep -v term data/*.0.0.gxe-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-log.txt:/\t/g' >> data/gxe-log.txt
-head -n1 data/alanine_aminotransferase.30620.0.0.gxe-qual.txt > data/gxe-qual.txt
-cat data/*gxe-qual.txt | grep -v ^term >> data/gxe-qual.txt
 ```
 
 Plots
