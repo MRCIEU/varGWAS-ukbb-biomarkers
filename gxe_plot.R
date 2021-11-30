@@ -31,12 +31,12 @@ get_dat <- function(file){
     # map SNP to rsid & gene
     lookup <- fread("Table S1.csv", select=c("snp", "gene", "rsid"))
     lookup <- unique(lookup)
-    d <- merge(d, lookup, by.x="V2", by.y="snp", all.x=T)
+    d <- merge(d, lookup, by.x="V2", by.y="snp")
     d$gene <- stringr::str_split(d$gene, "\\|", simplify=T)[,1]
     d$u <- factor(d$u)
     d$f <- paste0(d$gene, " (", d$rsid, ")")
     
-    levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status", Sleep="Sleep Duration", Meat="Processed Meat Intake", Fruit="Fresh Fruit Intake", Vegetable="Cooked Vegetable Intake")
+    levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status")
 
     # add key
     d$tt <- paste0(d$trait, ":", d$term)
@@ -71,7 +71,7 @@ get_plot <- function(d, leg_name){
     d$f <- factor(d$f, levels=unique(d$f) %>% sort(decreasing=T))
 
     # threshold rep P
-    d$p_sens <- d$p_sens < 5e-5
+    d$p_sens <- d$p_sens < 5e-8
     d$p_sens <- factor(d$p_sens, levels=c(T, F))
 
     # create plot
@@ -109,11 +109,11 @@ multiplicative <- merge(multiplicative, fread("data/gxe.txt") %>% mutate(tt=past
 
 # save plot
 pdf("gxe-additive.pdf", height=12, width=11)
-print(get_plot(additive, "Multiplicative (P < 5e-5)"))
+print(get_plot(additive, "Multiplicative (P < 5e-8)"))
 dev.off()
 
 pdf("gxe-multiplicative.pdf", height=12, width=11)
-print(get_plot(multiplicative, "Additive (P < 5e-5)"))
+print(get_plot(multiplicative, "Additive (P < 5e-8)"))
 dev.off()
 
 # GxE table

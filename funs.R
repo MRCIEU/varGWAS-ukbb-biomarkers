@@ -297,3 +297,62 @@ get_gene <- function(snp){
     gene = ng %>% dplyr::filter(key==!!key$key) %>% pull(gene)
     return(gene)
 }
+
+finemap_func <- function(chr_pos, id){
+    message(paste0("Working on variant: ", chr_pos))
+
+    # select natural interval around lead SNP
+    region <- map_variants_to_regions(chrpos=chr_pos, pop="EUR")
+
+    # select variants and LD matrix for region
+    dat <- ieugwasr_to_finemapr(
+        region$region,
+        id,
+        bfile = "/mnt/storage/home/ml18692/projects/varGWAS-ukbb-biomarkers/data/EUR",
+        plink_bin = "/mnt/storage/home/ml18692/projects/varGWAS-ukbb-biomarkers/data/plink_Linux"
+    )
+
+    # perform finemapping using SuSie
+    fitted_rss <- tryCatch(
+        expr = {
+            susieR::susie_rss(
+                dat[[1]]$z$zscore,
+                dat[[1]]$ld,
+                L=10,
+                estimate_prior_variance=TRUE
+            )
+        },
+        error = function(e){ 
+            NULL
+        }
+    )
+
+    if (is.null(fitted_rss)){
+        return(NULL)
+    }
+
+    # collect fine mapped snps
+    cs <- summary(fitted_rss)$cs
+
+    if (is.null(cs)){
+        return(NULL)
+    }
+
+    snps <- data.frame()
+    for (j in 1:nrow(cs)){
+        for (k in stringr::str_split(cs$variable[j], ",", simplify=T) %>% as.numeric){
+            res <- cs[j,]
+            res <- cbind(res, data.frame(
+                snp=dat[[1]]$z$snp[k],
+                pip=fitted_rss$pip[k]
+            ))
+            snps <- rbind(snps, res)
+        }
+    }
+
+    # get assoc for snps
+    ass <- associations(snps$snp, id) %>% dplyr::select(rsid, chr, position, nea, ea) %>% dplyr::rename(oa="nea", snp="rsid")
+    snps <- merge(snps, ass, "snp")
+
+    return(data.frame(chr_pos, snps, id, stringsAsFactors=F))
+}
