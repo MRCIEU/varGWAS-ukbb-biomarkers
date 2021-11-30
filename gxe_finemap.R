@@ -72,6 +72,7 @@ get_finemap <- function(d){
 get_est <- function(trait, v1, v2, finemap, pheno){
     # subset finemapped variants for this trait
     finemap <- finemap %>% dplyr::filter(trait == !!trait)
+    finemap$key <- paste0("chr", finemap$chr, "_", finemap$pos, "_", finemap$oa, "_", finemap$ea)
 
     # load dosages
     snps2 <- stringr::str_split(v2, "_", simplify=T) %>% as.data.frame(., stringsAsFactors=F) %>% dplyr::rename(chr="V1", pos="V2", oa="V3", ea="V4") %>% dplyr::mutate(chr=gsub("chr", "", chr))
@@ -80,13 +81,27 @@ get_est <- function(trait, v1, v2, finemap, pheno){
     snps$key <- paste0("chr", snps$chr, "_", snps$pos, "_", snps$oa, "_", snps$ea)
     chr_pos.2 <- paste0(snps2$chr, ":", snps2$pos)
 
+    skiped <- data.frame()
     for (i in 1:nrow(snps)){
-        dosage <- extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$oa[i], snps$ea[i])
+        dosage <- tryCatch(
+            expr = {
+                extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$oa[i], snps$ea[i])
+            },
+            error = function(e){ 
+                NULL
+            }
+        )
+
+        if (is.null(dosage)){
+            skiped <- rbind(skiped, data.frame(key=paste0("chr", snps$chr[i], "_", snps$pos[i], "_", snps$oa[i], "_", snps$ea[i])))
+            next
+        }
         pheno <- merge(pheno, dosage, "appieu")
     }
 
     # test for interaction adjusting for finemapped variants
-    adj <- finemap %>% dplyr::filter(chr_pos == !!chr_pos.2) %>% dplyr::select(chr, position, oa, ea) %>% dplyr::mutate(snp=paste0("chr", chr, "_", position, "_", oa, "_", ea)) %>% pull(snp)
+    adj <- finemap %>% dplyr::filter(chr_pos == !!chr_pos.2) %>% dplyr::select(chr, position, oa, ea) %>% dplyr::mutate(snp=paste0("chr", chr, "_", position, "_", oa, "_", ea)) %>% pull(snp) %>% unique
+    adj <- adj[!adj %in% skiped$key]
     f <- paste0(trait, " ~ ", v1, " * ", v2, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse=" + "), " + ", paste0(adj, collapse=" + "))
     message(f)
     mod <- lm(f, data=pheno)

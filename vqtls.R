@@ -170,5 +170,8 @@ all$key <- NULL
 # tidy outcome name
 all$outcome <- sapply(all$outcome, function(x) biomarkers_abr[x==biomarkers], simplify=T)
 
+# filter on P
+d <- d %>% dplyr::filter(phi_p < (5e-8/30))
+
 # write to table
 write.csv(all, file="Table S1.csv", quote=F, row.names=F)
