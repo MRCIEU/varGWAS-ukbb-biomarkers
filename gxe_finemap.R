@@ -147,6 +147,9 @@ additive <- merge(additive, fread("data/gxe-log.txt") %>% dplyr::mutate(tt=paste
 # subet for this trait
 additive <- additive %>% dplyr::filter(trait == !!opt$trait)
 
+# stop if no GxE effects
+stopifnot(nrow(additive) > 0)
+
 # finemap gxg snps
 additive.finemap <- get_finemap(additive)
 
