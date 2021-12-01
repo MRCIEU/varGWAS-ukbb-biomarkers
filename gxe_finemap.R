@@ -1,3 +1,5 @@
+load("data/pheno.RData")
+
 library("data.table")
 library("ggplot2")
 library("dplyr")
@@ -16,7 +18,6 @@ library("ieugwasr")
 library("susieR")
 library("robustbase")
 source("funs.R")
-load("data/pheno.RData")
 options(ieugwasr_api="http://64.227.44.193:8006/")
 set.seed(123)
 
