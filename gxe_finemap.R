@@ -103,7 +103,12 @@ get_est <- function(trait, v1, v2, finemap, pheno){
     # test for interaction adjusting for finemapped variants
     adj <- finemap %>% dplyr::filter(chr_pos == !!chr_pos.2) %>% dplyr::select(chr, position, oa, ea) %>% dplyr::mutate(snp=paste0("chr", chr, "_", position, "_", oa, "_", ea)) %>% pull(snp) %>% unique
     adj <- adj[!adj %in% skiped$key]
-    f <- paste0(trait, " ~ ", v1, " * ", v2, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse=" + "), " + ", paste0(adj, collapse=" + "))
+    if (length(adj) > 0){
+        f <- paste0(trait, " ~ ", v1, " * ", v2, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse=" + "), " + ", paste0(adj, collapse=" + "))
+    } else {
+        f <- paste0(trait, " ~ ", v1, " * ", v2, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse=" + "))
+    }
+    
     message(f)
     mod <- lm(f, data=pheno)
     t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
