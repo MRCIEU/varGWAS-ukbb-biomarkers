@@ -33,8 +33,8 @@ ld_dat <- ieugwasr::ld_matrix (
     qtl$snp,
     with_alleles = TRUE,
     pop = "EUR",
-    bfile = "/mnt/storage/home/ml18692/projects/varGWAS-ukbb-biomarkers/data/EUR",
-    plink_bin = "/mnt/storage/home/ml18692/projects/varGWAS-ukbb-biomarkers/data/plink_Linux"
+    bfile = "/user/home/ml18692/varGWAS-ukbb-biomarkers/data/EUR",
+    plink_bin = "/user/home/ml18692/varGWAS-ukbb-biomarkers/data/plink_Linux"
 )
 
 qtl$snp <- paste0(qtl$snp, "_", qtl$oa, "_", qtl$ea)

@@ -26,8 +26,8 @@ finemap <- function(dat){
         dat$rsid,
         with_alleles = T,
         pop = "EUR",
-        bfile = "/mnt/storage/home/ml18692/projects/varGWAS-ukbb-biomarkers/data/EUR",
-        plink_bin = "/mnt/storage/home/ml18692/projects/varGWAS-ukbb-biomarkers/data/plink_Linux"
+        bfile = "/user/home/ml18692/varGWAS-ukbb-biomarkers/data/EUR",
+        plink_bin = "/user/home/ml18692/varGWAS-ukbb-biomarkers/data/plink_Linux"
     )
 
     # select SNPs with LD data and orient effect size
