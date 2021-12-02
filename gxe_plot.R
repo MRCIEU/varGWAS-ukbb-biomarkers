@@ -109,6 +109,9 @@ finemapped$p_sens <- FALSE
 additive <- merge(additive, fread("data/gxe-log.txt") %>% mutate(tt=paste0(trait, ":", term)) %>% select(tt, p.value) %>% rename(p_sens="p.value"), "tt")
 multiplicative <- merge(multiplicative, fread("data/gxe.txt") %>% mutate(tt=paste0(trait, ":", term)) %>% select(tt, p.value) %>% rename(p_sens="p.value"), "tt")
 
+# order finemapped by additive
+finemapped2 <- merge(additive %>% dplyr::select(tt, estimate), finemapped, "tt")
+
 # save plot
 pdf("gxe-additive.pdf", height=12, width=11)
 print(get_plot(additive, "Multiplicative (P < 5e-8)"))
@@ -119,7 +122,7 @@ print(get_plot(multiplicative, "Additive (P < 5e-8)"))
 dev.off()
 
 pdf("gxe-finemapped.pdf", height=12, width=11)
-print(get_plot(finemapped, ""))
+print(get_plot(finemapped2, ""))
 dev.off()
 
 # GxE table

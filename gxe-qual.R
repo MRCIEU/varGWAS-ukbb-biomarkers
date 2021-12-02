@@ -41,11 +41,6 @@ dat$estimated_total_sugars_yesterday.100008.0.0_b <- dat$estimated_total_sugars_
 dat$age_at_recruitment.21022.0.0_b <- dat$age_at_recruitment.21022.0.0 > median(dat$age_at_recruitment.21022.0.0, na.rm=T)
 dat$body_mass_index.21001.0.0_b <- dat$body_mass_index.21001.0.0 > median(dat$body_mass_index.21001.0.0, na.rm=T)
 dat$sex.31.0.0_b <- dat$sex.31.0.0 > 0
-dat$sleep_duration.1160.0.0_b <- dat$sleep_duration.1160.0.0 < median(dat$sleep_duration.1160.0.0, na.rm=T)
-dat$processed_meat_intake.1349.0.0_b <- dat$processed_meat_intake.1349.0.0 < 3
-dat$fresh_fruit_intake.1309.0.0_b <- dat$fresh_fruit_intake.1309.0.0 < median(dat$fresh_fruit_intake.1309.0.0, na.rm=T)
-dat$cooked_vegetable_intake.1289.0.0_b <- dat$cooked_vegetable_intake.1289.0.0 < median(dat$cooked_vegetable_intake.1289.0.0, na.rm=T)
-
 
 # SD outcome
 dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]], na.rm=T)
