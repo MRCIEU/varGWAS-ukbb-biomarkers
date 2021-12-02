@@ -11,7 +11,7 @@ library("grid")
 source("funs.R")
 set.seed(123)
 
-get_dat <- function(file){
+get_dat <- function(file, threshold=5e-8){
     # read in gxe results
     d <- fread(file)
     d$lci <- d$estimate - (d$std.error * 1.96)
@@ -21,7 +21,7 @@ get_dat <- function(file){
     d <- d %>% dplyr::filter(trait != "body_mass_index.21001.0.0")
 
     # filter SNPs to show
-    d <- d %>% dplyr::filter(p.value < 5e-8)
+    d <- d %>% dplyr::filter(p.value < threshold)
 
     # merge
     d <- cbind(d, as.data.frame(str_split(d$term, ":", simplify=T), stringsAsFactors=F))
@@ -102,6 +102,8 @@ get_plot <- function(d, leg_name){
 # load gxe effects
 additive <- get_dat("data/gxe.txt")
 multiplicative <- get_dat("data/gxe-log.txt")
+finemapped <- get_dat("data/gxe-finemap.txt", threshold=1)
+finemapped$p_sens <- FALSE
 
 # append sensitivity P value
 additive <- merge(additive, fread("data/gxe-log.txt") %>% mutate(tt=paste0(trait, ":", term)) %>% select(tt, p.value) %>% rename(p_sens="p.value"), "tt")
@@ -114,6 +116,10 @@ dev.off()
 
 pdf("gxe-multiplicative.pdf", height=12, width=11)
 print(get_plot(multiplicative, "Additive (P < 5e-8)"))
+dev.off()
+
+pdf("gxe-finemapped.pdf", height=12, width=11)
+print(get_plot(finemapped, ""))
 dev.off()
 
 # GxE table

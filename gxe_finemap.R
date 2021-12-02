@@ -144,7 +144,7 @@ additive <- get_dat("data/gxe.txt")
 # append sensitivity P value
 additive <- merge(additive, fread("data/gxe-log.txt") %>% dplyr::mutate(tt=paste0(trait, ":", term)) %>% dplyr::select(tt, p.value) %>% dplyr::rename(p_sens="p.value"), "tt")
 
-# subet for this trait
+# subset for this trait
 additive <- additive %>% dplyr::filter(trait == !!opt$trait)
 
 # stop if no GxE effects
