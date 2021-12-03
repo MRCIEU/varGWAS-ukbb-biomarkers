@@ -23,7 +23,7 @@ get_dat <- function(file){
     d$key <- paste0(d$u, ":", d$term, ":", d$y)
 
     # drop BMI
-    d <- d %>% filter(y != "body_mass_index.21001.0.0")
+    d <- d %>% dplyr::filter(y != "body_mass_index.21001.0.0")
 
     # filter SNPs to show
     int <- fread("data/gxe.txt")
@@ -31,7 +31,7 @@ get_dat <- function(file){
     int <- int %>% dplyr::filter(p.value < 5e-8)
     int_log <- fread("data/gxe-log.txt")
     int_log$key <- paste0(int_log$term, ":", int_log$trait)
-    int_log <- int_log %>% dplyr::filter(p.value < 5e-5)
+    int_log <- int_log %>% dplyr::filter(p.value < 5e-8)
     int <- int %>% dplyr::filter(key %in% int_log$key)
     d <- d %>% dplyr::filter(key %in% int$key)
 
@@ -42,7 +42,7 @@ get_dat <- function(file){
     # map SNP to rsid & gene
     lookup <- fread("Table S1.csv", select=c("snp", "gene", "rsid"))
     lookup <- unique(lookup)
-    d <- merge(d, lookup, by.x="term", by.y="snp", all.x=T)
+    d <- merge(d, lookup, by.x="term", by.y="snp")
     d$gene <- stringr::str_split(d$gene, "\\|", simplify=T)[,1]
     d$u <- factor(d$u)
     d$f <- paste0(d$gene, "(", d$rsid, ")")
@@ -133,7 +133,12 @@ get_plot <- function(d){
     return(p)
 }
 
+# save plot
 pdf("gxe-qual.pdf", width=8.5, height=8)
 d <- get_dat("data/gxe-qual.txt")
 print(get_plot(d))
 dev.off()
+
+# save concentrating effects
+conc <- d %>% dplyr::filter(p.value.T > 0.05 | p.value.F > 0.05) 
+write.table(conc, file="data/gxe-qual-conc.txt", row.names=F)
