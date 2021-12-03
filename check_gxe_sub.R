@@ -114,6 +114,7 @@ dosage <- extract_variant_from_bgen("4", 10402838, "T", "C")
 dat <- merge(dat, dosage, "appieu")
 # test for subgroup effect
 f <- paste0("urate.30880.0.0 ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 +  PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(grep("chr", names(dat), value=T), collapse="+"))
+#f <- paste0("urate.30880.0.0 ~ chr4_10402838_T_C + age_at_recruitment.21022.0.0 +  PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10")
 as.formula(f)
 fit <- lm(f, data=dat) %>% tidy
 fit1 <- lm(f, data=dat %>% dplyr::filter(sex.31.0.0_b)) %>% tidy

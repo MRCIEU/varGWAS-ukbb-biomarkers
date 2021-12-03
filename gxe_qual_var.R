@@ -44,6 +44,25 @@ for (e in biomarkers){
 d <- fread("data/gxe-qual-conc.txt", select=c("key"))
 d <- cbind(d, as.data.frame(str_split(d$key, ":", simplify=T), stringsAsFactors=F) %>% dplyr::rename(u="V1", x="V2", y="V3"))
 
+# drop conc effects that attentuate when adjusted for main effects (see check_gxe_sub.R)
+d <- d %>% dplyr::filter(key == "body_mass_index.21001.0.0:chr9_132566666_G_A:alanine_aminotransferase.30620.0.0" | key == "body_mass_index.21001.0.0:chr22_44324727_C_G:triglycerides.30870.0.0")
+d$key <- NULL
+
+# add in two large quantiative effects
+d <- rbind(d, data.frame(
+  u="body_mass_index.21001.0.0",
+  x="chr22_44324727_C_G",
+  y="alanine_aminotransferase.30620.0.0",
+  stringsAsFactors=F
+))
+d <- rbind(d, data.frame(
+  u="sex.31.0.0",
+  x="chr4_9926051_A_G",
+  y="urate.30880.0.0",
+  stringsAsFactors=F
+))
+d$key <- paste0(d$u, ":", d$x, ":", d$y)
+
 # read in fine-mapped covarites
 fm <- fread("Table S3.csv")
 fm$key <- paste0(fm$term, ":", fm$trait)

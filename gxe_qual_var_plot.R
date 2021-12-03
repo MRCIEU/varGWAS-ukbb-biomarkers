@@ -14,7 +14,6 @@ set.seed(123)
 
 # read in gxg qual
 d <- fread("data/gxe-qual-var1.txt")
-d <- d %>% dplyr::filter(term %in% c("chr22_44324727_C_G","chr9_132566666_G_A", "chr4_10402838_T_C"))
 d$mod_pheno <- gsub("body_mass_index.21001.0.0_b", "BMI", d$mod_pheno)
 d$mod_pheno <- gsub("sex.31.0.0_b", "Sex", d$mod_pheno)
 d$rsid.1 <- sapply(d$term, get_rsid)
@@ -49,7 +48,6 @@ f$gt <- 2
 d <- rbind(e,f)
 
 d <- cbind(d, as.data.frame(str_split(d$term, ":", simplify=T), stringsAsFactors=F))
-d <- d %>% dplyr::filter(V1 %in% c("chr22_44324727_C_G","chr9_132566666_G_A", "chr4_10402838_T_C"))
 d$V2 <- gsub("body_mass_index.21001.0.0", "BMI", d$V2)
 d$V2 <- gsub("sex.31.0.0", "Sex", d$V2)
 d$rsid.1 <- sapply(d$V1, get_rsid)
@@ -82,6 +80,6 @@ p <- ggplot(d, aes(x=copies, y=estimate, ymin=lci, ymax=uci, group=int_t, shape=
     ylab("Trait (SD, 95% CI)") +
     labs(shape="Interaction")
 
-pdf("gxe-qual-var.pdf")
+pdf("gxe-qual-var.pdf", height=10)
 print(p)
 dev.off()

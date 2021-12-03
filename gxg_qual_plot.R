@@ -33,20 +33,41 @@ d$rsid.1 <- sapply(d$V1, get_rsid)
 d$rsid.2 <- sapply(d$V2, get_rsid)
 d$gene.1 <- sapply(d$V1, get_gene)
 d$gene.2 <- sapply(d$V2, get_gene)
-d$lci <- d$phi - (1.96 * d$se)
-d$uci <- d$phi + (1.96 * d$se)
 d$Trait <- sapply(d$trait, function(x) return(biomarkers_abr[biomarkers==x]))
 d$Trait <-  paste0(d$Trait, "\n", d$gene.1, " (", d$rsid.1, ")\n",d$gene.2, " (", d$rsid.2, ")")
 d$f <- paste0(d$gene.1, " (", d$rsid.1, ") x ",d$gene.2, " (", d$rsid.2, ")")
-d$gt <- as.factor(d$gt)
+d$phi_f <- NULL
+d$phi_p <- NULL
+e <- d
+f <- d
+e$estimate <- e$phi_x1
+e$se <- e$se_x1
+e$phi_x1 <- NULL
+e$phi_x2 <- NULL
+e$se_x1 <- NULL
+e$se_x2 <- NULL
+e$copies <- 1
+f$estimate <- f$phi_x2
+f$se <- f$se_x2
+f$phi_x1 <- NULL
+f$phi_x2 <- NULL
+f$se_x1 <- NULL
+f$se_x2 <- NULL
+f$copies <- 2
+d <- rbind(e,f)
+d$lci <- d$estimate - (1.96 * d$se)
+d$uci <- d$estimate + (1.96 * d$se)
 
-d2 <- d %>% dplyr::select(gt, phi, lci, uci, int, Trait, f) %>% dplyr::rename(copies="gt",estimate="phi")
+d2 <- d %>% dplyr::select(copies, estimate, lci, uci, int, Trait, f)
 d2$model <- "Variance"
 
 # combine data
 d <- rbind(d1, d2)
+d$copies <- as.factor(d$copies)
+d$int_t <- "Unadjusted"
+d$int_t[d$int] <- "Adjusted"
 
-p <- ggplot(d, aes(x=copies, y=estimate, ymin=lci, ymax=uci, group=int, shape=int)) +
+p <- ggplot(d, aes(x=copies, y=estimate, ymin=lci, ymax=uci, group=int_t, shape=int_t)) +
     geom_point(size = 1.5, position = position_dodge(width = 0.9)) +
     geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
     theme_classic() +
@@ -59,7 +80,7 @@ p <- ggplot(d, aes(x=copies, y=estimate, ymin=lci, ymax=uci, group=int, shape=in
     ) +
     ylab("Trait (SD, 95% CI)") +
     xlab("SNP (genotype copies)") +
-    labs(shape="Adjusted")
+    labs(shape="Interaction")
 
 pdf("gxg-qual.pdf", height=9)
 print(p)
