@@ -101,6 +101,14 @@ Combine nearest gene
 awk '{print $1"\t"$3"\t"$7}' data/*nearest* | uniq > data/nearest.txt
 ```
 
+Manually update wrong genes
+
+```sh
+sed -i 's/10402838\tZNF518B/10402838\tSLC2A9/g' data/nearest.txt
+sed -i 's/136153981\tSURF6/136153981\tABO/g' data/nearest.txt
+sed -i 's/88183820\tKLHL8/88183820\tHSD17B13/g' data/nearest.txt
+```
+
 ## Top hits table
 
 Combine all vQTLs
@@ -185,5 +193,17 @@ Plots
 
 ```sh
 Rscript gxe_plot.R
+# also output five concentrating effects
 Rscript gxe_qual_plot.R
+```
+
+Qualitative analysis
+
+```sh
+# estimate qual effect on mean and variance adjusted for fine-mapped effects
+# chr2_32521612_C_T x sex on testosterone attenuated so dropped
+# chr2_27741237_T_C x BMI on AST attenuated so dropped
+Rscript gxe_qual_var.R
+# plot four subgroup effects
+Rscript gxe_qual_var_plot.R
 ```

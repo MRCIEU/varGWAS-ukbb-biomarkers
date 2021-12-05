@@ -130,5 +130,8 @@ all$outcome <- sapply(all$outcome, function(x) biomarkers_abr[x==biomarkers], si
 # filter on P
 all <- all %>% dplyr::filter(phi_p < (5e-8/30))
 
+# update gene names
+all$gene[all$snp == "rs4530622"] <- "SLC2A9"
+
 # write to table
 write.csv(all, file="Table S1.csv", quote=F, row.names=F)

@@ -25,6 +25,10 @@ d$Trait <-  paste0(d$Trait, "\n", d$gene.1, " (", d$rsid.1, ")\n",d$mod_pheno)
 
 d1 <- d %>% dplyr::select(mod, estimate, lci, uci, Trait) %>% dplyr::rename(copies="mod") %>% dplyr::mutate(int=F)
 d1$model <- "Mean"
+d1$copies[grepl("BMI", d1$Trait) & d1$copies ==0] <- "Low BMI"
+d1$copies[grepl("BMI", d1$Trait) & d1$copies ==1] <- "High BMI"
+d1$copies[grepl("Sex", d1$Trait) & d1$copies ==0] <- "Female"
+d1$copies[grepl("Sex", d1$Trait) & d1$copies ==1] <- "Male"
 
 d <- fread("data/gxe-qual-var2.txt")
 d$phi_f <- NULL
@@ -75,11 +79,12 @@ p <- ggplot(d, aes(x=copies, y=estimate, ymin=lci, ymax=uci, group=int_t, shape=
     geom_hline(yintercept = c(0), linetype = "dashed", color = "grey") +
     theme(
         strip.background = element_blank(),
-        legend.background = element_blank()
+        legend.background = element_blank(),
+        axis.title.x=element_blank()
     ) +
     ylab("Trait (SD, 95% CI)") +
     labs(shape="Interaction")
 
-pdf("gxe-qual-var.pdf", height=10)
+pdf("gxe-qual-var.pdf")
 print(p)
 dev.off()

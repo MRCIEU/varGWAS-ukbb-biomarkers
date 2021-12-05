@@ -140,5 +140,5 @@ print(get_plot(d))
 dev.off()
 
 # save concentrating effects
-conc <- d %>% dplyr::filter(p.value.T > 0.05 | p.value.F > 0.05) 
+conc <- d %>% dplyr::filter((lci.T < 0 & uci.T > 0) | (lci.F < 0 & uci.F > 0))
 write.table(conc, file="data/gxe-qual-conc.txt", row.names=F)

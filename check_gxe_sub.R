@@ -122,3 +122,30 @@ fit0 <- lm(f, data=dat %>% dplyr::filter(!sex.31.0.0_b)) %>% tidy
 fit %>% dplyr::filter(term == "chr4_10402838_T_C")
 fit0 %>% dplyr::filter(term == "chr4_10402838_T_C")
 fit1 %>% dplyr::filter(term == "chr4_10402838_T_C")
+
+# AST
+snps <- ieugwasr::tophits("ukb-d-30650_irnt")
+for (i in 1:nrow(snps)){
+    dosage <- tryCatch(
+        expr = {
+            extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$position[i]), snps$nea[i], snps$ea[i])
+        },
+        error = function(e){ 
+            message("skipping:", paste0(as.character(snps$chr[i]), as.double(snps$position[i]), snps$nea[i], snps$ea[i]))
+            NULL
+        }
+    )
+    if (!is.null(dosage)){
+        dat <- merge(dat, dosage, "appieu")
+    }
+}
+dat <- merge(dat, dosage, "appieu")
+# test for subgroup effect
+f <- paste0("urate.30880.0.0 ~ chr2_27741237_T_C + age_at_recruitment.21022.0.0 +  PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(grep("chr", names(dat), value=T), collapse="+"))
+as.formula(f)
+fit <- lm(f, data=dat) %>% tidy
+fit1 <- lm(f, data=dat %>% dplyr::filter(sex.31.0.0_b)) %>% tidy
+fit0 <- lm(f, data=dat %>% dplyr::filter(!sex.31.0.0_b)) %>% tidy
+fit %>% dplyr::filter(term == "chr4_10402838_T_C")
+fit0 %>% dplyr::filter(term == "chr4_10402838_T_C")
+fit1 %>% dplyr::filter(term == "chr4_10402838_T_C")
