@@ -40,13 +40,27 @@ for (e in biomarkers){
   dat[[e]] <- dat[[e]] / sd(dat[[e]], na.rm=T)
 }
 
-# read in GxE concentrating effects
-d <- fread("data/gxe-qual-conc.txt", select=c("key"))
-d <- cbind(d, as.data.frame(str_split(d$key, ":", simplify=T), stringsAsFactors=F) %>% dplyr::rename(u="V1", x="V2", y="V3"))
+# select GxE effects on both scales
+int <- fread("data/gxe.txt")
+int$snp <- stringr::str_split(int$term, ":", simplify=T)[,2]
+int$modifier <- stringr::str_split(int$term, ":", simplify=T)[,1]
+int$key <- paste0(int$term, ":", int$trait)
+int <- int %>% dplyr::filter(p.value < 5e-8)
+int_log <- fread("data/gxe-log.txt")
+int_log$key <- paste0(int_log$term, ":", int_log$trait)
+int_log <- int_log %>% dplyr::filter(p.value < 5e-8)
+int <- int %>% dplyr::filter(key %in% int_log$key)
 
-# drop conc effects that attentuate when adjusted for main effects
-d <- d %>% dplyr::filter(key != "sex.31.0.0:chr2_32521612_C_T:testosterone.30850.0.0")
-d <- d %>% dplyr::filter(key != "body_mass_index.21001.0.0:chr2_27741237_T_C:aspartate_aminotransferase.30650.0.0")
+# merge on to gene info
+lookup <- fread("Table S1.csv", select=c("snp", "gene", "rsid"))
+lookup <- unique(lookup)
+int <- merge(int, lookup,"snp")
+int$gene <- stringr::str_split(int$gene, "\\|", simplify=T)[,1]
+
+# select top n=5 effects by pval
+#d <- int %>% dplyr::filter(key != "body_mass_index.21001.0.0:chr22_44324730_C_T:aspartate_aminotransferase.30650.0.0") %>% dplyr::arrange(p.value) %>% head(n=5)
+# select top n=5 effects by effect size
+d <- int %>% dplyr::arrange(desc(abs(estimate))) %>% dplyr::filter(key != "body_mass_index.21001.0.0:chr22_44324730_C_T:aspartate_aminotransferase.30650.0.0") %>% dplyr::filter(key != "sex.31.0.0:chr19_45413233_G_T:cholesterol.30690.0.0") %>% head(n=5)
 
 # read in fine-mapped covarites
 fm <- fread("Table S3.csv")
@@ -71,6 +85,9 @@ for (i in 1:nrow(snps)){
 # test for effect of SNP stratified by modifier
 results <- data.frame()
 results_var <- data.frame()
+d$u <- d$modifier
+d$y <- d$trait
+d$x <- d$snp
 for (i in 1:nrow(d)){
   # define modifier group
   k <- paste0(d$u[i], "_b")

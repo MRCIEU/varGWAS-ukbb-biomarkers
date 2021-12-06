@@ -85,6 +85,6 @@ p <- ggplot(d, aes(x=copies, y=estimate, ymin=lci, ymax=uci, group=int_t, shape=
     ylab("Trait (SD, 95% CI)") +
     labs(shape="Interaction")
 
-pdf("gxe-qual-var.pdf")
+pdf("gxe-qual-var.pdf", height=10)
 print(p)
 dev.off()
