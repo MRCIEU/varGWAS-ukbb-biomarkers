@@ -69,12 +69,12 @@ Rscript qc-fig.R
 
 ## Clump vQTLs
 
-Clump tophits & flip effect allele
+Clump tophits
 
 ```sh
 for trait in alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
     sbatch runR.sh clump.R -t "$trait"
-    #sbatch runR.sh clump.R -t "$trait" -p 5e-5
+    sbatch runR.sh clump.R -t "$trait" -p 5e-5
 done
 ```
 
@@ -89,7 +89,7 @@ for trait in alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosp
     bedtools \
     closest \
     -g /mnt/storage/home/ml18692/db/reference_genomes/released/2019-08-30/data/2.8/b37/human_g1k_v37.fasta.fai \
-    -a <(awk -F"," 'NR>1 {print $1"\t"$2-1"\t"$2}' "data/""$trait"".clump.txt" | sort -k1,1n -k2,2n) \
+    -a <(awk -F"," 'NR>1 {print $2"\t"$3-1"\t"$3}' "data/""$trait"".clump.txt" | sort -k1,1n -k2,2n) \
     -b data/Homo_sapiens.GRCh37.104.hgnc.bed \
     > "data/""$trait"".nearest-gene.txt"
 done
@@ -107,6 +107,7 @@ Manually update wrong genes
 sed -i 's/10402838\tZNF518B/10402838\tSLC2A9/g' data/nearest.txt
 sed -i 's/136153981\tSURF6/136153981\tABO/g' data/nearest.txt
 sed -i 's/88183820\tKLHL8/88183820\tHSD17B13/g' data/nearest.txt
+sed -i 's/118588320\tDDX6/118588320\tTREH/g' data/nearest.txt
 ```
 
 ## Top hits table
@@ -117,7 +118,7 @@ Combine all vQTLs
 echo -n "trait," > data/vqtls.txt
 head -n1 data/urate.30880.0.0.clump.txt >> data/vqtls.txt
 grep -v chr data/*.0.0.clump.txt | sed 's/data\///g' | sed 's/.clump.txt:/,/g' >> data/vqtls.txt
-sbatch runR.sh vqtls.R
+Rscript table_s1.R
 ```
 
 ## GxG interaction analysis
