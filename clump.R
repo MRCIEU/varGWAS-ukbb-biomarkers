@@ -33,7 +33,7 @@ sig <- ld_clump(sig)
 sig <- gwas[gwas$rsid %in% sig$rsid]
 
 # flip alleles and drop effect estimate
-sig <- sig %>% select(chr, pos, rsid, oa, ea) %>% rename(oa="ea", ea="oa")
+#sig <- sig %>% select(chr, pos, rsid, oa, ea) %>% rename(oa="ea", ea="oa")
 
 # save assoc
 if (opt$p == 5e-8/30){
