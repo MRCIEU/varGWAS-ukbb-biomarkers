@@ -26,7 +26,7 @@ main$key <- paste0("chr", main$chr, "_", main$pos, "_", main$oa, "_", main$ea)
 stopifnot(nrow(main) > 0)
 
 # read in modifier clumped vQTLs P < 5e-5 & add key
-modifier <- fread(paste0("data/", opt$trait, ".clump_5e-05.txt"))
+modifier <- fread(paste0("data/", opt$trait, ".clump.txt"))
 modifier$key <- paste0("chr", modifier$chr, "_", modifier$pos, "_", modifier$oa, "_", modifier$ea)
 
 # load dosages

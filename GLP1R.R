@@ -1,51 +1,94 @@
 library("ieugwasr")
-library("data.table")
-library("jlst")
+library("dplyr")
+library("broom")
 source("funs.R")
-set.seed(1234)
 options(ieugwasr_api="http://64.227.44.193:8006/")
+set.seed(123)
 
-# load phenotypes
-d <- fread("data/body_mass_index.21001.0.0.txt")
-
-# extract cis-QTLs from opengwas
-qtl <- ieugwasr::tophits(c("prot-a-1219", "finn-a-GLP1ANA", "eqtl-a-ENSG00000112164"))
-qtl <- qtl %>% dplyr::filter(chr=="6")
-
-# extract GTEx cis-eQTLs
-gtex <- fread("data/GLP1R.csv")
-gtex$ea <- str_split(gtex[['Variant Id']], "_", simplify = T)[,4]
-gtex$oa <- str_split(gtex[['Variant Id']], "_", simplify = T)[,3]
-
-# combine
-df <- rbind(
-    qtl %>% dplyr::select(beta, rsid, p, id, ea, nea) %>% dplyr::rename(pval="p", study="id", oa="nea") %>% dplyr::mutate(tissue="blood"),
-    gtex %>% dplyr::select(NES, "SNP Id", "P-Value", ea, oa, Tissue) %>% dplyr::rename(pval="P-Value", beta="NES", rsid="SNP Id", tissue="Tissue") %>% dplyr::mutate(study="gtex")
+f <- "/tmp/tmp.GU8Wh7SknM/data.33352.csv"
+pheno <- fread(f, select=c(
+        "eid",
+        "31-0.0",
+        "21022-0.0",
+        "21001-0.0",
+        "2744-0.0",
+        "1687-0.0"
+    ),
+    col.names=c(
+        "eid", 
+        "sex.31.0.0",
+        "age_at_recruitment.21022.0.0",
+        "body_mass_index.21001.0.0",
+        "birth_weight_of_first_child.2744.0.0",
+        "comparative_body_size_at_age_10.1687.0.0")
 )
-df <- df %>% dplyr::filter(pval < 5e-8)
 
-# clump
-df <- ld_clump(df)
+pheno <- pheno %>% dplyr::mutate_at(c('birth_weight_of_first_child.2744.0.0'), na_if, -1)
+pheno <- pheno %>% dplyr::mutate_at(c('birth_weight_of_first_child.2744.0.0'), na_if, -2)
+pheno <- pheno %>% dplyr::mutate_at(c('birth_weight_of_first_child.2744.0.0'), na_if, -3)
+pheno <- pheno %>% dplyr::mutate_at(c('comparative_body_size_at_age_10.1687.0.0'), na_if, -1)
+pheno <- pheno %>% dplyr::mutate_at(c('comparative_body_size_at_age_10.1687.0.0'), na_if, -3)
+pheno <- pheno %>% dplyr::mutate(comparative_body_size_at_age_10.1687.0.0=dplyr::recode(comparative_body_size_at_age_10.1687.0.0, `3`=0, `1`=-1, `2`=1, .default = NA_real_))
+pheno$birth_weight_of_first_child.2744.0.0 <- as.double(pheno$birth_weight_of_first_child.2744.0.0)
 
-# test for vQTL effect
-results <- data.frame()
-for (i in 1:nrow(df)){
-    variant <- bgen.load("/mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/arrays/imputed/released/2018-09-18/data/dosage_bgen/data.chr06.bgen",
-        rsids=df$rsid[i]
-    )
-    dosage <- as.data.frame(
-        apply(variant$data, 1, function(data) { return(data[,1]*0 + data[,2]*1 + data[,3]*2) })
-    )
-    dosage$appieu <- row.names(dosage)
-    if (nrow(dosage) == 0){
-        next
-    }
-    snpid <-paste0(names(dosage)[1], "_", variant$variants$allele0, "_", variant$variants$allele1)
-    names(dosage)[1] <- snpid
-    dosage <- merge(d, dosage, "appieu")
-    p_main <- vartest(dosage %>% dplyr::pull("body_mass_index.21001.0.0"), dosage %>% dplyr::pull(!!snpid), covar = dosage %>% dplyr::select("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"), covar.var = T, type = 2, x.sq = T)$test$P
-    p_log <- vartest(dosage %>% dplyr::pull("body_mass_index.21001.0.0") %>% log, dosage %>% dplyr::pull(!!snpid), covar = dosage %>% dplyr::select("age_at_recruitment.21022.0.0", "sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10"), covar.var = T, type = 2, x.sq = T)$test$P
-    results <- rbind(results, data.frame(
-        p_main, p_log, rsid=snpid
-    ))
-}
+# load linker
+linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
+
+# load covariates
+pc <- get_genetic_principal_components()
+
+# merge data
+dat <- merge(linker, pc, "appieu")
+dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
+
+# SD scale outcomes
+dat$body_mass_index.21001.0.0 <- dat$body_mass_index.21001.0.0 / sd(dat$body_mass_index.21001.0.0, na.rm=T)
+dat$birth_weight_of_first_child.2744.0.0 <- dat$birth_weight_of_first_child.2744.0.0 / sd(dat$birth_weight_of_first_child.2744.0.0, na.rm=T)
+dat$comparative_body_size_at_age_10.1687.0.0 <- dat$comparative_body_size_at_age_10.1687.0.0 / sd(dat$comparative_body_size_at_age_10.1687.0.0, na.rm=T)
+
+# extract array SNP
+dosage <- extract_variant_from_bgen("6", 39016636, "C", "T")
+dat <- merge(dat, dosage, "appieu")
+
+# extract exome SNP
+# TODO
+#system("
+#    plink \
+#    --bim /mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/exome/released/2020-10-12/data/raw_downloaded/ukb_snp_chr6.bim \
+#    --fam /projects/MRC-IEU/research/data/ukbiobank/genetic/variants/exome/raw/exome_download/data.exome.ukbapp.15825.fam \
+#    --bed /mnt/storage/private/mrcieu/data/ukbiobank/genetic/variants/exome/released/2020-10-12/data/raw_downloaded/ukb_cal_chr6_b0_v1.bed \
+#    --extract <(grep -v '#' ~/ukbb.lct.exome.vep.txt | cut -s -f1 | sort -u) \
+#    --recode A \
+#    --out ~/ukbb.lct.exome.txt
+#")
+
+# test for mean effect
+res_mean <- data.frame()
+
+res <- lm(body_mass_index.21001.0.0 ~ chr6_39016636_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10, data=dat) %>% tidy %>% dplyr::filter(term == "chr6_39016636_C_T")
+res$trait <- "body_mass_index.21001.0.0"
+res_mean <- rbind(res_mean, res)
+res <- lm(birth_weight_of_first_child.2744.0.0 ~ chr6_39016636_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10, data=dat) %>% tidy %>% dplyr::filter(term == "chr6_39016636_C_T")
+res$trait <- "birth_weight_of_first_child.2744.0.0"
+res_mean <- rbind(res_mean, res)
+res <- lm(comparative_body_size_at_age_10.1687.0.0 ~ chr6_39016636_C_T + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10, data=dat) %>% tidy %>% dplyr::filter(term == "chr6_39016636_C_T")
+res$trait <- "comparative_body_size_at_age_10.1687.0.0"
+res_mean <- rbind(res_mean, res)
+
+# test for variance effect
+res_var <- data.frame()
+
+covar <- c("age_at_recruitment.21022.0.0","sex.31.0.0","PC1","PC2","PC3","PC4","PC5","PC6","PC7","PC8","PC9","PC10")
+res <- varGWASR::model(dat %>% dplyr::select(all_of(c("chr6_39016636_C_T", "body_mass_index.21001.0.0", covar))) %>% na.omit, "chr6_39016636_C_T", "body_mass_index.21001.0.0", covar1 = covar, covar2 = covar)
+res$trait <- "body_mass_index.21001.0.0"
+res_var <- rbind(res_var, res)
+
+covar <- c("age_at_recruitment.21022.0.0","PC1","PC2","PC3","PC4","PC5","PC6","PC7","PC8","PC9","PC10")
+res <- varGWASR::model(dat %>% dplyr::select(all_of(c("chr6_39016636_C_T", "birth_weight_of_first_child.2744.0.0", covar))) %>% na.omit, "chr6_39016636_C_T", "birth_weight_of_first_child.2744.0.0", covar1 = covar, covar2 = covar)
+res$trait <- "birth_weight_of_first_child.2744.0.0"
+res_var <- rbind(res_var, res)
+
+covar <- c("age_at_recruitment.21022.0.0","sex.31.0.0","PC1","PC2","PC3","PC4","PC5","PC6","PC7","PC8","PC9","PC10")
+res <- varGWASR::model(dat %>% dplyr::select(all_of(c("chr6_39016636_C_T", "comparative_body_size_at_age_10.1687.0.0", covar))) %>% na.omit, "chr6_39016636_C_T", "comparative_body_size_at_age_10.1687.0.0", covar1 = covar, covar2 = covar)
+res$trait <- "comparative_body_size_at_age_10.1687.0.0"
+res_var <- rbind(res_var, res)
