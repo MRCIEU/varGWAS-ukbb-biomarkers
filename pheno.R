@@ -7,7 +7,7 @@ set.seed(1234)
 disease_id <- paste0("41270-0.", seq(0, 212))
 disease_name <- paste0("diagnoses_icd10_41270.0.", seq(0, 212))
 
-f <- "/tmp/tmp.FfUlkCzYam/data.33352.csv"
+f <- "/tmp/tmp.GU8Wh7SknM/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
         "31-0.0",
@@ -70,7 +70,9 @@ pheno <- fread(f, select=c(
         "24024-0.0",
         disease_id,
         "50-0.0",
-        "2754-0.0"
+        "2754-0.0",
+        "20150-0.0",
+        "20151-0.0"
     ),
     col.names=c(
         "eid", 
@@ -134,7 +136,9 @@ pheno <- fread(f, select=c(
         "average_24_hour_sound_level_of_noise_pollution.24024.0.0",
         disease_name,
         "standing_height.50.0.0",
-        "age_at_first_live_birth.2754.0.0"
+        "age_at_first_live_birth.2754.0.0",
+        "forced_expiratory_volume_best_measure.20150.0.0",
+        "forced_vital_capacity_best_measure.20151.0.0"
     )
 )
 unlink(f)
