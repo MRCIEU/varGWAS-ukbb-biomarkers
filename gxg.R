@@ -1,3 +1,4 @@
+load("data/pheno.RData")
 library('optparse')
 library('data.table')
 library('dplyr')
@@ -17,8 +18,22 @@ opt = parse_args(opt_parser);
 
 message(paste0("trait ", opt$trait))
 
-# read in extracted phenotypes
-pheno <- fread(paste0("data/", opt$trait, ".txt"))
+# load linker
+linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
+
+# load covariates
+covariates <- get_covariates()
+covariates$chip <- as.numeric(as.factor(covariates$chip)) - 1
+pc <- get_genetic_principal_components()
+
+# merge data
+dat <- merge(linker, covariates, "appieu")
+dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
+dat <- merge(dat, pc, "appieu")
+
+# SD normalise outcome
+dat[[opt$trait]] <- dat[[opt$trait]] / sd(dat[[opt$trait]], na.rm=T)
+dat[[paste0(opt$trait, "_log")]] <- log(dat[[opt$trait]])
 
 # read in main clumped vQTLs P < 5e-8/30 & add key
 main <- fread(paste0("data/", opt$trait, ".clump.txt"))
@@ -37,9 +52,8 @@ snps$key <- paste0("chr", snps$chr, "_", snps$pos, "_", snps$oa, "_", snps$ea)
 
 for (i in 1:nrow(snps)){
     dosage <- extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$oa[i], snps$ea[i])
-    pheno <- merge(pheno, dosage, "appieu")
+    dat <- merge(dat, dosage, "appieu")
 }
-pheno[[paste0(opt$trait, "_log")]] <- log(pheno[[opt$trait]])
 
 # test for interaction between each snp
 results <- data.frame()
@@ -69,14 +83,14 @@ for (i in 1:length(main$key)){
 
     # test GxG on additive scale
     f <- as.formula(paste0(opt$trait, " ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(main$key[i], " * " ,modifier$key[j], collapse=" + ")))
-    mod <- lm(f, data=pheno)
+    mod <- lm(f, data=dat)
     t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
     t <- t %>% dplyr::filter(grepl(":", t$term))
     results <- rbind(results, t)
 
     # test GxG on multiplicative scale
     f <- as.formula(paste0(opt$trait, "_log ~ age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(main$key[i], " * " ,modifier$key[j], collapse=" + ")))
-    mod <- lm(f, data=pheno)
+    mod <- lm(f, data=dat)
     t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
     t <- t %>% dplyr::filter(grepl(":", t$term))
     results_log <- rbind(results_log, t)
