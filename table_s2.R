@@ -1,4 +1,6 @@
 library("data.table")
+source("funs.R")
+set.seed(23)
 
 # GxE
 int <- fread("data/gxe.txt")
@@ -29,9 +31,16 @@ int <- int %>% dplyr::select(x, modifier, y, estimate, lci, uci, p.value) %>% dp
 
 # GxG
 d <- fread("data/gxg.txt")
+d$key <- paste0(d$term, ":", d$trait)
+d <- d %>% dplyr::filter(p.value < 5e-8)
+d_log <- fread("data/gxg-log.txt")
+d_log$key <- paste0(d_log$term, ":", d_log$trait)
+d_log <- d_log %>% dplyr::filter(p.value < 5e-8)
+d <- d %>% dplyr::filter(key %in% d_log$key)
+
 d$lci <- d$estimate - (1.96* d$std.error)
 d$uci <- d$estimate + (1.96* d$std.error)
-d <- d %>% dplyr::filter(p.value < 5e-8) %>% dplyr::filter(term != "chr12_121424861_A_G:chr19_45411941_T_C")
+d <- d %>% dplyr::filter(p.value < 5e-8)
 d <- cbind(d, data.frame(stringr::str_split(d$term, ":", simplify=T), stringsAsFactors=F))
 d <- merge(d, lookup, by.x="X1", by.y="snp")
 d <- merge(d, lookup, by.x="X2", by.y="snp")
@@ -42,6 +51,15 @@ d <- d %>% dplyr::select(x, u, y, estimate, lci, uci, p.value) %>% dplyr::rename
 
 # combine
 all <- rbind(int, d)
+names(all) <- c(
+    "snp",
+    "modifier",
+    "outcome",
+    "beta",
+    "lci",
+    "uci",
+    "p"
+)
 
 # save
 write.csv(all, file="Table S2.csv", row.names=F, quote=F)
