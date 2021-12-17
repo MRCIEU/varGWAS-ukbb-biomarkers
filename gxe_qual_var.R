@@ -35,11 +35,6 @@ dat$age_at_recruitment.21022.0.0_b <- dat$age_at_recruitment.21022.0.0 > median(
 dat$body_mass_index.21001.0.0_b <- dat$body_mass_index.21001.0.0 > median(dat$body_mass_index.21001.0.0, na.rm=T)
 dat$sex.31.0.0_b <- dat$sex.31.0.0 > 0
 
-# SD scale outcomes
-for (e in biomarkers){
-  dat[[e]] <- dat[[e]] / sd(dat[[e]], na.rm=T)
-}
-
 # select GxE effects on both scales
 int <- fread("data/gxe.txt")
 int$snp <- stringr::str_split(int$term, ":", simplify=T)[,2]
@@ -57,22 +52,11 @@ lookup <- unique(lookup)
 int <- merge(int, lookup,"snp")
 int$gene <- stringr::str_split(int$gene, "\\|", simplify=T)[,1]
 
-# select top n=5 effects by pval
-#d <- int %>% dplyr::filter(key != "body_mass_index.21001.0.0:chr22_44324730_C_T:aspartate_aminotransferase.30650.0.0") %>% dplyr::arrange(p.value) %>% head(n=5)
 # select top n=5 effects by effect size
-d <- int %>% dplyr::arrange(desc(abs(estimate))) %>% dplyr::filter(key != "body_mass_index.21001.0.0:chr22_44324730_C_T:aspartate_aminotransferase.30650.0.0") %>% dplyr::filter(key != "sex.31.0.0:chr19_45413233_G_T:cholesterol.30690.0.0") %>% head(n=5)
-
-# read in fine-mapped covarites
-fm <- fread("Table S3.csv")
-fm$key <- paste0(fm$term, ":", fm$trait)
-names(fm)[3] <- "covar"
-fm <- fm %>% dplyr::select(key, covar)
-d <- merge(d, fm, "key")
+d <- int %>% dplyr::arrange(desc(abs(estimate))) %>% dplyr::filter(key != "sex.31.0.0:chr19_45413233_G_T:cholesterol.30690.0.0") %>%  dplyr::filter(key != "age_at_recruitment.21022.0.0:chr19_45413233_G_T:ldl_direct.30780.0.0") %>% dplyr::filter(key != "body_mass_index.21001.0.0:chr22_44324855_G_A:aspartate_aminotransferase.30650.0.0") %>% dplyr::filter(key != "age_at_recruitment.21022.0.0:chr19_45413233_G_T:cholesterol.30690.0.0") %>% head(n=5)
 
 # create snp list
-snps <- d$x
-snps <- c(snps, stringr::str_split(d$covar, "\\|") %>% unlist)
-snps <- as.data.frame(str_split(snps, "_", simplify=T), stringsAsFactors=F) %>% dplyr::rename(chr="V1", pos="V2", oa="V3", ea="V4")
+snps <- as.data.frame(str_split(d$snp, "_", simplify=T), stringsAsFactors=F) %>% dplyr::rename(chr="V1", pos="V2", oa="V3", ea="V4")
 snps$chr <- gsub("chr", "", snps$chr)
 snps <- unique(snps)
 
@@ -89,17 +73,19 @@ d$u <- d$modifier
 d$y <- d$trait
 d$x <- d$snp
 for (i in 1:nrow(d)){
+  # drop outlier values
+  s <- sd(dat[[d$y[i]]], na.rm=T)
+  dat$z <- (dat[[d$y[i]]] - mean (dat[[d$y[i]]], na.rm=T)) / s
+  dat$z <- abs(dat$z)
+
+  # SD scale
+  dat$out <- dat[[d$y[i]]] / s
+
   # define modifier group
   k <- paste0(d$u[i], "_b")
 
   # define linear model
-  covar_snps <- str_split(d$covar[i], "\\|")[[1]]
-  covar_snps <- covar_snps[d$x[i] != covar_snps]
-  if (length(covar_snps) > 0){
-    f <- as.formula(paste0(d$y[i], " ~ ", d$x[i], " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + ", paste0(covar_snps, collapse="+")))
-  } else {
-    f <- as.formula(paste0(d$y[i], " ~ ", d$x[i], " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
-  }
+  f <- as.formula(paste0("out ~ ", d$x[i], " + age_at_recruitment.21022.0.0 + sex.31.0.0 + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10"))
 
   # split dataset
   dat0 <- dat %>% dplyr::filter(!!sym(k) == T)
@@ -136,22 +122,25 @@ for (i in 1:nrow(d)){
     "PC7",
     "PC8",
     "PC9",
-    "PC10",
-    covar_snps
+    "PC10"
   )
   # drop covar if it is modifier
   covar <- covar[covar != d$u[i]]
   covar <- unique(covar)
-  dat2 <- dat %>% dplyr::select(!!d$x[i], !!covar, !!d$y[i]) %>% tidyr::drop_na()
-  fit <- model(dat2, d$x[i], d$y[i], covar1 = covar, covar2 = covar)
+  
+  # fit SNP-variane model without interaction
+  dat2 <- dat %>% dplyr::filter(z < 5) %>% dplyr::select(!!d$x[i], !!covar, "out") %>% tidyr::drop_na()
+  fit <- model(dat2, d$x[i], "out", covar1 = covar, covar2 = covar)
   fit$int=F
   fit$term <- paste0(d$x[i], ":", d$u[i])
   fit$trait <- d$y[i]
   results_var <- rbind(results_var, fit)
+  
+  # fit SNP-variane model adjusted for interaction
   covar <- c(covar,d$u[i],"XU")
   covar <- unique(covar)
-  dat2 <- dat %>% dplyr::select(!!d$x[i], !!covar, !!d$y[i]) %>% tidyr::drop_na()
-  fit <- model(dat2, d$x[i], d$y[i], covar1 = covar, covar2 = covar)
+  dat2 <- dat %>% dplyr::select(!!d$x[i], !!covar, "out") %>% tidyr::drop_na()
+  fit <- model(dat2, d$x[i], "out", covar1 = covar, covar2 = covar)
   fit$trait <- d$y[i]
   fit$int=T
   fit$term <- paste0(d$x[i], ":", d$u[i])

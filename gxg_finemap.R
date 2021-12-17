@@ -1,3 +1,5 @@
+load("data/pheno.RData")
+
 library("data.table")
 library("ggplot2")
 library("dplyr")
@@ -71,8 +73,21 @@ get_finemap <- function(d){
 }
 
 get_est <- function(trait, v1, v2, finemap){
-    # read in extracted phenotypes
-    pheno <- fread(paste0("data/", trait, ".txt"))
+    # load linker
+    linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
+
+    # load covariates
+    covariates <- get_covariates()
+    covariates$chip <- as.numeric(as.factor(covariates$chip)) - 1
+    pc <- get_genetic_principal_components()
+
+    # merge data
+    dat <- merge(linker, covariates, "appieu")
+    dat <- merge(dat, pheno, by.x="app15825", by.y="eid")
+    dat <- merge(dat, pc, "appieu")
+
+    # SD normalise outcome
+    dat[[trait]] <- dat[[trait]] / sd(dat[[trait]], na.rm=T)
 
     # subset finemapped variants for this trait
     finemap <- finemap %>% dplyr::filter(trait == !!trait)
@@ -88,7 +103,7 @@ get_est <- function(trait, v1, v2, finemap){
 
     for (i in 1:nrow(snps)){
         dosage <- extract_variant_from_bgen(as.character(snps$chr[i]), as.double(snps$pos[i]), snps$oa[i], snps$ea[i])
-        pheno <- merge(pheno, dosage, "appieu")
+        dat <- merge(dat, dosage, "appieu")
     }
 
     # test for interaction adjusting for finemapped variants
@@ -97,7 +112,7 @@ get_est <- function(trait, v1, v2, finemap){
     adj <- unique(adj1, adj2)
     f <- paste0(trait, " ~ ", v1, " * ", v2, " + age_at_recruitment.21022.0.0 + sex.31.0.0 + ", paste0("PC", seq(1,10), collapse=" + "), " + ", paste0(adj, collapse=" + "))
     message(f)
-    mod <- lm(f, data=pheno)
+    mod <- lm(f, data=dat)
     t <- coeftest(mod, vcov = vcovHC(mod, type = "HC0")) %>% tidy
     t <- t %>% dplyr::filter(grepl(":", t$term))
     t$trait <- trait
@@ -124,6 +139,10 @@ additive.finemap_5 <- get_finemap(additive[5])
 additive.finemap_5$target <- additive$V1[5]
 additive.finemap_6 <- get_finemap(additive[6])
 additive.finemap_6$target <- additive$V1[6]
+additive.finemap_7 <- get_finemap(additive[7])
+additive.finemap_7$target <- additive$V1[7]
+additive.finemap_8 <- get_finemap(additive[8])
+additive.finemap_8$target <- additive$V1[8]
 
 additive.finemap <- rbind(
     additive.finemap_1,
@@ -131,7 +150,9 @@ additive.finemap <- rbind(
     additive.finemap_3,
     additive.finemap_4,
     additive.finemap_5,
-    additive.finemap_6
+    additive.finemap_6,
+    additive.finemap_7,
+    additive.finemap_8
 )
 
 # test for effect adjusting for finemapped variants

@@ -63,7 +63,7 @@ get_plot <- function(d, leg_name){
     tp$fill <- as.factor(tp$fill)
 
     # sort data by locus name
-    d$f <- factor(d$f, levels=unique(d$f) %>% sort(decreasing=T))
+    d$f <- factor(d$f, levels=unique(d$f) %>% sort(decreasing=F))
 
     # threshold rep P
     d$p_sens <- d$p_sens < 5e-8
@@ -86,6 +86,7 @@ get_plot <- function(d, leg_name){
             strip.background = element_blank(),
             strip.text.y = element_text(angle = 0),
             legend.position = "bottom",
+            legend.box.background = element_rect(colour = "black"),
             panel.spacing.y = unit(0, "lines")
         ) +
         ylab("Genotype * genotype (dosage) interaction effect estimate, SD (95% CI)")
@@ -100,7 +101,7 @@ multiplicative <- get_dat("data/gxg-log.txt")
 # append sensitivity P value
 additive <- merge(additive, fread("data/gxg-log.txt") %>% mutate(tt=paste0(trait, ":", term)) %>% select(tt, p.value) %>% rename(p_sens="p.value"), "tt")
 multiplicative <- merge(multiplicative, fread("data/gxg.txt") %>% mutate(tt=paste0(trait, ":", term)) %>% select(tt, p.value) %>% rename(p_sens="p.value"), "tt")
-finemapped$p_sens=NA
+finemapped$p_sens=1
 
 # save plot
 pdf("gxg-additive.pdf", height=6, width=8)

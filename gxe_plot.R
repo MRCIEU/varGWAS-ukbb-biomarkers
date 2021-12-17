@@ -110,30 +110,27 @@ additive <- merge(additive, fread("data/gxe-log.txt") %>% mutate(tt=paste0(trait
 multiplicative <- merge(multiplicative, fread("data/gxe.txt") %>% mutate(tt=paste0(trait, ":", term)) %>% select(tt, p.value) %>% rename(p_sens="p.value"), "tt")
 
 # order finemapped by additive
-finemapped2 <- merge(additive %>% dplyr::select(tt, estimate), finemapped, "tt")
+finemapped2 <- merge(additive %>% dplyr::select(tt), finemapped, "tt")
 
 # save plot
-pdf("gxe-additive.pdf", height=12, width=11)
+pdf("gxe-additive.pdf", height=13, width=11)
 print(get_plot(additive, "Multiplicative (P < 5e-8)"))
 dev.off()
 
-pdf("gxe-multiplicative.pdf", height=12, width=11)
+pdf("gxe-multiplicative.pdf", height=13, width=11)
 print(get_plot(multiplicative, "Additive (P < 5e-8)"))
 dev.off()
 
-pdf("gxe-finemapped.pdf", height=12, width=11)
+pdf("gxe-finemapped.pdf", height=13, width=11)
 print(get_plot(finemapped2, ""))
 dev.off()
 
 # GxE table
 additive$ea <- stringr::str_split(additive$V2, "_", simplify=T)[,4]
 additive_tbl <- additive %>% 
-    filter(tt != "hdl_cholesterol.30760.0.0:sex.31.0.0:chr19_45413576_C_T") %>%
-    filter(tt != "triglycerides.30870.0.0:body_mass_index.21001.0.0:chr22_44324727_C_G") %>%
-    filter(tt != "urate.30880.0.0:sex.31.0.0:chr4_10402838_T_C") %>%
-    filter(p_sens < 5e-8) %>%
-    arrange(p.value) %>%
-    select(rsid, ea, u, y, estimate, lci, uci, p.value, gene)
+    dplyr::filter(p_sens < 5e-8) %>%
+    dplyr::arrange(p.value) %>%
+    dplyr::select(rsid, ea, u, y, estimate, lci, uci, p.value, gene)
 additive_tbl$SNP <- paste0(additive_tbl$rsid, additive_tbl$ea)
 additive_tbl$rsid <- NULL
 additive_tbl$ea <- NULL

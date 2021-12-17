@@ -101,13 +101,16 @@ Combine nearest gene
 awk '{print $1"\t"$3"\t"$7}' data/*nearest* | uniq > data/nearest.txt
 ```
 
-Manually update wrong genes
+Manually update most likely genes based on expression evidence
 
 ```sh
 sed -i 's/10402838\tZNF518B/10402838\tSLC2A9/g' data/nearest.txt
 sed -i 's/136153981\tSURF6/136153981\tABO/g' data/nearest.txt
 sed -i 's/88183820\tKLHL8/88183820\tHSD17B13/g' data/nearest.txt
 sed -i 's/118588320\tDDX6/118588320\tTREH/g' data/nearest.txt
+sed -i 's/49214274\tMAMSTR/49214274\tFUT2/g' data/nearest.txt
+sed -i 's/136155000\tSURF6/136155000\tABO/g' data/nearest.txt
+sed -i 's/116648917\tZNF259/116648917\tAPOA5/g' data/nearest.txt
 ```
 
 ## Top hits table
@@ -163,9 +166,9 @@ for trait in alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosp
 done
 
 # qualitative analysis
-for trait in alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
-    sbatch runR.sh gxe-qual.R -t "$trait"
-done
+#for trait in alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
+#    sbatch runR.sh gxe-qual.R -t "$trait"
+#done
 
 # finemap analysis
 for trait in alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosphatase.30610.0.0 apolipoprotein_a.30630.0.0 apolipoprotein_b.30640.0.0 aspartate_aminotransferase.30650.0.0 c_reactive_protein.30710.0.0 calcium.30680.0.0 cholesterol.30690.0.0 creatinine.30700.0.0 cystatin_c.30720.0.0 direct_bilirubin.30660.0.0 gamma_glutamyltransferase.30730.0.0 glucose.30740.0.0 glycated_haemoglobin.30750.0.0 hdl_cholesterol.30760.0.0 igf_1.30770.0.0 ldl_direct.30780.0.0 lipoprotein_a.30790.0.0 oestradiol.30800.0.0 phosphate.30810.0.0 rheumatoid_factor.30820.0.0 shbg.30830.0.0 testosterone.30850.0.0 total_bilirubin.30840.0.0 total_protein.30860.0.0 triglycerides.30870.0.0 urate.30880.0.0 urea.30670.0.0 vitamin_d.30890.0.0; do
@@ -184,15 +187,15 @@ echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe-log.tx
 grep -v term data/*.0.0.gxe-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-log.txt:/\t/g' >> data/gxe-log.txt
 echo -e "term\testimate\tstd.error\tstatistic\tp.value\ttrait\tformula" > data/gxe-finemap.txt
 grep -v term data/*.0.0_gxe-add-finemap.txt | cut -d: --complement -f1 >> data/gxe-finemap.txt
-head -n1 data/calcium.30680.0.0.gxe-qual.txt > data/gxe-qual.txt
-cat data/*.0.0.gxe-qual.txt | grep -v "term.T" >> data/gxe-qual.txt
+#head -n1 data/calcium.30680.0.0.gxe-qual.txt > data/gxe-qual.txt
+#cat data/*.0.0.gxe-qual.txt | grep -v "term.T" >> data/gxe-qual.txt
 ```
 
 GxE plots
 
 ```sh
 Rscript gxe_plot.R
-Rscript gxe_qual_plot.R
+#Rscript gxe_qual_plot.R
 ```
 
 Subgroup mean and variance analysis

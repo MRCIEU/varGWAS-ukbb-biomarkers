@@ -66,9 +66,10 @@ d <- rbind(d1, d2)
 d$copies <- as.factor(d$copies)
 d$int_t <- "Unadjusted"
 d$int_t[d$int] <- "Adjusted"
+d$int_t <- factor(d$int_t, levels=c("Unadjusted", "Adjusted"))
 
 p <- ggplot(d, aes(x=copies, y=estimate, ymin=lci, ymax=uci, group=int_t, shape=int_t)) +
-    geom_point(size = 1.5, position = position_dodge(width = 0.9)) +
+    geom_point(size = 2, position = position_dodge(width = 0.9)) +
     geom_errorbar(width=.05, position = position_dodge(width = 0.9)) +
     theme_classic() +
     facet_grid(Trait~model, scale="free") + 
@@ -82,6 +83,6 @@ p <- ggplot(d, aes(x=copies, y=estimate, ymin=lci, ymax=uci, group=int_t, shape=
     xlab("SNP (genotype copies)") +
     labs(shape="Interaction")
 
-pdf("gxg-qual.pdf", height=9)
+pdf("gxg-qual.pdf", height=10)
 print(p)
 dev.off()
