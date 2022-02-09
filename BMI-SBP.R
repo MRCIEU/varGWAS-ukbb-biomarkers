@@ -67,4 +67,4 @@ for (i in 1:nrow(bmi_iv)){
 }
 
 # save file
-write.table(res, sep="\t", quote=F, row.names=F, file="bmi_iv_var.txt")
+write.table(res_var, sep="\t", quote=F, row.names=F, file="bmi_iv_var.txt")
