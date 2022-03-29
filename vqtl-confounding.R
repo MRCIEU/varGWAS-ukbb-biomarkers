@@ -3,15 +3,8 @@ load("data/pheno.RData")
 library("varGWASR")
 library("dplyr")
 library("data.table")
-library('optparse')
 source("funs.R")
 set.seed(12)
-
-option_list = list(
-  make_option(c("-t", "--trait"), type="character", default=NULL, help="Variable name for outcome", metavar="character")
-);
-opt_parser = OptionParser(option_list=option_list);
-opt = parse_args(opt_parser);
 
 # load linker
 linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
