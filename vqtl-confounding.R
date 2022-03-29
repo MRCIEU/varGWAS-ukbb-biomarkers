@@ -1,8 +1,3 @@
-- LP manuscript revisions
-- simulation/revisions to variance GWAS paper
-- updated prediction models for HIE paper
-- pygwasvcf on pip
-
 load("data/pheno.RData")
 
 library("varGWASR")
