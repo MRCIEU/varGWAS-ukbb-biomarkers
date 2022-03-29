@@ -1,3 +1,8 @@
+- LP manuscript revisions
+- simulation/revisions to variance GWAS paper
+- updated prediction models for HIE paper
+- pygwasvcf on pip
+
 load("data/pheno.RData")
 
 library("varGWASR")
@@ -37,14 +42,21 @@ chr22_s <- chr22[sample(nrow(chr22), n_snps), ]
 results <- data.frame()
 covar <- c("age_at_recruitment.21022.0.0","sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10")
 for (i in 1:n_snps){
-    g <- extract_variant_from_bgen(as.character(chr22_s$chromosome[i]), as.double(chr22_s$position[i]), chr22_s$alleleA[i], chr22_s$alleleB[i])
-    dx <- merge(dat, g, "appieu")
-    dx <- dx %>% dplyr::select(paste0("chr", chr22_s$chromosome[i], "_", chr22_s$position[i], "_", chr22_s$alleleA[i], "_", chr22_s$alleleB[i]), "age_at_recruitment.21022.0.0","sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", "standing_height.50.0.0") %>% tidyr::drop_na()
-    fit0 <- varGWASR::model(dx, paste0("chr", chr22_s$chromosome[i], "_", chr22_s$position[i], "_", chr22_s$alleleA[i], "_", chr22_s$alleleB[i]), "standing_height.50.0.0", covar1 = covar, covar2 = NULL)
-    names(fit0) <- paste0(names(fit0), ".fit0")
-    fit1 <- varGWASR::model(dx, paste0("chr", chr22_s$chromosome[i], "_", chr22_s$position[i], "_", chr22_s$alleleA[i], "_", chr22_s$alleleB[i]), "standing_height.50.0.0", covar1 = covar, covar2 = covar)
-    names(fit1) <- paste0(names(fit1), ".fit1")
-    results <- rbind(results, cbind(fit0, fit1))
+    res <- tryCatch({
+        g <- extract_variant_from_bgen(as.character(chr22_s$chromosome[i]), as.double(chr22_s$position[i]), chr22_s$alleleA[i], chr22_s$alleleB[i])
+        dx <- merge(dat, g, "appieu")
+        dx <- dx %>% dplyr::select(paste0("chr", chr22_s$chromosome[i], "_", chr22_s$position[i], "_", chr22_s$alleleA[i], "_", chr22_s$alleleB[i]), "age_at_recruitment.21022.0.0","sex.31.0.0", "PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10", "standing_height.50.0.0") %>% tidyr::drop_na()
+        fit0 <- varGWASR::model(dx, paste0("chr", chr22_s$chromosome[i], "_", chr22_s$position[i], "_", chr22_s$alleleA[i], "_", chr22_s$alleleB[i]), "standing_height.50.0.0", covar1 = covar, covar2 = NULL)
+        names(fit0) <- paste0(names(fit0), ".fit0")
+        fit1 <- varGWASR::model(dx, paste0("chr", chr22_s$chromosome[i], "_", chr22_s$position[i], "_", chr22_s$alleleA[i], "_", chr22_s$alleleB[i]), "standing_height.50.0.0", covar1 = covar, covar2 = covar)
+        names(fit1) <- paste0(names(fit1), ".fit1")
+        cbind(fit0, fit1)
+    }, error=function(cond) {
+        return(NULL)
+    })
+    if (!is.null(res)){
+        results <- rbind(results, res)
+    }
 }
 
 # save results
