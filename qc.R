@@ -74,7 +74,6 @@ qq_plot <- function(plotdata, title, ldsc=NULL, ylim=50){
     qqplot <- ggplot(plotdata, aes(x = expected, y = observed)) +
         geom_ribbon(aes(ymax = cupper, ymin = clower), fill = "red", alpha = 0.5) +
         scale_y_continuous(expand = c(0,0), limits = c(0, ylim)) +
-        scale_x_continuous(expand = c(0,0), limits = c(0, ylim)) +
         geom_point() +
         labs(x = expression(paste("Expected -log"[10],"(", plain(P),")")),
             y = expression(paste("Observed -log"[10],"(", plain(P),")"))) +
@@ -88,7 +87,8 @@ qq_plot <- function(plotdata, title, ldsc=NULL, ylim=50){
             axis.text.y = element_text(size = 22),
             axis.title = element_text(size = 22),
             plot.title = element_text(size = 22)
-        )
+        ) +
+        scale_x_continuous(labels = scales::comma, breaks = scales::pretty_breaks(n = 3))
     if(!is.null(ldsc)){
         qqplot <- qqplot +
           geom_text(data = ldsc, aes(label = lab, x = -Inf, y = Inf), hjust = 0, vjust = 1, parse=T)
