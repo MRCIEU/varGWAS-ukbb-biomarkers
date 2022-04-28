@@ -43,3 +43,5 @@ for (trait in unique(d$trait)){
     }
 
 }
+
+write.csv(results, file="data/vqtl-log.csv")
