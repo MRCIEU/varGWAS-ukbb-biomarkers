@@ -164,5 +164,4 @@ for (i in 1:nrow(additive)){
     additive.results <- rbind(additive.results, est)
 }
 
-write.table(additive.results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$t,"_gxe-add-finemap.txt"))
-write.table(additive.finemap, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$t,"_gxe-additive.finemap.txt"))
+write.table(additive.results, sep="\t", quote=F, row.names=F, file=paste0("data/", opt$t,"_gxe-add-adj500kb.txt"))
