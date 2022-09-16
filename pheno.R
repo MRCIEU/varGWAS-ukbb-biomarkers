@@ -72,7 +72,8 @@ pheno <- fread(f, select=c(
         "50-0.0",
         "2754-0.0",
         "20150-0.0",
-        "20151-0.0"
+        "20151-0.0",
+        "22040-0.0"
     ),
     col.names=c(
         "eid", 
@@ -138,7 +139,8 @@ pheno <- fread(f, select=c(
         "standing_height.50.0.0",
         "age_at_first_live_birth.2754.0.0",
         "forced_expiratory_volume_best_measure.20150.0.0",
-        "forced_vital_capacity_best_measure.20151.0.0"
+        "forced_vital_capacity_best_measure.20151.0.0",
+        "summed_MET_minutes_per_week_for_all_activity.22040.0.0"
     )
 )
 unlink(f)
