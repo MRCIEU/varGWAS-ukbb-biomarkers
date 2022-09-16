@@ -8,7 +8,7 @@ library("lmtest")
 library("sandwich")
 source("funs.R")
 set.seed(1234)
-options(ieugwasr_api="http://64.227.44.193:8006/")
+options(ieugwasr_api="http://web-dc1-bms-d0.infra.bris.ac.uk:5002/")
 
 option_list = list(
   make_option(c("-t", "--trait"), type="character", default=NULL, help="Name of trait", metavar="character")

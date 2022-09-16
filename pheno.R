@@ -7,7 +7,7 @@ set.seed(1234)
 disease_id <- paste0("41270-0.", seq(0, 212))
 disease_name <- paste0("diagnoses_icd10_41270.0.", seq(0, 212))
 
-f <- "/tmp/tmp.GU8Wh7SknM/data.33352.csv"
+f <- "/tmp/tmp.KzpT1GumUk/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
         "31-0.0",
