@@ -356,3 +356,18 @@ finemap_func <- function(chr_pos, id){
 
     return(data.frame(chr_pos, snps, id, stringsAsFactors=F))
 }
+
+all_interval_func <- function(chr_pos, id){
+    message(paste0("Working on variant: ", chr_pos))
+
+    # split out chrpos
+    split <- stringr::str_split(chr_pos, ":", simplify=T) %>% as.data.frame(., stringsAsFactors=F) %>% dplyr::rename(chr="V1", pos="V2")
+    split$pos <- as.numeric(split$pos)
+    split$start <- split$pos - 250000
+    split$end <- split$pos + 250000
+
+    # get assoc for snps
+    ass <- associations(paste0(split$chr, ":", split$start, "-", split$end), id) %>% dplyr::select(rsid, chr, position, nea, ea) %>% dplyr::rename(oa="nea", snp="rsid")
+
+    return(data.frame(chr_pos, ass, stringsAsFactors=F))
+}

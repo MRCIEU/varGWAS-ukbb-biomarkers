@@ -3,10 +3,10 @@ library("dplyr")
 library("ggplot2")
 library("broom")
 source("funs.R")
-options(ieugwasr_api="http://64.227.44.193:8006/")
+options(ieugwasr_api="http://104.248.164.99/")
 set.seed(123)
 
-f <- "/tmp/tmp.nQ9KZWt0VB/data.33352.csv"
+f <- "/tmp/tmp.mVvLa5Exif/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
         "31-0.0",
@@ -174,3 +174,45 @@ covar <- c("age_at_recruitment.21022.0.0","PC1","PC2","PC3","PC4","PC5","PC6","P
 res <- varGWASR::model(dat %>% dplyr::select(all_of(c("chr6_39016636_C_T", "birth_weight_of_first_child.2744.0.0_log", covar))) %>% na.omit, "chr6_39016636_C_T", "birth_weight_of_first_child.2744.0.0_log", covar1 = covar, covar2 = covar)
 res$trait <- "birth_weight_of_first_child.2744.0.0_log"
 res$term <- "chr6_39016636_C_T"
+
+get_prs <- function(dat, iv){
+    # extract dosages and harmonise
+    variants <- apply(iv, 1, function(row){
+        tryCatch({
+            extract_variant_from_bgen(row[['chr']], as.double(row[['position']]), row[['nea']], row[['ea']])
+        }, error = function(error_condition) {
+            return(NA)
+        })
+    })
+    # drop betas if the variant could not be recovere
+    iv <- iv[!is.na(variants),]
+
+    variants <- variants[!is.na(variants)] %>%
+        reduce(left_join, by = "appieu")
+    row.names(variants) <- variants$appieu
+    variants$appieu <- NULL
+
+    # weight each SNP by beta
+    w <- as.matrix(variants) %*% diag(iv$beta)
+
+    # sum the weighted alleles into score
+    prs <- as.data.frame(rowSums(w))
+    names(prs) <- c("PRS")
+    prs$appieu <- row.names(prs)
+
+    # merge single snps with pheno
+    variants$appieu <- row.names(variants)
+    dat <- merge(dat, variants, "appieu")
+
+    # merge prs with pheno
+    dat <- merge(dat, prs,"appieu")
+
+    return(dat)
+}
+
+# prepare BMI-PRS lacking GLP1R locus
+bmi_iv <- tophits("ieu-a-835")
+bmi_dat <- get_prs(dat, bmi_iv %>% dplyr::filter(chr != "6"))
+
+# test interaction term
+lm(body_mass_index.21001.0.0 ~ chr6_39046794_G_A * PRS + PC1 + PC2 + PC3 + PC4 + PC5 + PC6 + PC7 + PC8 + PC9 + PC10 + age_at_recruitment.21022.0.0 + sex.31.0.0, data=bmi_dat)
