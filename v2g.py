@@ -88,10 +88,10 @@ for index, row in df.iterrows():
   d = query_OpenTargetGenetics_genesForVariant(vid)
   if d is None:
     continue
-  mapping[row['key']] = d
+  mapping[row['rsid']] = d
 
 f = open(output, "w")
-f.write("key\tgene\n")
+f.write("rsid\tgene\n")
 for variant in mapping:
   f.write(variant + "\t" + mapping[variant] + "\n")
 f.close()
