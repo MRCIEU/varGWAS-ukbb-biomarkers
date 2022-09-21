@@ -80,7 +80,16 @@ output = sys.argv[2]
 df = pd.read_csv(input)
 
 # map variants to gene
+mapping = dict()
 for index, row in df.iterrows():
   vid = query_OpenTargetGenetics_variantForRSID(row['rsid'])
+  if vid is None:
+    continue
   d = query_OpenTargetGenetics_genesForVariant(vid)
-  print(row['key'], row['chr'], row['pos'])
+  mapping[row['key']] = d
+
+f = open(output, "w")
+f.write("key\tgene\n")
+for variant in mapping:
+  f.write(variant + "\t" + mapping[variant] + "\n")
+f.close()
