@@ -86,10 +86,10 @@ for trait in alanine_aminotransferase.30620.0.0 albumin.30600.0.0 alkaline_phosp
 done
 ```
 
-Combine nearest gene
+Combine v2g gene
 
 ```sh
-cat data/*nearest* | sort -u > data/nearest.txt
+cat data/*nearest* | grep -v rsid | sort -u > data/nearest.txt
 ```
 
 ## Top hits table
