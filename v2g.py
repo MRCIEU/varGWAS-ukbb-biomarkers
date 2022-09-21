@@ -86,6 +86,8 @@ for index, row in df.iterrows():
   if vid is None:
     continue
   d = query_OpenTargetGenetics_genesForVariant(vid)
+  if d is None:
+    continue
   mapping[row['key']] = d
 
 f = open(output, "w")

@@ -92,18 +92,6 @@ Combine nearest gene
 cat data/*nearest* | sort -u > data/nearest.txt
 ```
 
-Manually update most likely genes based on expression evidence
-
-```sh
-sed -i 's/10402838\tZNF518B/10402838\tSLC2A9/g' data/nearest.txt
-sed -i 's/136153981\tSURF6/136153981\tABO/g' data/nearest.txt
-sed -i 's/88183820\tKLHL8/88183820\tHSD17B13/g' data/nearest.txt
-sed -i 's/118588320\tDDX6/118588320\tTREH/g' data/nearest.txt
-sed -i 's/49214274\tMAMSTR/49214274\tFUT2/g' data/nearest.txt
-sed -i 's/136155000\tSURF6/136155000\tABO/g' data/nearest.txt
-sed -i 's/116648917\tZNF259/116648917\tAPOA5/g' data/nearest.txt
-```
-
 ## Top hits table
 
 Combine all vQTLs
