@@ -38,7 +38,7 @@ get_dat <- function(file){
     for (i in 1:nrow(d)){
         if (is.na(d$gene.1[i])){
             d$f[i] <- paste0(d$rsid.1[i], " x ",d$gene.2[i], " (", d$rsid.2[i], ")")
-        } else if (is.na(d$gene.2)){
+        } else if (is.na(d$gene.2[i])){
             d$f[i] <- paste0(d$gene.1[i], " (", d$rsid.1[i], ") x ", d$rsid.2[i])
         } else{
             d$f[i] <- paste0(d$gene.1[i], " (", d$rsid.1[i], ") x ",d$gene.2[i], " (", d$rsid.2[i], ")")
