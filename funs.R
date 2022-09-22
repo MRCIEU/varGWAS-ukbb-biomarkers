@@ -369,9 +369,9 @@ all_interval_func <- function(chr_pos, id){
     split$end <- split$pos + 500000
 
     # get assoc for snps
-    ass <- associations(paste0(split$chr, ":", split$start, "-", split$end), id)%>% dplyr::select(rsid, chr, position, nea, ea, p) %>% dplyr::rename(pval="p")
+    ass <- associations(paste0(split$chr, ":", split$start, "-", split$end), id) %>% dplyr::select(rsid, chr, position, nea, ea, p) %>% dplyr::rename(pval="p")
     ass <- ld_clump(ass)
-    names(ass)[1] <- "snp"
+    ass <- ass %>% dplyr::rename(snp="rsid", oa = "nea")
 
     return(data.frame(chr_pos, ass, stringsAsFactors=F))
 }
