@@ -165,7 +165,7 @@ grep -v term data/*.0.0.gxe-main.txt | grep -v :$ | sed 's/data\///g' | sed 's/.
 echo -e "trait\tterm\testimate\tstd.error\tstatistic\tp.value" > data/gxe-log.txt
 grep -v term data/*.0.0.gxe-log.txt | grep -v :$ | sed 's/data\///g' | sed 's/.gxe-log.txt:/\t/g' >> data/gxe-log.txt
 echo -e "term\testimate\tstd.error\tstatistic\tp.value\ttrait\tformula" > data/gxe-finemap.txt
-grep -v term data/*.0.0_gxe-add-finemap.txt | cut -d: --complement -f1 >> data/gxe-finemap.txt
+grep -v term data/*.0.0_gxe-add-adj500kb.txt | cut -d: --complement -f1 >> data/gxe-finemap.txt
 #head -n1 data/calcium.30680.0.0.gxe-qual.txt > data/gxe-qual.txt
 #cat data/*.0.0.gxe-qual.txt | grep -v "term.T" >> data/gxe-qual.txt
 ```
