@@ -36,16 +36,14 @@ get_dat <- function(file){
     d$tt <- paste0(d$trait, ":", d$term)
     d$f <- rep(NA, nrow(d))
     for (i in 1:nrow(d)){
-        if (is.na(d$gene.1)){
-            paste0(d$rsid.1, " x ",d$gene.2, " (", d$rsid.2, ")")
+        if (is.na(d$gene.1[i])){
+            d$f[i] <- paste0(d$rsid.1[i], " x ",d$gene.2[i], " (", d$rsid.2[i], ")")
         } else if (is.na(d$gene.2)){
-            paste0(d$gene.1, " (", d$rsid.1, ") x ", d$rsid.2)
+            d$f[i] <- paste0(d$gene.1[i], " (", d$rsid.1[i], ") x ", d$rsid.2[i])
         } else{
-            paste0(d$gene.1, " (", d$rsid.1, ") x ",d$gene.2, " (", d$rsid.2, ")")
+            d$f[i] <- paste0(d$gene.1[i], " (", d$rsid.1[i], ") x ",d$gene.2[i], " (", d$rsid.2[i], ")")
         }
     }
-
-    d$f <- paste0(d$gene.1, " (", d$rsid.1, ") x ",d$gene.2, " (", d$rsid.2, ")")
 
     return(d)
 }
