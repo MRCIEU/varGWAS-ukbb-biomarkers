@@ -2,7 +2,9 @@ library('data.table')
 library('dplyr')
 library('purrr')
 library('rbgen')
+library('ieugwasr')
 library('stringr')
+options(ieugwasr_api="http://web-dc1-bms-d0.infra.bris.ac.uk:5002/")
 
 get_filtered_linker <- function(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="16729") {
     message("Preparing IEU linker")
@@ -367,10 +369,7 @@ all_interval_func <- function(chr_pos, id){
     split$end <- split$pos + 500000
 
     # get assoc for snps
-    ass <- associations(paste0(split$chr, ":", split$start, "-", split$end), id) %>% dplyr::select(rsid, chr, position, nea, ea) %>% dplyr::rename(oa="nea")
-
-    # clump associations
-    ass$pval <- 0
+    ass <- associations(paste0(split$chr, ":", split$start, "-", split$end), id)%>% dplyr::select(rsid, chr, position, nea, ea, p) %>% dplyr::rename(pval="p")
     ass <- ld_clump(ass)
     names(ass)[1] <- "snp"
 
