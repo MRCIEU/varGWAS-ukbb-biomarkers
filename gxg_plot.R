@@ -10,6 +10,7 @@ library("RColorBrewer")
 library("grid")
 source("funs.R")
 set.seed(123)
+options(ieugwasr_api="http://web-dc1-bms-d0.infra.bris.ac.uk:5002/")
 
 get_dat <- function(file){
     # read in gxe results

@@ -281,23 +281,10 @@ get_rsid <- function(snp){
 }
 
 get_gene <- function(snp){
-    key <- as.data.frame(str_split(snp, "_", simplify=T), stringsAsFactors=F) %>% dplyr::mutate(key=paste0(V1, ":", V2))
-    key$key <- gsub("chr", "", key$key)
-
     # get data on nearest gene
-    ng <- fread("data/nearest.txt")
-    ng <- unique(ng)
-    ng$key <- paste0(ng$V1,":",ng$V2)
-    ng$V1 <- NULL
-    ng$V2 <- NULL
-    names(ng)[1] <- "gene"
-    ng <- ng %>%
-        group_by_at(vars(key)) %>%
-        summarize(gene = toString(gene)) %>%
-        ungroup()
-    ng$gene <- gsub(", ", "|", ng$gene)
-    gene = ng %>% dplyr::filter(key==!!key$key) %>% pull(gene)
-    return(gene)
+    ng <- fread("data/nearest.txt", col.names=c("rsid", "gene"))
+    gene <- ng %>% dplyr::filter(rsid == !!snp) %>% dplyr::pull(gene) %>% unique
+    return(gene[1])
 }
 
 finemap_func <- function(chr_pos, id){
