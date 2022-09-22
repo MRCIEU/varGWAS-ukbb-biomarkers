@@ -29,8 +29,8 @@ get_dat <- function(file){
     d$Trait <- sapply(d$trait, function(x) return(biomarkers_abr[biomarkers==x]))
     d$rsid.1 <- sapply(d$V1, get_rsid)
     d$rsid.2 <- sapply(d$V2, get_rsid)
-    d$gene.1 <- sapply(d$V1, get_gene)
-    d$gene.2 <- sapply(d$V2, get_gene)
+    d$gene.1 <- sapply(d$rsid.1, get_gene)
+    d$gene.2 <- sapply(d$rsid.2, get_gene)
 
     # add key
     d$tt <- paste0(d$trait, ":", d$term)
