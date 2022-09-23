@@ -10,7 +10,7 @@ library('ieugwasr')
 library("varGWASR")
 source("funs.R")
 set.seed(1234)
-options(ieugwasr_api="http://64.227.44.193:8006/")
+options(ieugwasr_api="http://web-dc1-bms-d0.infra.bris.ac.uk:5002/")
 
 # load linker
 linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")
@@ -46,11 +46,13 @@ int_log$key <- paste0(int_log$term, ":", int_log$trait)
 int_log <- int_log %>% dplyr::filter(p.value < 5e-8)
 int <- int %>% dplyr::filter(key %in% int_log$key)
 
+# annotate with rsid
+int$rsid <- sapply(int$snp, get_rsid)
+
 # merge on to gene info
-lookup <- fread("Table S1.csv", select=c("snp", "gene", "rsid"))
+lookup <- fread("Table S1.csv", select=c("gene", "rsid"))
 lookup <- unique(lookup)
-int <- merge(int, lookup,"snp")
-int$gene <- stringr::str_split(int$gene, "\\|", simplify=T)[,1]
+int <- merge(int, lookup,"rsid", all.x=T)
 
 # select top n=5 effects by effect size
 d <- int %>% dplyr::arrange(desc(abs(estimate))) %>% dplyr::filter(key != "sex.31.0.0:chr19_45413233_G_T:cholesterol.30690.0.0") %>%  dplyr::filter(key != "age_at_recruitment.21022.0.0:chr19_45413233_G_T:ldl_direct.30780.0.0") %>% dplyr::filter(key != "body_mass_index.21001.0.0:chr22_44324855_G_A:aspartate_aminotransferase.30650.0.0") %>% dplyr::filter(key != "age_at_recruitment.21022.0.0:chr19_45413233_G_T:cholesterol.30690.0.0") %>% head(n=5)

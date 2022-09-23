@@ -34,9 +34,16 @@ get_dat <- function(file, threshold=5e-8){
     # map SNP to rsid & gene
     lookup <- fread("Table S1.csv", select=c("gene", "rsid"))
     lookup <- unique(lookup)
-    d <- merge(d, lookup, "rsid")
+    d <- merge(d, lookup, "rsid", all.x=T)
     d$u <- factor(d$u)
-    d$f <- paste0(d$gene, " (", d$rsid, ")")
+    d$f <- NA
+    for (i in 1:nrow(d)){
+        if (is.na(d$gene[i])){
+            d$f[i] <- paste0(d$rsid[i])
+        } else {
+            d$f[i] <- paste0(d$gene[i], " (", d$rsid[i], ")")
+        }
+    }
     
     levels(d$u) <- list(Age="Age At Recruitment", Sex="Sex", BMI="Body Mass Index", PA="Summed Minutes Activity", Alcohol="Alcohol Intake Frequency", Smoking="Smoking Status")
 
