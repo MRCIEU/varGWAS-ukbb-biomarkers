@@ -11,7 +11,7 @@ library("sandwich")
 library("varGWASR")
 source("funs.R")
 set.seed(1234)
-options(ieugwasr_api="http://64.227.44.193:8006/")
+options(ieugwasr_api="http://web-dc1-bms-d0.infra.bris.ac.uk:5002/")
 
 # load linker
 linker <- get_filtered_linker(drop_standard_excl=TRUE, drop_non_white_british=TRUE, drop_related=TRUE, application="15825")

@@ -29,7 +29,7 @@ get_dat <- function(file, threshold=5e-8){
     d$u <- sapply(d$V1, get_trait_name)
 
     # map SNP to rsid & gene
-    lookup <- fread("Table S1.csv", select=c("snp", "gene", "rsid"))
+    lookup <- fread("Table S1.csv", select=c("gene", "rsid"))
     lookup <- unique(lookup)
     d <- merge(d, lookup, by.x="V2", by.y="snp")
     d$gene <- stringr::str_split(d$gene, "\\|", simplify=T)[,1]
