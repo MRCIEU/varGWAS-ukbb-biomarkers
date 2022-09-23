@@ -7,7 +7,7 @@ set.seed(1234)
 disease_id <- paste0("41270-0.", seq(0, 212))
 disease_name <- paste0("diagnoses_icd10_41270.0.", seq(0, 212))
 
-f <- "/tmp/tmp.KzpT1GumUk/data.33352.csv"
+f <- "/tmp/tmp.CSu8c6hseg/data.33352.csv"
 pheno <- fread(f, select=c(
         "eid",
         "31-0.0",
@@ -73,7 +73,8 @@ pheno <- fread(f, select=c(
         "2754-0.0",
         "20150-0.0",
         "20151-0.0",
-        "22040-0.0"
+        "22040-0.0",
+        "904-0.0"
     ),
     col.names=c(
         "eid", 
@@ -140,7 +141,8 @@ pheno <- fread(f, select=c(
         "age_at_first_live_birth.2754.0.0",
         "forced_expiratory_volume_best_measure.20150.0.0",
         "forced_vital_capacity_best_measure.20151.0.0",
-        "summed_MET_minutes_per_week_for_all_activity.22040.0.0"
+        "summed_MET_minutes_per_week_for_all_activity.22040.0.0",
+        "number_of_days_week_of_vigorous_physical_activity_10_minutes.904.0.0"
     )
 )
 unlink(f)
@@ -178,6 +180,8 @@ pheno$water_intake.1528.0.0 <- as.double(pheno$water_intake.1528.0.0)
 pheno$water_intake.1528.0.0[pheno$water_intake.1528.0.0 == -10] <- 0.5
 pheno <- pheno %>% dplyr::mutate_at(c("age_at_first_live_birth.2754.0.0"), na_if, -4)
 pheno <- pheno %>% dplyr::mutate_at(c("age_at_first_live_birth.2754.0.0"), na_if, -3)
+pheno <- pheno %>% dplyr::mutate_at(c("number_of_days_week_of_vigorous_physical_activity_10_minutes.904.0.0"), na_if, -1)
+pheno <- pheno %>% dplyr::mutate_at(c("number_of_days_week_of_vigorous_physical_activity_10_minutes.904.0.0"), na_if, -3)
 
 # 6150
 pheno$heart_attack.6150 <- apply(pheno[,c('vascular_heart_problems_diagnosed_by_doctor.6150.0.0', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.1', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.2', 'vascular_heart_problems_diagnosed_by_doctor.6150.0.3'),with=F], 1, function(x) {sum(x==1, na.rm=T)>0})
