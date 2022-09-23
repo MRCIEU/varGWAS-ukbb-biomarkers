@@ -28,11 +28,13 @@ get_dat <- function(file, threshold=5e-8){
     d$y <- sapply(d$trait, function(x) return(biomarkers_abr[biomarkers==x]))
     d$u <- sapply(d$V1, get_trait_name)
 
+    # map SNP to rsid
+    d$rsid <- sapply(d$V2, get_rsid)
+
     # map SNP to rsid & gene
     lookup <- fread("Table S1.csv", select=c("gene", "rsid"))
     lookup <- unique(lookup)
-    d <- merge(d, lookup, by.x="V2", by.y="snp")
-    d$gene <- stringr::str_split(d$gene, "\\|", simplify=T)[,1]
+    d <- merge(d, lookup, "rsid")
     d$u <- factor(d$u)
     d$f <- paste0(d$gene, " (", d$rsid, ")")
     
