@@ -16,13 +16,25 @@ set.seed(123)
 d <- fread("data/gxg-qual.txt")
 d$rsid.1 <- sapply(d$term, get_rsid)
 d$rsid.2 <- sapply(d$mod_snp, get_rsid)
-d$gene.1 <- sapply(d$term, get_gene)
-d$gene.2 <- sapply(d$mod_snp, get_gene)
+d$gene.1 <- sapply(d$rsid.1, get_gene)
+d$gene.2 <- sapply(d$rsid.2, get_gene)
 d$lci <- d$estimate - (1.96 * d$std.error)
 d$uci <- d$estimate + (1.96 * d$std.error)
 d$Trait <- sapply(d$trait, function(x) return(biomarkers_abr[biomarkers==x]))
-d$Trait <-  paste0(d$Trait, "\n", d$gene.1, " (", d$rsid.1, ")\n",d$gene.2, " (", d$rsid.2, ")")
-d$f <- paste0(d$gene.1, " (", d$rsid.1, ") x ",d$gene.2, " (", d$rsid.2, ")")
+
+d$f <- rep(NA, nrow(d))
+for (i in 1:nrow(d)){
+    if (is.na(d$gene.1[i])){
+        d$Trait[i] <-  paste0(d$Trait[i], "\n", d$rsid.1[i], "\n",d$gene.2[i], " (", d$rsid.2[i], ")")
+        d$f[i] <- paste0(d$rsid.1[i], " x ",d$gene.2[i], " (", d$rsid.2[i], ")")
+    } else if (is.na(d$gene.2[i])){
+        d$Trait[i] <-  paste0(d$Trait[i], "\n", d$gene.1[i], " (", d$rsid.1[i], ")\n", d$rsid.2[i])
+        d$f[i] <- paste0(d$gene.1[i], " (", d$rsid.1[i], ") x ", d$rsid.2[i])
+    } else{
+        d$Trait[i] <-  paste0(d$Trait[i], "\n", d$gene.1[i], " (", d$rsid.1[i], ")\n",d$gene.2[i], " (", d$rsid.2[i], ")")
+        d$f[i] <- paste0(d$gene.1[i], " (", d$rsid.1[i], ") x ",d$gene.2[i], " (", d$rsid.2[i], ")")
+    }
+}
 
 d1 <- d %>% dplyr::select(mod, estimate, lci, uci, Trait, f) %>% dplyr::rename(copies="mod") %>% dplyr::mutate(int=F)
 d1$model <- "Mean"
@@ -31,11 +43,24 @@ d <- fread("data/gxg-qual-var.txt")
 d <- cbind(d, as.data.frame(str_split(d$term, ":", simplify=T), stringsAsFactors=F))
 d$rsid.1 <- sapply(d$V1, get_rsid)
 d$rsid.2 <- sapply(d$V2, get_rsid)
-d$gene.1 <- sapply(d$V1, get_gene)
-d$gene.2 <- sapply(d$V2, get_gene)
+d$gene.1 <- sapply(d$rsid.1, get_gene)
+d$gene.2 <- sapply(d$rsid.2, get_gene)
 d$Trait <- sapply(d$trait, function(x) return(biomarkers_abr[biomarkers==x]))
-d$Trait <-  paste0(d$Trait, "\n", d$gene.1, " (", d$rsid.1, ")\n",d$gene.2, " (", d$rsid.2, ")")
-d$f <- paste0(d$gene.1, " (", d$rsid.1, ") x ",d$gene.2, " (", d$rsid.2, ")")
+
+d$f <- rep(NA, nrow(d))
+for (i in 1:nrow(d)){
+    if (is.na(d$gene.1[i])){
+        d$Trait[i] <-  paste0(d$Trait[i], "\n", d$rsid.1[i], "\n",d$gene.2[i], " (", d$rsid.2[i], ")")
+        d$f[i] <- paste0(d$rsid.1[i], " x ",d$gene.2[i], " (", d$rsid.2[i], ")")
+    } else if (is.na(d$gene.2[i])){
+        d$Trait[i] <-  paste0(d$Trait[i], "\n", d$gene.1[i], " (", d$rsid.1[i], ")\n", d$rsid.2[i])
+        d$f[i] <- paste0(d$gene.1[i], " (", d$rsid.1[i], ") x ", d$rsid.2[i])
+    } else{
+        d$Trait[i] <-  paste0(d$Trait[i], "\n", d$gene.1[i], " (", d$rsid.1[i], ")\n",d$gene.2[i], " (", d$rsid.2[i], ")")
+        d$f[i] <- paste0(d$gene.1[i], " (", d$rsid.1[i], ") x ",d$gene.2[i], " (", d$rsid.2[i], ")")
+    }
+}
+
 d$phi_f <- NULL
 d$phi_p <- NULL
 e <- d
