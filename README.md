@@ -183,3 +183,5 @@ Subgroup mean and variance analysis
 Rscript gxe_qual_var.R
 Rscript gxe_qual_var_plot.R
 ```
+
+Adjust all and produce summary statistics
